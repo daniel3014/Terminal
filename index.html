@@ -1,81 +1,158 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Terminal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Terminal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: #0e0e0e;
-      color: #e5e5e5;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+<style>
+:root {
+  --bg: #0e0e0e;
+  --text: #e5e5e5;
+  --sub: #888;
+  --line: #333;
+}
 
-    .container {
-      text-align: center;
-      width: 100%;
-      max-width: 320px;
-    }
+.light {
+  --bg: #f5f5f5;
+  --text: #111;
+  --sub: #666;
+  --line: #ccc;
+}
 
-    .hora {
-      font-size: 56px;
-      font-weight: 300;
-      letter-spacing: 1px;
-    }
+body {
+  margin: 0;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .temp {
-      font-size: 16px;
-      opacity: 0.6;
-      margin-top: 4px;
-    }
+.container {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
 
-    input {
-      margin-top: 32px;
-      width: 100%;
-      padding: 12px;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid #333;
-      color: #e5e5e5;
-      font-size: 16px;
-      outline: none;
-      text-align: center;
-    }
+.hora {
+  font-size: 56px;
+  font-weight: 300;
+}
 
-    input::placeholder {
-      color: #777;
-    }
-  </style>
+.data {
+  font-size: 14px;
+  color: var(--sub);
+  margin-top: 4px;
+}
+
+.clima {
+  margin-top: 20px;
+  font-size: 16px;
+  color: var(--sub);
+}
+
+.switches {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+input {
+  margin-top: 30px;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  font-size: 16px;
+  text-align: center;
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--sub);
+}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
-    <div class="hora" id="hora">--:--</div>
-    <div class="temp" id="temp">-- °C</div>
+<div class="container">
+  <div class="hora" id="hora">--:--</div>
+  <div class="data" id="data">---</div>
 
-    <input
-      type="text"
-      placeholder="Pergunte algo…"
-      disabled
-    >
+  <div class="clima">
+    🌡️ <span id="temp">--</span>
   </div>
 
-  <script>
-    function atualizarHora() {
-      const agora = new Date();
-      document.getElementById("hora").innerText =
-        agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  <div class="switches">
+    <button onclick="setMode('light')">☀️</button>
+    <button onclick="setMode('dark')">🌙</button>
+    <button onclick="setAuto()">Auto</button>
+  </div>
+
+  <input placeholder="Pergunte algo…" disabled>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  function atualizarHora() {
+    const agora = new Date();
+
+    document.getElementById("hora").innerText =
+      agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById("data").innerText =
+      agora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
+  }
+
+  function modoAutomatico() {
+    const hora = new Date().getHours();
+    if (hora >= 6 && hora < 18) {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
     }
-    setInterval(atualizarHora, 1000);
-    atualizarHora();
-  </script>
+  }
+
+  window.setMode = (mode) => {
+    localStorage.setItem("mode", mode);
+    if (mode === "light") document.body.classList.add("light");
+    else document.body.classList.remove("light");
+  };
+
+  window.setAuto = () => {
+    localStorage.setItem("mode", "auto");
+    modoAutomatico();
+  };
+
+  const savedMode = localStorage.getItem("mode") || "auto";
+  if (savedMode === "auto") modoAutomatico();
+  else setMode(savedMode);
+
+  atualizarHora();
+  setInterval(atualizarHora, 1000);
+
+  // Temperatura fake por enquanto
+  document.getElementById("temp").innerText = "23°C";
+
+});
+</script>
 
 </body>
 </html>
