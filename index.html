@@ -72,3 +72,10 @@
       const agora = new Date();
       document.getElementById("hora").innerText =
         agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    setInterval(atualizarHora, 1000);
+    atualizarHora();
+  </script>
+
+</body>
+</html>
