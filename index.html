@@ -2,163 +2,166 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Jarvis Terminal</title>
+<title>Jarvis</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 :root {
-  --bg: #0e0e0e;
-  --text: #e5e5e5;
-  --sub: #888;
-  --line: #333;
-  --active: #fff;
+  --card: rgba(255,255,255,0.12);
+  --text: #fff;
+  --sub: rgba(255,255,255,0.7);
 }
 
 .light {
-  --bg: #f5f5f5;
+  --card: rgba(255,255,255,0.7);
   --text: #111;
-  --sub: #666;
-  --line: #ccc;
-  --active: #000;
+  --sub: #444;
 }
 
 body {
   margin: 0;
   height: 100vh;
-  background: var(--bg);
+  background: linear-gradient(135deg, #1f1f3a, #2b5876);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.container {
-  width: 100%;
-  max-width: 320px;
+.light body {
+  background: linear-gradient(135deg, #e3f2ff, #f8fbff);
+}
+
+.app {
+  padding: 20px;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+}
+
+/* SWITCH */
+.switch {
+  grid-column: 2;
+  justify-self: end;
+  font-size: 13px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* HORA */
+.clock {
+  grid-column: span 2;
   text-align: center;
 }
 
-.hora {
-  font-size: 56px;
+.time {
+  font-size: 64px; /* +14% */
   font-weight: 300;
 }
 
-.data {
-  margin-top: 4px;
+.date {
+  color: var(--sub);
+}
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+}
+
+/* CLIMA */
+.weather {
   font-size: 14px;
-  color: var(--sub);
 }
 
-.clima {
-  margin-top: 18px;
-  font-size: 16px;
-  color: var(--sub);
+.weather h3 {
+  margin: 0 0 8px 0;
+  font-weight: 400;
 }
 
-.modes {
-  margin-top: 28px;
+.weather .temp {
+  font-size: 32px;
+}
+
+/* PREVISÃO */
+.forecast {
   display: flex;
-  justify-content: center;
-  gap: 18px;
+  justify-content: space-between;
   font-size: 13px;
+  margin-top: 8px;
 }
 
-.mode {
-  opacity: 0.4;
-}
-
-.mode.active {
-  opacity: 1;
-  color: var(--active);
-}
-
+/* INPUT */
 input {
-  margin-top: 36px;
-  width: 100%;
-  padding: 12px;
-  background: transparent;
+  grid-column: span 2;
+  padding: 14px;
+  border-radius: 16px;
   border: none;
-  border-bottom: 1px solid var(--line);
-  color: var(--text);
-  font-size: 16px;
-  text-align: center;
   outline: none;
-}
-
-input::placeholder {
-  color: var(--sub);
+  font-size: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-  <div class="hora" id="hora">--:--</div>
-  <div class="data" id="data">---</div>
+  <!-- SWITCH -->
+  <div class="switch" id="modeSwitch">AUTO</div>
 
-  <div class="clima">
-    🌡️ <span id="temp">23°C</span>
+  <!-- HORA -->
+  <div class="clock">
+    <div class="time" id="time">--:--</div>
+    <div class="date" id="date">---</div>
   </div>
 
-  <div class="modes">
-    <div class="mode" id="auto">AUTO</div>
-    <div class="mode" id="light">light</div>
-    <div class="mode" id="dark">dark</div>
+  <!-- CLIMA -->
+  <div class="card weather">
+    <h3>🌦️ Clima</h3>
+    <div class="temp">23°C</div>
+    Sensação: 25°C<br>
+    Precipitação: 10%
   </div>
 
-  <input placeholder="Diga: Jarvis…" disabled>
+  <!-- PREVISÃO -->
+  <div class="card">
+    <h3>Próximos dias</h3>
+    <div class="forecast">
+      <div>☀️ 24°</div>
+      <div>🌧️ 22°</div>
+      <div>⛅ 23°</div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <input placeholder="Diga: Jarvis… ou digite aqui">
 
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  const modes = ["auto", "light", "dark"];
-
-  function atualizarHora() {
-    const agora = new Date();
-    document.getElementById("hora").innerText =
-      agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    document.getElementById("data").innerText =
-      agora.toLocaleDateString("pt-BR", {
-        weekday: "long",
-        day: "numeric",
-        month: "short"
-      });
+  function updateTime() {
+    const now = new Date();
+    document.getElementById("time").innerText =
+      now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    document.getElementById("date").innerText =
+      now.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
   }
 
-  function aplicarModo(mode) {
-    document.body.classList.remove("light");
-    document.querySelectorAll(".mode").forEach(m => m.classList.remove("active"));
+  setInterval(updateTime, 1000);
+  updateTime();
 
-    if (mode === "light") document.body.classList.add("light");
-    if (mode === "auto") modoAutomatico();
-
-    document.getElementById(mode).classList.add("active");
-    localStorage.setItem("mode", mode);
-  }
-
-  function modoAutomatico() {
+  // MODO AUTO
+  function applyAuto() {
     const h = new Date().getHours();
-    if (h >= 6 && h < 18) document.body.classList.add("light");
+    document.body.classList.toggle("light", h >= 6 && h < 18);
   }
 
-  // Clique simples (não slider)
-  modes.forEach(mode => {
-    document.getElementById(mode).onclick = () => aplicarModo(mode);
-  });
-
-  // padrão AUTO
-  const saved = localStorage.getItem("mode") || "auto";
-  aplicarModo(saved);
-
-  atualizarHora();
-  setInterval(atualizarHora, 1000);
-
+  applyAuto();
 });
 </script>
 
