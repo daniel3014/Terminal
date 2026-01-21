@@ -7,17 +7,21 @@
 
 <style>
 :root {
-  --bg1: #1c1c1e;
-  --bg2: #2c2c2e;
-  --glass: rgba(255,255,255,0.15);
+  --bg1: #0f2027;
+  --bg2: #203a43;
+  --bg3: #2c5364;
+
+  --glass: rgba(255,255,255,0.12);
   --text: #ffffff;
   --sub: rgba(255,255,255,0.7);
 }
 
 .light {
-  --bg1: #eaeaea;
-  --bg2: #ffffff;
-  --glass: rgba(255,255,255,0.7);
+  --bg1: #74ebd5;
+  --bg2: #ACB6E5;
+  --bg3: #ffffff;
+
+  --glass: rgba(255,255,255,0.55);
   --text: #111;
   --sub: #444;
 }
@@ -25,7 +29,7 @@
 body {
   margin: 0;
   height: 100vh;
-  background: linear-gradient(180deg, var(--bg1), var(--bg2));
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text);
 }
@@ -42,31 +46,33 @@ body {
 /* ---------- SLIDER ---------- */
 .theme-slider {
   justify-self: end;
-  width: 160px;
-  height: 36px;
-  background: var(--glass);
-  border-radius: 18px;
+  width: 170px;
+  height: 38px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 19px;
   display: flex;
   position: relative;
-  backdrop-filter: blur(18px);
+  align-items: center;
+  backdrop-filter: blur(24px);
   cursor: pointer;
 }
 
 .theme-slider span {
   flex: 1;
-  font-size: 12px;
+  text-align: center;
+  font-size: 14px;
+  z-index: 2;
+  color: var(--sub);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-  color: var(--sub);
 }
 
 .slider-thumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: calc(33.333% - 6px);
+  top: 4px;
+  left: 4px;
+  width: calc(33.333% - 8px);
   height: 30px;
   background: rgba(255,255,255,0.85);
   border-radius: 15px;
@@ -93,15 +99,17 @@ body {
 /* ---------- GLASS WIDGET ---------- */
 .widget {
   background: var(--glass);
-  border-radius: 26px;
-  padding: 18px;
-  backdrop-filter: blur(22px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  border-radius: 28px;
+  padding: 20px;
+  backdrop-filter: blur(28px);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.15),
+    inset 0 1px 1px rgba(255,255,255,0.15);
 }
 
 /* ---------- WEATHER ---------- */
 .weather-main {
-  font-size: 38px;
+  font-size: 40px;
 }
 
 .weather-sub {
@@ -113,7 +121,7 @@ body {
 .forecast {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 14px;
 }
 
@@ -121,13 +129,13 @@ body {
 input {
   grid-column: span 2;
   padding: 16px;
-  border-radius: 20px;
+  border-radius: 22px;
   border: none;
   outline: none;
   font-size: 16px;
-  background: var(--glass);
+  background: rgba(255,255,255,0.18);
   color: var(--text);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(22px);
 }
 </style>
 </head>
@@ -139,9 +147,9 @@ input {
   <!-- SLIDER -->
   <div class="theme-slider" id="slider">
     <div class="slider-thumb" id="thumb"></div>
-    <span>Light</span>
-    <span>Auto</span>
-    <span>Dark</span>
+    <span>☀️</span>
+    <span>AUTO</span>
+    <span>🌙</span>
   </div>
 
   <!-- CLOCK -->
