@@ -7,13 +7,17 @@
 
 <style>
 :root {
-  --card: rgba(255,255,255,0.12);
+  --bg1: #1b1f3b;
+  --bg2: #2f6fa3;
+  --card: rgba(255,255,255,0.14);
   --text: #fff;
-  --sub: rgba(255,255,255,0.7);
+  --sub: rgba(255,255,255,0.75);
 }
 
 .light {
-  --card: rgba(255,255,255,0.7);
+  --bg1: #e6f1ff;
+  --bg2: #ffffff;
+  --card: rgba(255,255,255,0.8);
   --text: #111;
   --sub: #444;
 }
@@ -21,83 +25,82 @@
 body {
   margin: 0;
   height: 100vh;
-  background: linear-gradient(135deg, #1f1f3a, #2b5876);
-  color: var(--text);
+  background: linear-gradient(135deg, var(--bg1), var(--bg2));
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-.light body {
-  background: linear-gradient(135deg, #e3f2ff, #f8fbff);
+  color: var(--text);
 }
 
 .app {
   padding: 20px;
   height: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1.2fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
   gap: 16px;
 }
 
 /* SWITCH */
-.switch {
-  grid-column: 2;
+.theme-switch {
   justify-self: end;
-  font-size: 13px;
-  opacity: 0.8;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
   cursor: pointer;
 }
 
-/* HORA */
+/* CLOCK */
 .clock {
   grid-column: span 2;
   text-align: center;
 }
 
 .time {
-  font-size: 64px; /* +14% */
+  font-size: 72px;
   font-weight: 300;
 }
 
 .date {
+  font-size: 16px;
   color: var(--sub);
 }
 
-/* CARDS */
-.card {
+/* WIDGETS */
+.widget {
   background: var(--card);
-  border-radius: 20px;
+  border-radius: 22px;
   padding: 16px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
 }
 
-/* CLIMA */
-.weather {
+/* WEATHER */
+.weather-main {
+  font-size: 36px;
+}
+
+.weather-sub {
+  margin-top: 6px;
   font-size: 14px;
+  color: var(--sub);
 }
 
-.weather h3 {
-  margin: 0 0 8px 0;
-  font-weight: 400;
-}
-
-.weather .temp {
-  font-size: 32px;
-}
-
-/* PREVISÃO */
+/* FORECAST */
 .forecast {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  margin-top: 8px;
+  margin-top: 12px;
+  font-size: 14px;
 }
 
 /* INPUT */
 input {
   grid-column: span 2;
-  padding: 14px;
-  border-radius: 16px;
+  padding: 16px;
+  border-radius: 18px;
   border: none;
   outline: none;
   font-size: 16px;
@@ -110,25 +113,26 @@ input {
 <div class="app">
 
   <!-- SWITCH -->
-  <div class="switch" id="modeSwitch">AUTO</div>
+  <div class="theme-switch" id="themeBtn">A</div>
 
-  <!-- HORA -->
-  <div class="clock">
+  <!-- CLOCK -->
+  <div class="clock widget" data-widget="clock">
     <div class="time" id="time">--:--</div>
     <div class="date" id="date">---</div>
   </div>
 
-  <!-- CLIMA -->
-  <div class="card weather">
-    <h3>🌦️ Clima</h3>
-    <div class="temp">23°C</div>
-    Sensação: 25°C<br>
-    Precipitação: 10%
+  <!-- WEATHER -->
+  <div class="widget" data-widget="weather">
+    <div class="weather-main">23°C</div>
+    <div class="weather-sub">
+      Sensação: 25°C<br>
+      Precipitação: 10%
+    </div>
   </div>
 
-  <!-- PREVISÃO -->
-  <div class="card">
-    <h3>Próximos dias</h3>
+  <!-- FORECAST -->
+  <div class="widget" data-widget="forecast">
+    <div>Previsão</div>
     <div class="forecast">
       <div>☀️ 24°</div>
       <div>🌧️ 22°</div>
@@ -144,7 +148,9 @@ input {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  function updateTime() {
+  let mode = localStorage.getItem("mode") || "auto";
+
+  function updateClock() {
     const now = new Date();
     document.getElementById("time").innerText =
       now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -152,16 +158,27 @@ document.addEventListener("DOMContentLoaded", () => {
       now.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
   }
 
-  setInterval(updateTime, 1000);
-  updateTime();
-
-  // MODO AUTO
-  function applyAuto() {
-    const h = new Date().getHours();
-    document.body.classList.toggle("light", h >= 6 && h < 18);
+  function applyMode() {
+    document.body.classList.remove("light");
+    if (mode === "light") document.body.classList.add("light");
+    if (mode === "auto") {
+      const h = new Date().getHours();
+      if (h >= 6 && h < 18) document.body.classList.add("light");
+    }
+    document.getElementById("themeBtn").innerText =
+      mode === "auto" ? "A" : mode === "light" ? "☀️" : "🌙";
   }
 
-  applyAuto();
+  document.getElementById("themeBtn").onclick = () => {
+    mode = mode === "auto" ? "light" : mode === "light" ? "dark" : "auto";
+    localStorage.setItem("mode", mode);
+    applyMode();
+  };
+
+  applyMode();
+  updateClock();
+  setInterval(updateClock, 1000);
+
 });
 </script>
 
