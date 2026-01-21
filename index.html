@@ -16,14 +16,13 @@
 }
 
 .light{
-  --bg1:#dbeafe;   /* azul bem claro */
-  --bg2:#bfdbfe;   /* azul iOS-style */
-  --bg3:#e0f2fe;   /* azul quase branco */
+  --bg1:#dbeafe;
+  --bg2:#bfdbfe;
+  --bg3:#e0f2fe;
   --glass:rgba(255,255,255,.6);
   --text:#0f172a;
   --sub:#334155;
 }
-
 
 body{
   margin:0;
@@ -38,8 +37,8 @@ body{
   height:100%;
   display:grid;
   grid-template-columns:1.2fr 1fr;
-  grid-template-rows:auto auto 1fr auto;
-  gap:18px;
+  grid-template-rows:auto auto auto 1fr auto;
+  gap:16px;
 }
 
 /* ===== SLIDER ===== */
@@ -82,25 +81,52 @@ body{
 }
 
 /* ===== CLOCK ===== */
-.clock{grid-column:span 2;text-align:center;}
-.time{font-size:74px;font-weight:300;}
-.date{font-size:16px;color:var(--sub);}
+.clock{
+  grid-column:span 2;
+  text-align:center;
+}
+
+.time{
+  font-size:74px;
+  font-weight:300;
+}
+
+.date{
+  font-size:16px;
+  color:var(--sub);
+}
 
 /* ===== WIDGET ===== */
 .widget{
   background:var(--glass);
-  border-radius:28px;
-  padding:20px;
+  border-radius:26px;
+  padding:14px 16px;
   backdrop-filter:blur(30px);
   box-shadow:
     0 12px 35px rgba(0,0,0,.15),
     inset 0 1px 1px rgba(255,255,255,.2);
 }
 
-.weather-main{font-size:40px;}
-.weather-sub{font-size:14px;color:var(--sub);margin-top:6px;}
-.forecast{display:flex;justify-content:space-between;margin-top:14px;font-size:14px;}
+/* ===== WEATHER (COMPACT) ===== */
+.weather-main{
+  font-size:26px;
+  font-weight:500;
+}
 
+.weather-sub{
+  font-size:12px;
+  color:var(--sub);
+  line-height:1.4;
+}
+
+.forecast{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  font-size:14px;
+}
+
+/* ===== INPUT ===== */
 input{
   grid-column:span 2;
   padding:16px;
@@ -126,19 +152,18 @@ input{
     <span>🌙</span>
   </div>
 
+  <!-- WEATHER COMPACTO NO TOPO -->
+  <div class="widget">
+    <div class="weather-main">23°C • ☀️</div>
+    <div class="weather-sub">
+      Sensação 25° · Chuva 10%
+    </div>
+  </div>
+
   <!-- CLOCK -->
   <div class="clock widget">
     <div class="time" id="time">--:--</div>
     <div class="date" id="date">---</div>
-  </div>
-
-  <!-- WEATHER -->
-  <div class="widget">
-    <div class="weather-main">23°C</div>
-    <div class="weather-sub">
-      Sensação: 25°C<br>
-      Precipitação: 10%
-    </div>
   </div>
 
   <!-- FORECAST -->
@@ -151,6 +176,7 @@ input{
     </div>
   </div>
 
+  <!-- INPUT -->
   <input placeholder="Diga: Jarvis… ou digite aqui">
 
 </div>
@@ -185,7 +211,13 @@ document.addEventListener("DOMContentLoaded",()=>{
     localStorage.setItem("mode",mode);
   }
 
-  /* CLICK */
+  let dragging=false;
+
+  slider.addEventListener("pointerdown",()=>{
+    dragging=true;
+    thumb.style.transition="none";
+  });
+
   slider.addEventListener("click",e=>{
     if(dragging) return;
     const rect=slider.getBoundingClientRect();
@@ -193,14 +225,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     const index=Math.min(2,Math.max(0,Math.floor(x/segment)));
     mode=modes[index];
     applyMode();
-  });
-
-  /* DRAG */
-  let dragging=false;
-
-  slider.addEventListener("pointerdown",e=>{
-    dragging=true;
-    thumb.style.transition="none";
   });
 
   window.addEventListener("pointermove",e=>{
