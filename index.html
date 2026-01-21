@@ -37,8 +37,8 @@ body{
   height:100%;
   display:grid;
   grid-template-columns:1.2fr 1fr;
-  grid-template-rows:auto auto auto 1fr auto;
-  gap:16px;
+  grid-template-rows:auto auto auto auto 1fr auto;
+  gap:14px;
 }
 
 /* ===== SLIDER ===== */
@@ -80,23 +80,7 @@ body{
   will-change:transform;
 }
 
-/* ===== CLOCK ===== */
-.clock{
-  grid-column:span 2;
-  text-align:center;
-}
-
-.time{
-  font-size:74px;
-  font-weight:300;
-}
-
-.date{
-  font-size:16px;
-  color:var(--sub);
-}
-
-/* ===== WIDGET ===== */
+/* ===== WIDGET BASE ===== */
 .widget{
   background:var(--glass);
   border-radius:26px;
@@ -107,7 +91,7 @@ body{
     inset 0 1px 1px rgba(255,255,255,.2);
 }
 
-/* ===== WEATHER (COMPACT) ===== */
+/* ===== WEATHER (COMPACTO) ===== */
 .weather-main{
   font-size:26px;
   font-weight:500;
@@ -119,6 +103,26 @@ body{
   line-height:1.4;
 }
 
+/* ===== CLOCK (COMPACTADO) ===== */
+.clock{
+  grid-column:span 2;
+  text-align:center;
+  padding:12px 16px;
+}
+
+.time{
+  font-size:54px;       /* ↓ menor que antes */
+  font-weight:300;
+  line-height:1.1;
+}
+
+.date{
+  font-size:13px;       /* ↓ mais discreta */
+  color:var(--sub);
+  margin-top:4px;
+}
+
+/* ===== FORECAST ===== */
 .forecast{
   display:flex;
   justify-content:space-between;
@@ -152,7 +156,7 @@ input{
     <span>🌙</span>
   </div>
 
-  <!-- WEATHER COMPACTO NO TOPO -->
+  <!-- WEATHER -->
   <div class="widget">
     <div class="weather-main">23°C • ☀️</div>
     <div class="weather-sub">
@@ -160,8 +164,8 @@ input{
     </div>
   </div>
 
-  <!-- CLOCK -->
-  <div class="clock widget">
+  <!-- CLOCK COMPACTO -->
+  <div class="widget clock">
     <div class="time" id="time">--:--</div>
     <div class="date" id="date">---</div>
   </div>
@@ -190,13 +194,13 @@ document.addEventListener("DOMContentLoaded",()=>{
   const slider=document.getElementById("slider");
   const thumb=document.getElementById("thumb");
 
-  const sliderWidth=slider.clientWidth;
-  const segment=sliderWidth/3;
+  const segment=slider.clientWidth/3;
   const maxX=segment*2;
 
   function setThumb(x, animate=true){
-    if(!animate) thumb.style.transition="none";
-    else thumb.style.transition="transform .25s cubic-bezier(.25,.8,.25,1)";
+    thumb.style.transition=animate
+      ? "transform .25s cubic-bezier(.25,.8,.25,1)"
+      : "none";
     thumb.style.transform=`translateX(${x}px)`;
   }
 
@@ -221,8 +225,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   slider.addEventListener("click",e=>{
     if(dragging) return;
     const rect=slider.getBoundingClientRect();
-    const x=e.clientX-rect.left;
-    const index=Math.min(2,Math.max(0,Math.floor(x/segment)));
+    const index=Math.min(2,Math.max(0,Math.floor((e.clientX-rect.left)/segment)));
     mode=modes[index];
     applyMode();
   });
@@ -239,8 +242,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(!dragging) return;
     dragging=false;
     const rect=slider.getBoundingClientRect();
-    const x=e.clientX-rect.left;
-    const index=Math.min(2,Math.max(0,Math.round(x/segment)));
+    const index=Math.min(2,Math.max(0,Math.round((e.clientX-rect.left)/segment)));
     mode=modes[index];
     applyMode();
   });
@@ -248,7 +250,11 @@ document.addEventListener("DOMContentLoaded",()=>{
   function updateClock(){
     const n=new Date();
     time.innerText=n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    date.innerText=n.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+    date.innerText=n.toLocaleDateString('pt-BR',{
+      weekday:'long',
+      day:'numeric',
+      month:'long'
+    });
   }
 
   applyMode();
