@@ -11,6 +11,8 @@
   --glass-dark: rgba(30,41,59,0.55);
   --border-light: rgba(255,255,255,0.35);
   --border-dark: rgba(255,255,255,0.15);
+  --pill-light: rgba(255,255,255,0.45);
+  --pill-dark: rgba(15,23,42,0.65);
   --blur: blur(22px);
   --shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
@@ -45,19 +47,6 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
-  position: relative;
-}
-
-/* GRID VISÍVEL NO MODO EDIÇÃO */
-.edit-mode .app::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
 }
 
 /* WIDGET */
@@ -71,21 +60,9 @@ body {
   transition: background 0.4s ease, border 0.4s ease;
 }
 
-/* DARK MODE WIDGET */
 body[data-theme="dark"] .widget {
   background: var(--glass-dark);
   border-color: var(--border-dark);
-}
-
-/* EDIT MODE */
-.edit-mode .widget {
-  cursor: grab;
-  animation: wiggle 0.4s ease-in-out infinite alternate;
-}
-
-@keyframes wiggle {
-  from { transform: rotate(-0.4deg); }
-  to { transform: rotate(0.4deg); }
 }
 
 /* CLOCK */
@@ -113,32 +90,51 @@ body[data-theme="dark"] .widget {
   justify-content: space-between;
 }
 
-/* ===== THEME SLIDER ===== */
+/* ===== SLIDER CAPSULE ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
   right: 20px;
-  height: 42px;
-  padding: 6px;
+  height: 46px;
+  padding: 8px;
   border-radius: 999px;
+  width: 190px;
+  backdrop-filter: var(--blur);
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 180px;
-  backdrop-filter: var(--blur);
   transition: background 0.4s ease, border 0.4s ease;
 }
 
-/* SLIDER LIGHT */
+/* outer capsule */
 body[data-theme="light"] .theme-slider {
   background: var(--glass-light);
   border: 1px solid var(--border-light);
 }
 
-/* SLIDER DARK */
 body[data-theme="dark"] .theme-slider {
   background: var(--glass-dark);
   border: 1px solid var(--border-dark);
+}
+
+/* INNER PILL TRACK */
+.theme-slider::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  z-index: 0;
+  transition: background 0.4s ease;
+}
+
+/* pill light */
+body[data-theme="light"] .theme-slider::before {
+  background: var(--pill-light);
+}
+
+/* pill dark */
+body[data-theme="dark"] .theme-slider::before {
+  background: var(--pill-dark);
 }
 
 /* LABELS */
@@ -158,24 +154,20 @@ body[data-theme="dark"] .theme-slider {
   width: 52px;
   border-radius: 999px;
   box-shadow: var(--shadow);
-  left: 6px;
+  left: 8px;
+  z-index: 3;
   transition: left 0.35s cubic-bezier(.4,0,.2,1), background 0.4s ease;
   cursor: pointer;
 }
 
-/* THUMB LIGHT */
+/* thumb light */
 body[data-theme="light"] .slider-thumb {
   background: white;
 }
 
-/* THUMB DARK */
+/* thumb dark */
 body[data-theme="dark"] .slider-thumb {
-  background: rgba(255,255,255,0.9);
-}
-
-/* DARK TEXT BOOST */
-body[data-theme="dark"] span {
-  color: #e5e7eb;
+  background: rgba(255,255,255,0.95);
 }
 </style>
 </head>
@@ -190,7 +182,7 @@ body[data-theme="dark"] span {
   <span>🌙</span>
 </div>
 
-<div class="app" id="grid">
+<div class="app">
 
   <div class="widget weather">
     <strong>23°C ☀️</strong><br>
@@ -208,10 +200,6 @@ body[data-theme="dark"] span {
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget">
-    Widget futuro do Jarvis
-  </div>
-
 </div>
 
 <script>
@@ -224,12 +212,12 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// ===== THEME SLIDER LOGIC =====
+// SLIDER LOGIC
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
 
 const states = ["light","auto","dark"];
-const positions = [6, 64, 122];
+const positions = [8, 68, 128];
 let current = 1;
 
 function applyTheme(state) {
