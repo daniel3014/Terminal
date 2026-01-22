@@ -10,7 +10,7 @@
   --glass: rgba(255,255,255,0.55);
   --border: rgba(255,255,255,0.35);
   --blur: blur(22px);
-  --shadow: 0 20px 40px rgba(0,0,0,0.12);
+  --shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 * {
@@ -21,7 +21,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #eaf3ff, #cfe4ff);
+  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   padding: 30px 16px;
 }
 
@@ -29,12 +29,12 @@ body {
   max-width: 1000px;
   margin: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   position: relative;
 }
 
-/* GRID VISUAL (APENAS EM MODO EDIÇÃO) */
+/* GRID VISÍVEL NO MODO EDIÇÃO */
 .edit-mode .app::before {
   content: "";
   position: absolute;
@@ -59,12 +59,12 @@ body {
 
 .edit-mode .widget {
   cursor: grab;
-  animation: wiggle 0.35s ease-in-out infinite alternate;
+  animation: wiggle 0.4s ease-in-out infinite alternate;
 }
 
 @keyframes wiggle {
-  from { transform: rotate(-0.3deg); }
-  to   { transform: rotate(0.3deg); }
+  from { transform: rotate(-0.4deg); }
+  to { transform: rotate(0.4deg); }
 }
 
 /* CLOCK */
@@ -74,7 +74,7 @@ body {
 }
 
 .clock-time {
-  font-size: 60px;
+  font-size: 64px;
 }
 
 .clock-date {
@@ -83,7 +83,7 @@ body {
 
 /* WEATHER */
 .weather strong {
-  font-size: 26px;
+  font-size: 28px;
 }
 
 /* FORECAST */
@@ -92,12 +92,12 @@ body {
   justify-content: space-between;
 }
 
-/* THEME SLIDER (VERSÃO ANTERIOR) */
+/* ===== SLIDER (VISUAL RESTAURADO EXATAMENTE) ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 150px;
+  width: 160px;
   padding: 10px;
   border-radius: 30px;
   background: var(--glass);
@@ -107,17 +107,17 @@ body {
 
 .track {
   position: relative;
-  height: 34px;
-  background: rgba(255,255,255,0.45);
+  height: 36px;
+  background: rgba(255,255,255,0.4);
   border-radius: 18px;
 }
 
 .thumb {
   position: absolute;
   top: 4px;
-  left: 58px;
-  width: 26px;
-  height: 26px;
+  left: 4px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: white;
   box-shadow: var(--shadow);
@@ -128,7 +128,7 @@ body {
 .labels {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 6px;
   opacity: 0.7;
 }
@@ -137,7 +137,7 @@ body {
 
 <body>
 
-<!-- THEME -->
+<!-- THEME SLIDER -->
 <div class="theme-slider">
   <div class="track" id="track">
     <div class="thumb" id="thumb"></div>
@@ -183,12 +183,12 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// EDIT MODE VIA DOUBLE TAP / CLICK
+// EDIT MODE — DOUBLE TAP / DOUBLE CLICK
 let editMode = false;
 const grid = document.getElementById("grid");
 
 document.querySelectorAll(".widget").forEach(w => {
-  w.addEventListener("dblclick", () => toggleEdit());
+  w.addEventListener("dblclick", toggleEdit);
   w.addEventListener("touchend", e => {
     if (e.detail === 2) toggleEdit();
   });
@@ -203,7 +203,7 @@ function toggleEdit(force) {
   document.body.classList.toggle("edit-mode", editMode);
 }
 
-// DRAG
+// DRAG & DROP
 let dragged;
 document.querySelectorAll(".widget").forEach(w => {
   w.draggable = true;
@@ -229,26 +229,41 @@ document.querySelectorAll(".widget").forEach(w => {
   });
 });
 
-// THEME SLIDER (FLUIDO)
+// SLIDER (LÓGICA MANTIDA)
 const thumb = document.getElementById("thumb");
+const positions = [4, 60, 116];
+let current = 1;
+
+function snapTo(index) {
+  current = index;
+  thumb.style.left = positions[index] + "px";
+}
+
 thumb.addEventListener("mousedown", e => {
   const startX = e.clientX;
   const startLeft = thumb.offsetLeft;
 
   function move(ev) {
     let delta = ev.clientX - startX;
-    let pos = Math.min(110, Math.max(4, startLeft + delta));
+    let pos = Math.min(116, Math.max(4, startLeft + delta));
     thumb.style.left = pos + "px";
   }
 
   function up() {
     document.removeEventListener("mousemove", move);
     document.removeEventListener("mouseup", up);
+
+    const pos = thumb.offsetLeft;
+    if (pos < 40) snapTo(0);
+    else if (pos < 90) snapTo(1);
+    else snapTo(2);
   }
 
   document.addEventListener("mousemove", move);
   document.addEventListener("mouseup", up);
 });
+
+snapTo(1);
 </script>
 
 </body>
