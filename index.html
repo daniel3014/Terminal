@@ -8,23 +8,28 @@
 <style>
 :root {
   --glass-light: rgba(255,255,255,0.55);
-  --glass-dark: rgba(30,41,59,0.55);
+  --glass-dark: rgba(20,28,45,0.55);
+
   --border-light: rgba(255,255,255,0.35);
-  --border-dark: rgba(255,255,255,0.15);
-  --pill-light: rgba(255,255,255,0.45);
-  --pill-dark: rgba(15,23,42,0.65);
+  --border-dark: rgba(255,255,255,0.12);
+
+  --pill-light: rgba(255,255,255,0.5);
+  --pill-dark: rgba(10,15,30,0.75);
+
   --blur: blur(22px);
-  --shadow: 0 20px 40px rgba(0,0,0,0.25);
+  --shadow: 0 25px 50px rgba(0,0,0,0.25);
+  --glow-light: 0 0 20px rgba(120,180,255,0.35);
+  --glow-dark: 0 0 24px rgba(80,140,255,0.45);
 }
 
-/* ===== THEMES ===== */
+/* THEMES */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
 }
 
 body[data-theme="dark"] {
-  background: linear-gradient(135deg, #020617, #0f172a, #020617);
+  background: linear-gradient(135deg, #020617, #0b1220, #020617);
   color: #e5e7eb;
 }
 
@@ -37,7 +42,7 @@ body {
   margin: 0;
   min-height: 100vh;
   padding: 30px 16px;
-  transition: background 0.5s ease, color 0.4s ease;
+  transition: background 0.6s ease, color 0.4s ease;
 }
 
 /* APP GRID */
@@ -90,20 +95,20 @@ body[data-theme="dark"] .widget {
   justify-content: space-between;
 }
 
-/* ===== SLIDER CAPSULE ===== */
+/* ===== PREMIUM THEME SLIDER ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
   right: 20px;
-  height: 46px;
-  padding: 8px;
+  width: 200px;
+  height: 48px;
+  padding: 6px;
   border-radius: 999px;
-  width: 190px;
   backdrop-filter: var(--blur);
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: background 0.4s ease, border 0.4s ease;
+  justify-content: space-between;
+  transition: background 0.5s ease, border 0.5s ease;
 }
 
 /* outer capsule */
@@ -117,56 +122,57 @@ body[data-theme="dark"] .theme-slider {
   border: 1px solid var(--border-dark);
 }
 
-/* INNER PILL TRACK */
+/* inner pill */
 .theme-slider::before {
   content: "";
   position: absolute;
   inset: 6px;
   border-radius: 999px;
   z-index: 0;
-  transition: background 0.4s ease;
+  transition: background 0.5s ease;
 }
 
-/* pill light */
 body[data-theme="light"] .theme-slider::before {
   background: var(--pill-light);
 }
 
-/* pill dark */
 body[data-theme="dark"] .theme-slider::before {
   background: var(--pill-dark);
 }
 
-/* LABELS */
+/* labels */
 .theme-slider span {
   flex: 1;
   text-align: center;
   font-size: 14px;
   z-index: 2;
-  pointer-events: none;
   opacity: 0.85;
+  pointer-events: none;
 }
 
-/* THUMB */
+/* thumb */
 .slider-thumb {
   position: absolute;
-  height: 30px;
-  width: 52px;
+  height: 32px;
+  width: 58px;
   border-radius: 999px;
-  box-shadow: var(--shadow);
-  left: 8px;
+  left: 6px;
   z-index: 3;
-  transition: left 0.35s cubic-bezier(.4,0,.2,1), background 0.4s ease;
-  cursor: pointer;
-}
-
-/* thumb light */
-body[data-theme="light"] .slider-thumb {
   background: white;
+  box-shadow: var(--shadow);
+  transition:
+    left 0.45s cubic-bezier(.2,.8,.2,1),
+    box-shadow 0.4s ease,
+    background 0.4s ease;
 }
 
-/* thumb dark */
+/* glow */
+body[data-theme="light"] .slider-thumb {
+  box-shadow: var(--shadow), var(--glow-light);
+}
+
 body[data-theme="dark"] .slider-thumb {
+  box-shadow: var(--shadow), var(--glow-dark);
   background: rgba(255,255,255,0.95);
 }
 </style>
@@ -216,34 +222,35 @@ setInterval(updateClock,1000);
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
 
-const states = ["light","auto","dark"];
-const positions = [8, 68, 128];
+const modes = ["light","auto","dark"];
+const positions = [6, 72, 138];
 let current = 1;
 
-function applyTheme(state) {
-  if (state === "auto") {
+function applyTheme(mode) {
+  if (mode === "auto") {
     const h = new Date().getHours();
-    document.body.dataset.theme = h >= 6 && h < 18 ? "light" : "dark";
+    document.body.dataset.theme = (h >= 6 && h < 18) ? "light" : "dark";
   } else {
-    document.body.dataset.theme = state;
+    document.body.dataset.theme = mode;
   }
 }
 
-function setState(index) {
+function setMode(index) {
   current = index;
   thumb.style.left = positions[index] + "px";
-  applyTheme(states[index]);
+  applyTheme(modes[index]);
 }
 
 slider.addEventListener("click", e => {
   const x = e.offsetX;
-  if (x < slider.offsetWidth / 3) setState(0);
-  else if (x < slider.offsetWidth * 2/3) setState(1);
-  else setState(2);
+  const w = slider.offsetWidth;
+  if (x < w/3) setMode(0);
+  else if (x < w*2/3) setMode(1);
+  else setMode(2);
 });
 
 // INIT
-setState(1);
+setMode(1);
 </script>
 
 </body>
