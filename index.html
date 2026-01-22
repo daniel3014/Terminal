@@ -10,15 +10,18 @@
   --glass: rgba(255,255,255,0.55);
   --border: rgba(255,255,255,0.35);
   --blur: blur(22px);
-  --shadow: 0 20px 40px rgba(0,0,0,0.1);
+  --shadow: 0 20px 40px rgba(0,0,0,0.12);
 }
 
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
+  background: linear-gradient(135deg, #eaf3ff, #cfe4ff);
   padding: 30px 16px;
 }
 
@@ -26,8 +29,21 @@ body {
   max-width: 1000px;
   margin: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
+  position: relative;
+}
+
+/* GRID VISUAL (APENAS EM MODO EDIÇÃO) */
+.edit-mode .app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
 }
 
 /* WIDGET */
@@ -38,18 +54,17 @@ body {
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  cursor: default;
   transition: transform 0.25s ease;
 }
 
 .edit-mode .widget {
   cursor: grab;
-  animation: wiggle 0.4s ease-in-out infinite alternate;
+  animation: wiggle 0.35s ease-in-out infinite alternate;
 }
 
 @keyframes wiggle {
-  from { transform: rotate(-0.4deg); }
-  to { transform: rotate(0.4deg); }
+  from { transform: rotate(-0.3deg); }
+  to   { transform: rotate(0.3deg); }
 }
 
 /* CLOCK */
@@ -59,7 +74,7 @@ body {
 }
 
 .clock-time {
-  font-size: 64px;
+  font-size: 60px;
 }
 
 .clock-date {
@@ -68,7 +83,7 @@ body {
 
 /* WEATHER */
 .weather strong {
-  font-size: 28px;
+  font-size: 26px;
 }
 
 /* FORECAST */
@@ -77,12 +92,12 @@ body {
   justify-content: space-between;
 }
 
-/* THEME SLIDER */
+/* THEME SLIDER (VERSÃO ANTERIOR) */
 .theme-slider {
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 160px;
+  width: 150px;
   padding: 10px;
   border-radius: 30px;
   background: var(--glass);
@@ -92,17 +107,17 @@ body {
 
 .track {
   position: relative;
-  height: 36px;
-  background: rgba(255,255,255,0.4);
+  height: 34px;
+  background: rgba(255,255,255,0.45);
   border-radius: 18px;
 }
 
 .thumb {
   position: absolute;
   top: 4px;
-  left: 4px;
-  width: 28px;
-  height: 28px;
+  left: 58px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: white;
   box-shadow: var(--shadow);
@@ -113,7 +128,7 @@ body {
 .labels {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 13px;
   margin-top: 6px;
   opacity: 0.7;
 }
@@ -122,7 +137,7 @@ body {
 
 <body>
 
-<!-- THEME SLIDER -->
+<!-- THEME -->
 <div class="theme-slider">
   <div class="track" id="track">
     <div class="thumb" id="thumb"></div>
@@ -168,32 +183,42 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// EDIT MODE (PRESS & HOLD)
-let editTimer;
+// EDIT MODE VIA DOUBLE TAP / CLICK
+let editMode = false;
 const grid = document.getElementById("grid");
 
-grid.addEventListener("mousedown", e => {
-  if (!e.target.classList.contains("widget")) return;
-  editTimer = setTimeout(() => {
-    document.body.classList.add("edit-mode");
-    e.target.draggable = true;
-  }, 500);
+document.querySelectorAll(".widget").forEach(w => {
+  w.addEventListener("dblclick", () => toggleEdit());
+  w.addEventListener("touchend", e => {
+    if (e.detail === 2) toggleEdit();
+  });
 });
 
-grid.addEventListener("mouseup", () => clearTimeout(editTimer));
-grid.addEventListener("mouseleave", () => clearTimeout(editTimer));
 document.body.addEventListener("click", e => {
-  if (!e.target.closest(".widget")) {
-    document.body.classList.remove("edit-mode");
-  }
+  if (editMode && !e.target.closest(".widget")) toggleEdit(false);
 });
+
+function toggleEdit(force) {
+  editMode = force !== undefined ? force : !editMode;
+  document.body.classList.toggle("edit-mode", editMode);
+}
 
 // DRAG
 let dragged;
 document.querySelectorAll(".widget").forEach(w => {
-  w.addEventListener("dragstart", () => dragged = w);
-  w.addEventListener("dragover", e => e.preventDefault());
+  w.draggable = true;
+
+  w.addEventListener("dragstart", () => {
+    if (!editMode) return false;
+    dragged = w;
+  });
+
+  w.addEventListener("dragover", e => {
+    if (editMode) e.preventDefault();
+  });
+
   w.addEventListener("drop", e => {
+    if (!editMode) return;
     e.preventDefault();
     if (dragged && dragged !== w) {
       const nodes = [...grid.children];
@@ -204,43 +229,26 @@ document.querySelectorAll(".widget").forEach(w => {
   });
 });
 
-// THEME SLIDER SNAP
+// THEME SLIDER (FLUIDO)
 const thumb = document.getElementById("thumb");
-const track = document.getElementById("track");
-
-const positions = [4, 60, 116]; // light, auto, dark
-let current = 1; // auto
-
-function snapTo(index) {
-  current = index;
-  thumb.style.left = positions[index] + "px";
-}
-
 thumb.addEventListener("mousedown", e => {
   const startX = e.clientX;
   const startLeft = thumb.offsetLeft;
 
   function move(ev) {
     let delta = ev.clientX - startX;
-    let pos = Math.min(116, Math.max(4, startLeft + delta));
+    let pos = Math.min(110, Math.max(4, startLeft + delta));
     thumb.style.left = pos + "px";
   }
 
   function up() {
     document.removeEventListener("mousemove", move);
     document.removeEventListener("mouseup", up);
-
-    const pos = thumb.offsetLeft;
-    if (pos < 40) snapTo(0);
-    else if (pos < 90) snapTo(1);
-    else snapTo(2);
   }
 
   document.addEventListener("mousemove", move);
   document.addEventListener("mouseup", up);
 });
-
-snapTo(1);
 </script>
 
 </body>
