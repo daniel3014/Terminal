@@ -13,13 +13,16 @@
   --border-light: rgba(255,255,255,0.35);
   --border-dark: rgba(255,255,255,0.12);
 
-  --pill-light: rgba(255,255,255,0.5);
-  --pill-dark: rgba(10,15,30,0.75);
+  --track-light: rgba(255,255,255,0.35);
+  --track-dark: rgba(15,23,42,0.75);
+
+  --thumb-light: rgba(255,255,255,0.95);
+  --thumb-dark: rgba(240,245,255,0.95);
 
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
-  --glow-light: 0 0 20px rgba(120,180,255,0.35);
-  --glow-dark: 0 0 24px rgba(80,140,255,0.45);
+  --glow-light: 0 0 18px rgba(120,180,255,0.35);
+  --glow-dark: 0 0 22px rgba(80,140,255,0.45);
 }
 
 /* THEMES */
@@ -62,7 +65,6 @@ body {
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  transition: background 0.4s ease, border 0.4s ease;
 }
 
 body[data-theme="dark"] .widget {
@@ -76,18 +78,11 @@ body[data-theme="dark"] .widget {
   text-align: center;
 }
 
-.clock-time {
-  font-size: 64px;
-}
-
-.clock-date {
-  opacity: 0.6;
-}
+.clock-time { font-size: 64px; }
+.clock-date { opacity: 0.6; }
 
 /* WEATHER */
-.weather strong {
-  font-size: 28px;
-}
+.weather strong { font-size: 28px; }
 
 /* FORECAST */
 .forecast {
@@ -95,7 +90,7 @@ body[data-theme="dark"] .widget {
   justify-content: space-between;
 }
 
-/* ===== PREMIUM THEME SLIDER ===== */
+/* ===== PREMIUM SLIDER FIXED ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
@@ -109,9 +104,10 @@ body[data-theme="dark"] .widget {
   align-items: center;
   justify-content: space-between;
   transition: background 0.5s ease, border 0.5s ease;
+  z-index: 100;
 }
 
-/* outer capsule */
+/* outer glass */
 body[data-theme="light"] .theme-slider {
   background: var(--glass-light);
   border: 1px solid var(--border-light);
@@ -122,22 +118,21 @@ body[data-theme="dark"] .theme-slider {
   border: 1px solid var(--border-dark);
 }
 
-/* inner pill */
-.theme-slider::before {
-  content: "";
+/* track */
+.theme-slider .track {
   position: absolute;
   inset: 6px;
   border-radius: 999px;
-  z-index: 0;
-  transition: background 0.5s ease;
+  z-index: 1;
+  transition: background 0.4s ease;
 }
 
-body[data-theme="light"] .theme-slider::before {
-  background: var(--pill-light);
+body[data-theme="light"] .track {
+  background: var(--track-light);
 }
 
-body[data-theme="dark"] .theme-slider::before {
-  background: var(--pill-dark);
+body[data-theme="dark"] .track {
+  background: var(--track-dark);
 }
 
 /* labels */
@@ -145,35 +140,35 @@ body[data-theme="dark"] .theme-slider::before {
   flex: 1;
   text-align: center;
   font-size: 14px;
-  z-index: 2;
-  opacity: 0.85;
+  z-index: 3;
   pointer-events: none;
+  opacity: 0.9;
 }
 
 /* thumb */
 .slider-thumb {
   position: absolute;
-  height: 32px;
-  width: 58px;
+  height: 30px;
+  width: 44px;
   border-radius: 999px;
-  left: 6px;
-  z-index: 3;
-  background: white;
-  box-shadow: var(--shadow);
+  top: 9px;
+  left: 9px;
+  z-index: 2;
   transition:
     left 0.45s cubic-bezier(.2,.8,.2,1),
-    box-shadow 0.4s ease,
-    background 0.4s ease;
+    background 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
-/* glow */
+/* thumb colors */
 body[data-theme="light"] .slider-thumb {
+  background: var(--thumb-light);
   box-shadow: var(--shadow), var(--glow-light);
 }
 
 body[data-theme="dark"] .slider-thumb {
+  background: var(--thumb-dark);
   box-shadow: var(--shadow), var(--glow-dark);
-  background: rgba(255,255,255,0.95);
 }
 </style>
 </head>
@@ -182,6 +177,7 @@ body[data-theme="dark"] .slider-thumb {
 
 <!-- SLIDER -->
 <div class="theme-slider" id="slider">
+  <div class="track"></div>
   <div class="slider-thumb" id="thumb"></div>
   <span>☀️</span>
   <span>AUTO</span>
@@ -223,7 +219,7 @@ const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
 
 const modes = ["light","auto","dark"];
-const positions = [6, 72, 138];
+const positions = [9, 78, 147];
 let current = 1;
 
 function applyTheme(mode) {
