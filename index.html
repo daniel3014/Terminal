@@ -7,21 +7,23 @@
 
 <style>
 :root {
-  --glass: rgba(255,255,255,0.55);
-  --border: rgba(255,255,255,0.35);
+  --glass-light: rgba(255,255,255,0.55);
+  --glass-dark: rgba(30,41,59,0.55);
+  --border-light: rgba(255,255,255,0.35);
+  --border-dark: rgba(255,255,255,0.15);
   --blur: blur(22px);
-  --shadow: 0 20px 40px rgba(0,0,0,0.1);
+  --shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-/* THEMES */
+/* ===== THEMES ===== */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
-  color: #000;
+  color: #0f172a;
 }
 
 body[data-theme="dark"] {
-  background: linear-gradient(135deg, #0f172a, #020617);
-  color: #fff;
+  background: linear-gradient(135deg, #020617, #0f172a, #020617);
+  color: #e5e7eb;
 }
 
 * {
@@ -33,7 +35,7 @@ body {
   margin: 0;
   min-height: 100vh;
   padding: 30px 16px;
-  transition: background 0.4s ease, color 0.4s ease;
+  transition: background 0.5s ease, color 0.4s ease;
 }
 
 /* APP GRID */
@@ -60,13 +62,19 @@ body {
 
 /* WIDGET */
 .widget {
-  background: var(--glass);
+  background: var(--glass-light);
   backdrop-filter: var(--blur);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  transition: transform 0.25s ease;
+  transition: background 0.4s ease, border 0.4s ease;
+}
+
+/* DARK MODE WIDGET */
+body[data-theme="dark"] .widget {
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
 }
 
 /* EDIT MODE */
@@ -105,7 +113,7 @@ body {
   justify-content: space-between;
 }
 
-/* ===== NEW SLIDER ===== */
+/* ===== THEME SLIDER ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
@@ -113,39 +121,61 @@ body {
   height: 42px;
   padding: 6px;
   border-radius: 999px;
-  background: var(--glass);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 12px;
   width: 180px;
+  backdrop-filter: var(--blur);
+  transition: background 0.4s ease, border 0.4s ease;
 }
 
+/* SLIDER LIGHT */
+body[data-theme="light"] .theme-slider {
+  background: var(--glass-light);
+  border: 1px solid var(--border-light);
+}
+
+/* SLIDER DARK */
+body[data-theme="dark"] .theme-slider {
+  background: var(--glass-dark);
+  border: 1px solid var(--border-dark);
+}
+
+/* LABELS */
 .theme-slider span {
   flex: 1;
   text-align: center;
   font-size: 14px;
   z-index: 2;
   pointer-events: none;
+  opacity: 0.85;
 }
 
+/* THUMB */
 .slider-thumb {
   position: absolute;
   height: 30px;
   width: 52px;
-  background: white;
   border-radius: 999px;
   box-shadow: var(--shadow);
   left: 6px;
-  transition: left 0.3s cubic-bezier(.4,0,.2,1);
+  transition: left 0.35s cubic-bezier(.4,0,.2,1), background 0.4s ease;
   cursor: pointer;
 }
 
-/* DARK FIX */
-body[data-theme="dark"] .widget {
-  background: rgba(30,41,59,0.6);
-  border-color: rgba(255,255,255,0.15);
+/* THUMB LIGHT */
+body[data-theme="light"] .slider-thumb {
+  background: white;
+}
+
+/* THUMB DARK */
+body[data-theme="dark"] .slider-thumb {
+  background: rgba(255,255,255,0.9);
+}
+
+/* DARK TEXT BOOST */
+body[data-theme="dark"] span {
+  color: #e5e7eb;
 }
 </style>
 </head>
@@ -193,48 +223,6 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock,1000);
-
-// EDIT MODE (DOUBLE TAP)
-let editMode = false;
-
-document.querySelectorAll(".widget").forEach(w => {
-  w.addEventListener("dblclick", toggleEdit);
-  w.addEventListener("touchend", e => {
-    if (e.detail === 2) toggleEdit();
-  });
-});
-
-document.body.addEventListener("click", e => {
-  if (editMode && !e.target.closest(".widget")) toggleEdit(false);
-});
-
-function toggleEdit(force) {
-  editMode = force !== undefined ? force : !editMode;
-  document.body.classList.toggle("edit-mode", editMode);
-}
-
-// DRAG
-const grid = document.getElementById("grid");
-let dragged;
-
-document.querySelectorAll(".widget").forEach(w => {
-  w.draggable = true;
-
-  w.addEventListener("dragstart", () => {
-    if (!editMode) return false;
-    dragged = w;
-  });
-
-  w.addEventListener("dragover", e => editMode && e.preventDefault());
-  w.addEventListener("drop", e => {
-    if (!editMode) return;
-    e.preventDefault();
-    const nodes = [...grid.children];
-    const a = nodes.indexOf(dragged);
-    const b = nodes.indexOf(w);
-    grid.insertBefore(dragged, a < b ? w.nextSibling : w);
-  });
-});
 
 // ===== THEME SLIDER LOGIC =====
 const slider = document.getElementById("slider");
