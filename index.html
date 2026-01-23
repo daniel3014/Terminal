@@ -11,18 +11,18 @@
   --glass-dark: rgba(20,28,45,0.55);
 
   --border-light: rgba(255,255,255,0.35);
-  --border-dark: rgba(255,255,255,0.12);
+  --border-dark: rgba(255,255,255,0.15);
 
   --track-light: rgba(255,255,255,0.35);
   --track-dark: rgba(15,23,42,0.75);
 
   --thumb-light: rgba(255,255,255,0.95);
-  --thumb-dark: rgba(240,245,255,0.95);
+  --thumb-dark: rgba(30,41,59,0.45);
 
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
   --glow-light: 0 0 18px rgba(120,180,255,0.35);
-  --glow-dark: 0 0 22px rgba(80,140,255,0.45);
+  --glow-dark: 0 0 22px rgba(80,140,255,0.25);
 }
 
 /* THEMES */
@@ -73,11 +73,7 @@ body[data-theme="dark"] .widget {
 }
 
 /* CLOCK */
-.clock {
-  grid-column: span 2;
-  text-align: center;
-}
-
+.clock { grid-column: span 2; text-align: center; }
 .clock-time { font-size: 64px; }
 .clock-date { opacity: 0.6; }
 
@@ -85,12 +81,9 @@ body[data-theme="dark"] .widget {
 .weather strong { font-size: 28px; }
 
 /* FORECAST */
-.forecast {
-  display: flex;
-  justify-content: space-between;
-}
+.forecast { display: flex; justify-content: space-between; }
 
-/* ===== PREMIUM SLIDER FIXED ===== */
+/* ===== SLIDER ===== */
 .theme-slider {
   position: fixed;
   top: 20px;
@@ -107,7 +100,6 @@ body[data-theme="dark"] .widget {
   z-index: 100;
 }
 
-/* outer glass */
 body[data-theme="light"] .theme-slider {
   background: var(--glass-light);
   border: 1px solid var(--border-light);
@@ -118,24 +110,18 @@ body[data-theme="dark"] .theme-slider {
   border: 1px solid var(--border-dark);
 }
 
-/* track */
-.theme-slider .track {
+/* TRACK */
+.track {
   position: absolute;
   inset: 6px;
   border-radius: 999px;
   z-index: 1;
-  transition: background 0.4s ease;
 }
 
-body[data-theme="light"] .track {
-  background: var(--track-light);
-}
+body[data-theme="light"] .track { background: var(--track-light); }
+body[data-theme="dark"] .track { background: var(--track-dark); }
 
-body[data-theme="dark"] .track {
-  background: var(--track-dark);
-}
-
-/* labels */
+/* LABELS */
 .theme-slider span {
   flex: 1;
   text-align: center;
@@ -145,29 +131,34 @@ body[data-theme="dark"] .track {
   opacity: 0.9;
 }
 
-/* thumb */
+/* THUMB */
 .slider-thumb {
   position: absolute;
-  height: 30px;
-  width: 44px;
+  height: 34px;
+  width: 60px; /* voltou maior */
+  top: 7px;
+  left: 7px;
   border-radius: 999px;
-  top: 9px;
-  left: 9px;
-  z-index: 2;
+  backdrop-filter: blur(18px);
   transition:
     left 0.45s cubic-bezier(.2,.8,.2,1),
     background 0.4s ease,
+    border 0.4s ease,
     box-shadow 0.4s ease;
+  z-index: 2;
 }
 
-/* thumb colors */
+/* LIGHT */
 body[data-theme="light"] .slider-thumb {
   background: var(--thumb-light);
+  border: 1px solid rgba(255,255,255,0.6);
   box-shadow: var(--shadow), var(--glow-light);
 }
 
+/* DARK = LIQUID GLASS */
 body[data-theme="dark"] .slider-thumb {
   background: var(--thumb-dark);
+  border: 1px solid rgba(255,255,255,0.25);
   box-shadow: var(--shadow), var(--glow-dark);
 }
 </style>
@@ -175,7 +166,6 @@ body[data-theme="dark"] .slider-thumb {
 
 <body data-theme="auto">
 
-<!-- SLIDER -->
 <div class="theme-slider" id="slider">
   <div class="track"></div>
   <div class="slider-thumb" id="thumb"></div>
@@ -185,7 +175,6 @@ body[data-theme="dark"] .slider-thumb {
 </div>
 
 <div class="app">
-
   <div class="widget weather">
     <strong>23°C ☀️</strong><br>
     Sensação 25° · Chuva 10%
@@ -201,7 +190,6 @@ body[data-theme="dark"] .slider-thumb {
     <span>🌧️ 22°</span>
     <span>⛅ 23°</span>
   </div>
-
 </div>
 
 <script>
@@ -214,12 +202,12 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// SLIDER LOGIC
+// SLIDER
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
 
 const modes = ["light","auto","dark"];
-const positions = [9, 78, 147];
+const positions = [7, 70, 133]; // ajustado para thumb maior
 let current = 1;
 
 function applyTheme(mode) {
@@ -245,7 +233,6 @@ slider.addEventListener("click", e => {
   else setMode(2);
 });
 
-// INIT
 setMode(1);
 </script>
 
