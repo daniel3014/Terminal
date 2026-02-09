@@ -27,15 +27,11 @@ body[data-theme="light"]{
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
   --grid-line: rgba(0,0,0,0.08);
-  --preview-border: rgba(15, 23, 42, 0.22);
-  --preview-fill: rgba(255,255,255,0.22);
 }
 body[data-theme="dark"]{
   background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
   --grid-line: rgba(255,255,255,0.14);
-  --preview-border: rgba(255,255,255,0.22);
-  --preview-fill: rgba(255,255,255,0.08);
 }
 
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
@@ -139,20 +135,6 @@ body[data-theme="dark"] .widget-wrap > .widget{
   position: fixed !important;
   margin: 0 !important;
   pointer-events: none;
-}
-
-.widget-wrap.drop-preview{
-  z-index: 0;
-}
-
-.widget-wrap.drop-preview .widget-shadow{
-  box-shadow: none;
-}
-
-.widget-wrap.drop-preview .widget{
-  background: var(--preview-fill);
-  border: 1.5px dashed var(--preview-border);
-  backdrop-filter: none;
 }
 
 .widget.clock{ text-align:center; }
@@ -366,8 +348,6 @@ function computeCols(){
   return { cols, cellW };
 }
 
-function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
-
 function allWidgetWraps(){
   return Array.from(document.querySelectorAll(".widget-wrap"))
     .filter(el => el.style.display !== "none");
@@ -397,8 +377,8 @@ function buildOccupancy(exceptEl){
   const { cols } = computeCols();
   const occ = new Set();
 
-  function mark(col,row){ occ.add(col + ":" + row); }
-  function isMarked(col,row){ return occ.has(col + ":" + row); }
+  const mark = (c,r) => occ.add(c + ":" + r);
+  const isMarked = (c,r) => occ.has(c + ":" + r);
 
   for(const el of allWidgetWraps()){
     if(el === exceptEl) continue;
@@ -418,7 +398,6 @@ function buildOccupancy(exceptEl){
 function fitsAt(occ, col, row, w, h){
   if(col < 1 || row < 1) return false;
   if(col + w - 1 > occ.cols) return false;
-
   for(let yy=0; yy<h; yy++){
     for(let xx=0; xx<w; xx++){
       if(occ.isMarked(col + xx, row + yy)) return false;
@@ -427,17 +406,7 @@ function fitsAt(occ, col, row, w, h){
   return true;
 }
 
-function orderedRange(min, max, preferPositive){
-  const arr = [];
-  if(preferPositive){
-    for(let i=min; i<=max; i++) arr.push(i);
-  }else{
-    for(let i=max; i>=min; i--) arr.push(i);
-  }
-  return arr;
-}
-
-function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer, bias){
+function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
   const occ = buildOccupancy(exceptEl);
 
   const maxCol = Math.max(1, occ.cols - w + 1);
@@ -447,30 +416,40 @@ function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer, bias)
   let tc = clampCol(targetCol);
   let tr = clampRow(targetRow);
 
-  if(prefer && fitsAt(occ, prefer.col, prefer.row, w, h)) return { col: prefer.col, row: prefer.row };
   if(fitsAt(occ, tc, tr, w, h)) return { col: tc, row: tr };
-
-  const dirX = (bias && bias.vx) ? Math.sign(bias.vx) : 0;
-  const dirY = (bias && bias.vy) ? Math.sign(bias.vy) : 0;
 
   const maxRings = 24;
   for(let ring=1; ring<=maxRings; ring++){
-    const dyList = orderedRange(-ring, ring, dirY >= 0);
-    const dxList = orderedRange(-ring, ring, dirX >= 0);
-
-    for(const dy of dyList){
-      for(const dx of dxList){
+    for(let dy=-ring; dy<=ring; dy++){
+      for(let dx=-ring; dx<=ring; dx++){
         if(Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
-
         const c = clampCol(tc + dx);
         const r = clampRow(tr + dy);
-
         if(fitsAt(occ, c, r, w, h)) return { col: c, row: r };
       }
     }
   }
 
   return { col: tc, row: tr };
+}
+
+function gridOrigin(){
+  return gridEl.getBoundingClientRect();
+}
+
+function pitchX(){
+  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
+  return cellW + GAP;
+}
+function pitchY(){
+  return GRID + GAP;
+}
+
+function cellFromPoint(x, y){
+  const r = gridOrigin();
+  const col = Math.floor((x - r.left) / pitchX()) + 1;
+  const row = Math.floor((y - r.top) / pitchY()) + 1;
+  return { col, row };
 }
 
 /* WRAP WIDGETS */
@@ -506,6 +485,8 @@ function ensureWrappedWidgets(){
 /* LAYOUT SAVE/LOAD */
 let activeProfile = (localStorage.getItem("layout_profile") || "default").trim() || "default";
 function layoutKey(){ return "terminal_layout_v3_" + activeProfile; }
+
+function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
 
 function saveLayout(){
   const data = { _meta: { profile: activeProfile } };
@@ -679,80 +660,14 @@ editToggle.addEventListener("keydown", e => {
   }
 });
 
-/* WIDGET DRAG (GRID) */
+/* WIDGET DRAG (SIMPLE: no preview, snap on drop) */
 let dragged = null;
-let preview = null;
 let dragPid = null;
 let dragOffX = 0;
 let dragOffY = 0;
 
-const SNAP_DEADZONE = 0.18;
-let snapCol = null;
-let snapRow = null;
-let lastTargetCol = null;
-let lastTargetRow = null;
-let lastBest = null;
-
-let lastPointerX = null;
-let lastPointerY = null;
-let lastPointerT = null;
-let biasVX = 0;
-let biasVY = 0;
-
-function gridOrigin(){
-  return gridEl.getBoundingClientRect();
-}
-
-function pitchX(){
-  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
-  return cellW + GAP;
-}
-function pitchY(){
-  return GRID + GAP;
-}
-
-function hysteresisDeadzone(rawCell, lastCell){
-  if(lastCell == null) return Math.round(rawCell);
-
-  const keepMin = lastCell - (0.5 - SNAP_DEADZONE);
-  const keepMax = lastCell + (0.5 - SNAP_DEADZONE);
-
-  if(rawCell >= keepMin && rawCell <= keepMax) return lastCell;
-  return Math.round(rawCell);
-}
-
-function cellFromCenter(centerX, centerY, w){
-  const r = gridOrigin();
-
-  const rawCol = ((centerX - r.left) / pitchX()) + 1;
-  const rawRow = ((centerY - r.top)  / pitchY()) + 1;
-
-  const { cols } = computeCols();
-  const maxCol = Math.max(1, cols - w + 1);
-
-  snapCol = hysteresisDeadzone(rawCol, snapCol);
-  snapRow = hysteresisDeadzone(rawRow, snapRow);
-
-  const col = Math.max(1, Math.min(maxCol, snapCol));
-  const row = Math.max(1, snapRow);
-
-  return { col, row };
-}
-
-function makeDropPreview(fromEl){
-  const ph = document.createElement("div");
-  ph.className = "widget-wrap drop-preview";
-  const {w,h,col,row} = getGridPos(fromEl);
-  ph.style.setProperty("--w", String(w));
-  ph.style.setProperty("--h", String(h));
-  ph.style.setProperty("--col", String(col));
-  ph.style.setProperty("--row", String(row));
-  ph.innerHTML = `<div class="widget-shadow" aria-hidden="true"></div><div class="widget"></div>`;
-  return ph;
-}
-
 function animateSettle(el, targetRect){
-  el.style.transition = "left 260ms cubic-bezier(.2,.9,.2,1), top 260ms cubic-bezier(.2,.9,.2,1), width 260ms cubic-bezier(.2,.9,.2,1), height 260ms cubic-bezier(.2,.9,.2,1)";
+  el.style.transition = "left 240ms cubic-bezier(.2,.9,.2,1), top 240ms cubic-bezier(.2,.9,.2,1), width 240ms cubic-bezier(.2,.9,.2,1), height 240ms cubic-bezier(.2,.9,.2,1)";
   el.style.left = targetRect.left + "px";
   el.style.top  = targetRect.top + "px";
   el.style.width  = targetRect.width + "px";
@@ -770,25 +685,7 @@ function animateSettle(el, targetRect){
   };
 
   el.addEventListener("transitionend", cleanup);
-  setTimeout(cleanup, 350);
-}
-
-function updatePointerBias(x,y){
-  const t = performance.now();
-  if(lastPointerT == null){
-    lastPointerX = x; lastPointerY = y; lastPointerT = t;
-    biasVX = 0; biasVY = 0;
-    return;
-  }
-  const dt = Math.max(1, t - lastPointerT);
-  const vx = (x - lastPointerX) / dt;
-  const vy = (y - lastPointerY) / dt;
-
-  const a = 0.65;
-  biasVX = a * biasVX + (1 - a) * vx;
-  biasVY = a * biasVY + (1 - a) * vy;
-
-  lastPointerX = x; lastPointerY = y; lastPointerT = t;
+  setTimeout(cleanup, 320);
 }
 
 function attachWidgetDrag(el){
@@ -804,22 +701,6 @@ function attachWidgetDrag(el){
     dragOffX = e.clientX - rect.left;
     dragOffY = e.clientY - rect.top;
 
-    const start = getGridPos(dragged);
-    snapCol = start.col;
-    snapRow = start.row;
-    lastTargetCol = null;
-    lastTargetRow = null;
-    lastBest = { col: start.col, row: start.row };
-
-    lastPointerX = null;
-    lastPointerY = null;
-    lastPointerT = null;
-    biasVX = 0;
-    biasVY = 0;
-
-    preview = makeDropPreview(dragged);
-    dragged.parentNode.insertBefore(preview, dragged.nextSibling);
-
     dragged.classList.add("fixed");
     dragged.style.left = rect.left + "px";
     dragged.style.top = rect.top + "px";
@@ -833,72 +714,31 @@ function attachWidgetDrag(el){
   el.addEventListener("pointermove", e => {
     if(!dragged || dragged !== el) return;
 
-    updatePointerBias(e.clientX, e.clientY);
-
     const left = e.clientX - dragOffX;
     const top  = e.clientY - dragOffY;
+
     dragged.style.left = left + "px";
     dragged.style.top  = top + "px";
-
-    const {w,h} = getGridPos(dragged);
-
-    const width  = parseFloat(dragged.style.width)  || dragged.getBoundingClientRect().width;
-    const height = parseFloat(dragged.style.height) || dragged.getBoundingClientRect().height;
-
-    const centerX = left + width / 2;
-    const centerY = top  + height / 2;
-
-    const target = cellFromCenter(centerX, centerY, w);
-
-    if(target.col === lastTargetCol && target.row === lastTargetRow && lastBest){
-      setGridPos(preview, lastBest.col, lastBest.row);
-      return;
-    }
-
-    lastTargetCol = target.col;
-    lastTargetRow = target.row;
-
-    const best = findNearestFreeCell(
-      dragged,
-      target.col,
-      target.row,
-      w,
-      h,
-      lastBest,
-      { vx: biasVX, vy: biasVY }
-    );
-
-    lastBest = best;
-    setGridPos(preview, best.col, best.row);
   });
 
   function endDrag(animate=true){
     if(!dragged) return;
 
-    const {col,row} = getGridPos(preview);
-    setGridPos(dragged, col, row);
+    const {w,h} = getGridPos(dragged);
 
-    const targetRect = preview.getBoundingClientRect();
+    const rect = dragged.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top  + rect.height / 2;
 
-    if(preview){
-      preview.remove();
-      preview = null;
-    }
+    const target = cellFromPoint(centerX, centerY);
+
+    const best = findNearestFreeCell(dragged, target.col, target.row, w, h);
+    setGridPos(dragged, best.col, best.row);
+
+    const targetRect = dragged.getBoundingClientRect();
 
     try{ dragged.releasePointerCapture(dragPid); }catch(_){}
     dragPid = null;
-
-    snapCol = null;
-    snapRow = null;
-    lastTargetCol = null;
-    lastTargetRow = null;
-    lastBest = null;
-
-    lastPointerX = null;
-    lastPointerY = null;
-    lastPointerT = null;
-    biasVX = 0;
-    biasVY = 0;
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
