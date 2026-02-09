@@ -15,58 +15,50 @@
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
 
-  --grid-size: 60px; /* ✅ grid menor */
+  --grid-size: 60px;
 }
 
+/* THEMES */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
-  --grid-line: rgba(0,0,0,0.08); /* ✅ grid visível no light */
+  --grid-line: rgba(0,0,0,0.08);
 }
-
 body[data-theme="dark"] {
   background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
-  --grid-line: rgba(255,255,255,0.14); /* ✅ grid visível no dark */
+  --grid-line: rgba(255,255,255,0.14);
 }
 
-* {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { margin: 0; min-height: 100vh; padding: 24px 16px; }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  padding: 24px 16px;
-}
-
-/* ✅ GRID OVERLAY TELA INTEIRA */
-body.edit-mode::before {
-  content: "";
-  position: fixed;
-  inset: 0;
+/* GRID OVERLAY TELA INTEIRA (EDIT MODE) */
+body.edit-mode::before{
+  content:"";
+  position:fixed;
+  inset:0;
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
-  pointer-events: none;
-  z-index: 0;
+  pointer-events:none;
+  z-index:0;
 }
 
 /* GRID CONTAINER */
-.app {
-  max-width: 1200px;
-  margin: auto;
-  display: grid;
+.app{
+  max-width:1200px;
+  margin:auto;
+  display:grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-  position: relative;
-  z-index: 1;
+  gap:24px;
+  position:relative;
+  z-index:1;
 }
 
 /* WIDGET */
-.widget {
+.widget{
   background: var(--glass-light);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border-light);
@@ -78,51 +70,45 @@ body.edit-mode::before {
   touch-action: none;
   user-select: none;
 
-  /* ✅ posição persistente */
+  /* posição persistente */
   --tx: 0px;
   --ty: 0px;
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
 }
 
-body[data-theme="dark"] .widget {
+body[data-theme="dark"] .widget{
   background: var(--glass-dark);
   border-color: var(--border-dark);
 }
 
 /* EDIT MODE */
-.edit-mode .widget {
+.edit-mode .widget{
   cursor: grab;
   animation: wiggle 0.35s ease-in-out infinite alternate;
 }
-
-@keyframes wiggle {
+@keyframes wiggle{
   from { transform: translate(var(--tx), var(--ty)) rotate(-0.4deg); }
   to   { transform: translate(var(--tx), var(--ty)) rotate(0.4deg); }
 }
-
-.widget.dragging {
-  animation: none;
-  cursor: grabbing;
-  opacity: 0.9;
-  z-index: 10;
-  transition: none;
+.widget.dragging{
+  animation:none;
+  cursor:grabbing;
+  opacity:0.9;
+  z-index:10;
+  transition:none;
 }
 
 /* CLOCK */
-.clock {
-  grid-column: span 2;
-  text-align: center;
-}
-
-.clock-time { font-size: 64px; }
-.clock-date { opacity: 0.6; }
+.clock{ grid-column: span 2; text-align:center; }
+.clock-time{ font-size:64px; }
+.clock-date{ opacity:0.6; }
 
 /* FORECAST */
-.forecast { display: flex; justify-content: space-between; }
+.forecast{ display:flex; justify-content:space-between; }
 
-/* THEME SLIDER */
-.theme-slider {
+/* THEME SLIDER (VISUAL MANTIDO) */
+.theme-slider{
   position: fixed;
   top: 20px;
   right: 20px;
@@ -137,39 +123,45 @@ body[data-theme="dark"] .widget {
   box-shadow: var(--shadow);
   cursor: pointer;
   z-index: 20;
+
+  /* para virar "widget" também */
+  --tx: 0px;
+  --ty: 0px;
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
 }
 
-body[data-theme="dark"] .theme-slider {
+body[data-theme="dark"] .theme-slider{
   background: var(--glass-dark);
   border-color: var(--border-dark);
 }
 
-/* ✅ CENTRALIZAÇÃO REAL (emoji + texto) */
-.theme-slider span {
-  display: block;
-  height: 44px;
-  line-height: 44px;
-  text-align: center;
-  font-size: 14px;
-  z-index: 2;
+/* centralização real (emoji + texto) */
+.theme-slider span{
+  display:block;
+  height:44px;
+  line-height:44px;
+  text-align:center;
+  font-size:14px;
+  z-index:2;
 }
 
-/* CAPSULE THUMB */
-.slider-thumb {
-  position: absolute;
-  height: 36px;
-  width: 54px;
-  border-radius: 999px;
-  left: 6px;
-  top: 4px;
+/* capsule thumb */
+.slider-thumb{
+  position:absolute;
+  height:36px;
+  width:54px;          /* mantém o visual */
+  border-radius:999px; /* capsule */
+  left:6px;            /* será ajustado via JS para centralizar */
+  top:4px;
   background: rgba(255,255,255,0.65);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.4);
   transition: left 0.25s ease;
-  z-index: 1;
+  z-index:1;
 }
 
-body[data-theme="dark"] .slider-thumb {
+body[data-theme="dark"] .slider-thumb{
   background: rgba(255,255,255,0.15);
   border-color: rgba(255,255,255,0.25);
 }
@@ -178,8 +170,8 @@ body[data-theme="dark"] .slider-thumb {
 
 <body data-theme="light">
 
-<!-- THEME SLIDER -->
-<div class="theme-slider" id="slider">
+<!-- THEME SLIDER (AGORA TAMBÉM É WIDGET) -->
+<div class="theme-slider" id="slider" data-widget-id="slider">
   <div class="slider-thumb" id="thumb"></div>
   <span data-mode="light">☀️</span>
   <span data-mode="auto">AUTO</span>
@@ -188,28 +180,30 @@ body[data-theme="dark"] .slider-thumb {
 
 <div class="app" id="grid">
 
-  <div class="widget weather">
+  <div class="widget weather" data-widget-id="w-weather">
     <strong>23°C ☀️</strong><br>
     Sensação 25° · Chuva 10%
   </div>
 
-  <div class="widget clock">
+  <div class="widget clock" data-widget-id="w-clock">
     <div class="clock-time" id="time"></div>
     <div class="clock-date" id="date"></div>
   </div>
 
-  <div class="widget forecast">
+  <div class="widget forecast" data-widget-id="w-forecast">
     <span>☀️ 24°</span>
     <span>🌧️ 22°</span>
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget">Widget futuro do Jarvis</div>
+  <div class="widget" data-widget-id="w-jarvis">
+    Widget futuro do Jarvis
+  </div>
 
 </div>
 
 <script>
-// CLOCK
+/* ================= CLOCK ================= */
 function updateClock() {
   const now = new Date();
   time.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -218,86 +212,231 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// EDIT MODE
+/* ================= HELPERS ================= */
+const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
+
+function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
+
+function getTXTY(el){
+  const cs = getComputedStyle(el);
+  return {
+    tx: pxToNum(cs.getPropertyValue("--tx")),
+    ty: pxToNum(cs.getPropertyValue("--ty"))
+  };
+}
+
+function setTXTY(el, tx, ty){
+  el.style.setProperty("--tx", tx + "px");
+  el.style.setProperty("--ty", ty + "px");
+}
+
+function snap(n){ return Math.round(n / GRID) * GRID; }
+
+function rectShift(rect, dx, dy){
+  return {
+    left: rect.left + dx,
+    top: rect.top + dy,
+    right: rect.right + dx,
+    bottom: rect.bottom + dy,
+    width: rect.width,
+    height: rect.height
+  };
+}
+
+function intersects(a, b, pad=8){
+  return !(a.right <= b.left + pad ||
+           a.left >= b.right - pad ||
+           a.bottom <= b.top + pad ||
+           a.top >= b.bottom - pad);
+}
+
+/* ================= EDIT MODE (igual estava) ================= */
 let editTimer;
-const grid = document.getElementById("grid");
+const gridEl = document.getElementById("grid");
+function enableEdit(){ document.body.classList.add("edit-mode"); }
+function disableEdit(){ document.body.classList.remove("edit-mode"); }
 
-function enableEdit() { document.body.classList.add("edit-mode"); }
-function disableEdit() { document.body.classList.remove("edit-mode"); }
-
-grid.addEventListener("dblclick", e => {
+gridEl.addEventListener("dblclick", e => {
   if (e.target.closest(".widget")) enableEdit();
 });
 
-grid.addEventListener("pointerdown", e => {
+gridEl.addEventListener("pointerdown", e => {
   if (!e.target.closest(".widget")) return;
   editTimer = setTimeout(enableEdit, 500);
 });
-
-grid.addEventListener("pointerup", () => clearTimeout(editTimer));
-grid.addEventListener("pointerleave", () => clearTimeout(editTimer));
+gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
+gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
 
 document.body.addEventListener("click", e => {
-  if (!e.target.closest(".widget") && !e.target.closest("#slider")) {
-    disableEdit();
-  }
+  if (!e.target.closest(".widget") && !e.target.closest("#slider")) disableEdit();
 });
 
-// ✅ DRAG + DROP (persistente)
+/* ================= DRAG + SNAP + NO OVERLAP + SAVE ================= */
+const draggableEls = () => Array.from(document.querySelectorAll(".widget, #slider"))
+  .filter(el => el.style.display !== "none");
+
 let dragged = null;
 let startX = 0, startY = 0;
 let baseTX = 0, baseTY = 0;
+let pointerId = null;
 
-function pxToNum(v){ return Number(String(v).replace("px","")) || 0; }
+function saveLayout(){
+  const data = {};
+  draggableEls().forEach(el => {
+    const id = el.getAttribute("data-widget-id");
+    if(!id) return;
+    const {tx,ty} = getTXTY(el);
+    data[id] = { tx, ty, hidden: false };
+  });
+  localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+}
 
-grid.querySelectorAll(".widget").forEach(widget => {
-  widget.addEventListener("pointerdown", e => {
-    if (!document.body.classList.contains("edit-mode")) return;
+function loadLayout(){
+  const raw = localStorage.getItem("terminal_layout_v1");
+  if(!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch { return; }
 
-    dragged = widget;
+  draggableEls().forEach(el => {
+    const id = el.getAttribute("data-widget-id");
+    if(!id || !data[id]) return;
+    setTXTY(el, data[id].tx ?? 0, data[id].ty ?? 0);
+    if(data[id].hidden) el.style.display = "none";
+  });
+}
+
+function findNearestFreeSpot(el, targetTX, targetTY){
+  const els = draggableEls().filter(x => x !== el);
+
+  const curRect = el.getBoundingClientRect();
+  const {tx: curTX, ty: curTY} = getTXTY(el);
+  const baseRect = rectShift(curRect, -curTX, -curTY); // "sem transform"
+
+  const candidateRectAt = (tx,ty) => rectShift(baseRect, tx, ty);
+
+  const occupied = () => els.map(o => o.getBoundingClientRect());
+
+  const isFree = (tx,ty) => {
+    const r = candidateRectAt(tx,ty);
+    for(const or of occupied()){
+      if(intersects(r, or, 10)) return false;
+    }
+    return true;
+  };
+
+  // tentativa direta
+  if(isFree(targetTX, targetTY)) return {tx: targetTX, ty: targetTY};
+
+  // busca em espiral (magnetic)
+  const maxRings = 18; // suficiente p/ telas grandes sem travar
+  for(let ring=1; ring<=maxRings; ring++){
+    const step = GRID * ring;
+    const tests = [
+      {tx: targetTX + step, ty: targetTY},
+      {tx: targetTX - step, ty: targetTY},
+      {tx: targetTX, ty: targetTY + step},
+      {tx: targetTX, ty: targetTY - step},
+
+      {tx: targetTX + step, ty: targetTY + step},
+      {tx: targetTX - step, ty: targetTY + step},
+      {tx: targetTX + step, ty: targetTY - step},
+      {tx: targetTX - step, ty: targetTY - step},
+    ];
+
+    for(const t of tests){
+      const stx = snap(t.tx);
+      const sty = snap(t.ty);
+      if(isFree(stx, sty)) return {tx: stx, ty: sty};
+    }
+  }
+
+  // fallback: fica no snap mesmo (mesmo que encoste)
+  return {tx: targetTX, ty: targetTY};
+}
+
+function attachDrag(el){
+  el.addEventListener("pointerdown", e => {
+    // slider: fora do edit-mode, o pointerdown deve ser para mudar tema (não arrastar)
+    if(el.id === "slider" && !document.body.classList.contains("edit-mode")) return;
+
+    if(!document.body.classList.contains("edit-mode")) return;
+
+    dragged = el;
     dragged.classList.add("dragging");
 
     startX = e.clientX;
     startY = e.clientY;
 
-    const cs = getComputedStyle(dragged);
-    baseTX = pxToNum(cs.getPropertyValue("--tx"));
-    baseTY = pxToNum(cs.getPropertyValue("--ty"));
+    const pos = getTXTY(dragged);
+    baseTX = pos.tx;
+    baseTY = pos.ty;
 
-    dragged.setPointerCapture(e.pointerId);
+    pointerId = e.pointerId;
+    dragged.setPointerCapture(pointerId);
   });
 
-  widget.addEventListener("pointermove", e => {
-    if (!dragged || dragged !== widget) return;
-
+  el.addEventListener("pointermove", e => {
+    if(!dragged || dragged !== el) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
-    dragged.style.setProperty("--tx", (baseTX + dx) + "px");
-    dragged.style.setProperty("--ty", (baseTY + dy) + "px");
+    setTXTY(dragged, baseTX + dx, baseTY + dy);
   });
 
-  widget.addEventListener("pointerup", e => {
-    if (!dragged || dragged !== widget) return;
+  el.addEventListener("pointerup", e => {
+    if(!dragged || dragged !== el) return;
+
+    // SNAP magnético + sem sobrepor
+    const {tx,ty} = getTXTY(dragged);
+    const targetTX = snap(tx);
+    const targetTY = snap(ty);
+    const best = findNearestFreeSpot(dragged, targetTX, targetTY);
+    setTXTY(dragged, best.tx, best.ty);
 
     dragged.classList.remove("dragging");
-    try { dragged.releasePointerCapture(e.pointerId); } catch(_) {}
+    try { dragged.releasePointerCapture(pointerId); } catch(_) {}
     dragged = null;
+    pointerId = null;
+
+    saveLayout();
   });
 
-  widget.addEventListener("pointercancel", e => {
-    if (!dragged || dragged !== widget) return;
-
+  el.addEventListener("pointercancel", e => {
+    if(!dragged || dragged !== el) return;
     dragged.classList.remove("dragging");
-    try { dragged.releasePointerCapture(e.pointerId); } catch(_) {}
+    try { dragged.releasePointerCapture(pointerId); } catch(_) {}
     dragged = null;
+    pointerId = null;
+    saveLayout();
   });
-});
+}
 
-// THEME SLIDER (clique direto na opção)
+// anexa drag aos widgets e ao slider
+draggableEls().forEach(attachDrag);
+
+// carrega layout salvo
+loadLayout();
+
+/* ================= THEME SLIDER: CLICK + DRAG-TO-SELECT (sem mudar visual) ================= */
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
-const positions = { light: 6, auto: 58, dark: 110 };
+
+const modes = ["light","auto","dark"];
+let currentMode = "light";
+
+function computeThumbLeft(mode){
+  const idx = modes.indexOf(mode);
+  const W = slider.clientWidth;
+  const seg = W / 3;
+  const tw = thumb.offsetWidth;
+  const center = seg * idx + seg/2;
+  return Math.round(center - tw/2);
+}
+
+function setThumb(mode, animate=true){
+  thumb.style.transition = animate ? "left 0.25s ease" : "none";
+  thumb.style.left = computeThumbLeft(mode) + "px";
+  currentMode = mode;
+}
 
 function applyTheme(mode){
   if(mode === "auto"){
@@ -306,17 +445,101 @@ function applyTheme(mode){
   } else {
     document.body.dataset.theme = mode;
   }
-  thumb.style.left = positions[mode] + "px";
+  setThumb(mode, true);
+  saveLayout(); // salva o layout junto, para manter consistência
 }
 
+function modeFromX(x){
+  const W = slider.clientWidth;
+  const third = W / 3;
+  if(x < third) return "light";
+  if(x < third*2) return "auto";
+  return "dark";
+}
+
+// clique direto nos labels (sem ciclo)
 slider.querySelectorAll("span").forEach(span => {
   span.addEventListener("click", e => {
+    // no modo edição, clique deve permitir “selecionar”/arrastar widget sem mudar tema
+    if(document.body.classList.contains("edit-mode")) return;
     e.stopPropagation();
     applyTheme(span.dataset.mode);
   });
 });
 
+// arrastar para selecionar (fora do modo edição)
+let themeDrag = false;
+let themePointerId = null;
+
+slider.addEventListener("pointerdown", e => {
+  if(document.body.classList.contains("edit-mode")) return; // aqui o slider é widget
+  themeDrag = true;
+  themePointerId = e.pointerId;
+  slider.setPointerCapture(themePointerId);
+
+  const rect = slider.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const mode = modeFromX(x);
+  // enquanto arrasta, thumb segue sem "snap" visual brusco
+  setThumb(mode, false);
+});
+
+slider.addEventListener("pointermove", e => {
+  if(!themeDrag) return;
+  const rect = slider.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+  const mode = modeFromX(x);
+  setThumb(mode, false);
+});
+
+slider.addEventListener("pointerup", e => {
+  if(!themeDrag) return;
+  themeDrag = false;
+  try { slider.releasePointerCapture(themePointerId); } catch(_) {}
+  themePointerId = null;
+
+  // snap final para o modo mais próximo e aplica tema
+  const rect = slider.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+  const mode = modeFromX(x);
+  applyTheme(mode);
+});
+
+slider.addEventListener("pointercancel", e => {
+  if(!themeDrag) return;
+  themeDrag = false;
+  try { slider.releasePointerCapture(themePointerId); } catch(_) {}
+  themePointerId = null;
+  applyTheme(currentMode);
+});
+
+// estado inicial
 applyTheme("light");
+
+/* ================= JARVIS HOOKS (sem UI, mas prontos) ================= */
+window.jarvis = {
+  removeWidget(id){
+    const el = document.querySelector(`[data-widget-id="${id}"]`) || document.getElementById(id);
+    if(!el) return false;
+    el.style.display = "none";
+    // marca como hidden no storage
+    const raw = localStorage.getItem("terminal_layout_v1");
+    const data = raw ? JSON.parse(raw) : {};
+    data[id] = { ...(data[id]||{}), hidden: true, tx: (data[id]?.tx ?? 0), ty: (data[id]?.ty ?? 0) };
+    localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+    return true;
+  },
+  showWidget(id){
+    const el = document.querySelector(`[data-widget-id="${id}"]`) || document.getElementById(id);
+    if(!el) return false;
+    el.style.display = "";
+    const raw = localStorage.getItem("terminal_layout_v1");
+    const data = raw ? JSON.parse(raw) : {};
+    if(data[id]) data[id].hidden = false;
+    localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+    return true;
+  }
+};
 </script>
 
 </body>
