@@ -20,7 +20,7 @@
   --shadow-inset: 12px;
 
   --cols: 12;
-  --cell-w: 60px; /* calculado via JS */
+  --cell-w: 60px;
 }
 
 body[data-theme="light"]{
@@ -41,7 +41,6 @@ body[data-theme="dark"]{
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 body{ margin:0; min-height:100vh; padding:24px 16px; }
 
-/* GRID OVERLAY */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -55,7 +54,6 @@ body.edit-mode::before{
   z-index:0;
 }
 
-/* GRID */
 .app{
   width: 100%;
   max-width: 100%;
@@ -64,7 +62,7 @@ body.edit-mode::before{
   z-index:1;
 
   display:grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); /* ocupa 100% */
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   grid-auto-rows: var(--grid-size);
   gap: var(--grid-gap);
   align-content:start;
@@ -72,7 +70,6 @@ body.edit-mode::before{
   overflow: visible;
 }
 
-/* WIDGET */
 .widget-wrap{
   position:relative;
 
@@ -120,7 +117,6 @@ body[data-theme="dark"] .widget-wrap > .widget{
   border-color: var(--border-dark);
 }
 
-/* EDIT MODE */
 .edit-mode .widget-wrap > .widget{ cursor:grab; }
 .edit-mode .widget-wrap > .widget,
 .edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
@@ -159,13 +155,11 @@ body[data-theme="dark"] .widget-wrap > .widget{
   backdrop-filter: none;
 }
 
-/* CLOCK / FORECAST */
 .widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 .widget.forecast{ display:flex; justify-content:space-between; }
 
-/* SLIDER (widget) */
 #slider{
   position: fixed;
   top: 20px;
@@ -241,7 +235,6 @@ body[data-theme="dark"] .slider-thumb{
   border-color: rgba(255,255,255,0.25);
 }
 
-/* EDIT TOGGLE */
 .edit-toggle{
   position: fixed;
   right: 20px;
@@ -434,7 +427,17 @@ function fitsAt(occ, col, row, w, h){
   return true;
 }
 
-function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer){
+function orderedRange(min, max, preferPositive){
+  const arr = [];
+  if(preferPositive){
+    for(let i=min; i<=max; i++) arr.push(i);
+  }else{
+    for(let i=max; i>=min; i--) arr.push(i);
+  }
+  return arr;
+}
+
+function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer, bias){
   const occ = buildOccupancy(exceptEl);
 
   const maxCol = Math.max(1, occ.cols - w + 1);
@@ -445,20 +448,29 @@ function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer){
   let tr = clampRow(targetRow);
 
   if(prefer && fitsAt(occ, prefer.col, prefer.row, w, h)) return { col: prefer.col, row: prefer.row };
-  if(fitsAt(occ, tc, tr, w, h)) return {col: tc, row: tr};
+  if(fitsAt(occ, tc, tr, w, h)) return { col: tc, row: tr };
+
+  const dirX = (bias && bias.vx) ? Math.sign(bias.vx) : 0;
+  const dirY = (bias && bias.vy) ? Math.sign(bias.vy) : 0;
 
   const maxRings = 24;
   for(let ring=1; ring<=maxRings; ring++){
-    for(let dy=-ring; dy<=ring; dy++){
-      for(let dx=-ring; dx<=ring; dx++){
+    const dyList = orderedRange(-ring, ring, dirY >= 0);
+    const dxList = orderedRange(-ring, ring, dirX >= 0);
+
+    for(const dy of dyList){
+      for(const dx of dxList){
         if(Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
+
         const c = clampCol(tc + dx);
         const r = clampRow(tr + dy);
-        if(fitsAt(occ, c, r, w, h)) return {col: c, row: r};
+
+        if(fitsAt(occ, c, r, w, h)) return { col: c, row: r };
       }
     }
   }
-  return {col: tc, row: tr};
+
+  return { col: tc, row: tr };
 }
 
 /* WRAP WIDGETS */
@@ -681,6 +693,12 @@ let lastTargetCol = null;
 let lastTargetRow = null;
 let lastBest = null;
 
+let lastPointerX = null;
+let lastPointerY = null;
+let lastPointerT = null;
+let biasVX = 0;
+let biasVY = 0;
+
 function gridOrigin(){
   return gridEl.getBoundingClientRect();
 }
@@ -755,6 +773,24 @@ function animateSettle(el, targetRect){
   setTimeout(cleanup, 350);
 }
 
+function updatePointerBias(x,y){
+  const t = performance.now();
+  if(lastPointerT == null){
+    lastPointerX = x; lastPointerY = y; lastPointerT = t;
+    biasVX = 0; biasVY = 0;
+    return;
+  }
+  const dt = Math.max(1, t - lastPointerT);
+  const vx = (x - lastPointerX) / dt;
+  const vy = (y - lastPointerY) / dt;
+
+  const a = 0.65;
+  biasVX = a * biasVX + (1 - a) * vx;
+  biasVY = a * biasVY + (1 - a) * vy;
+
+  lastPointerX = x; lastPointerY = y; lastPointerT = t;
+}
+
 function attachWidgetDrag(el){
   el.addEventListener("pointerdown", e => {
     if(!document.body.classList.contains("edit-mode")) return;
@@ -775,6 +811,12 @@ function attachWidgetDrag(el){
     lastTargetRow = null;
     lastBest = { col: start.col, row: start.row };
 
+    lastPointerX = null;
+    lastPointerY = null;
+    lastPointerT = null;
+    biasVX = 0;
+    biasVY = 0;
+
     preview = makeDropPreview(dragged);
     dragged.parentNode.insertBefore(preview, dragged.nextSibling);
 
@@ -790,6 +832,8 @@ function attachWidgetDrag(el){
 
   el.addEventListener("pointermove", e => {
     if(!dragged || dragged !== el) return;
+
+    updatePointerBias(e.clientX, e.clientY);
 
     const left = e.clientX - dragOffX;
     const top  = e.clientY - dragOffY;
@@ -814,7 +858,16 @@ function attachWidgetDrag(el){
     lastTargetCol = target.col;
     lastTargetRow = target.row;
 
-    const best = findNearestFreeCell(dragged, target.col, target.row, w, h, lastBest);
+    const best = findNearestFreeCell(
+      dragged,
+      target.col,
+      target.row,
+      w,
+      h,
+      lastBest,
+      { vx: biasVX, vy: biasVY }
+    );
+
     lastBest = best;
     setGridPos(preview, best.col, best.row);
   });
@@ -840,6 +893,12 @@ function attachWidgetDrag(el){
     lastTargetCol = null;
     lastTargetRow = null;
     lastBest = null;
+
+    lastPointerX = null;
+    lastPointerY = null;
+    lastPointerT = null;
+    biasVX = 0;
+    biasVY = 0;
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
