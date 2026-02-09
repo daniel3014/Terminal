@@ -11,20 +11,23 @@
   --glass-dark: rgba(20,28,45,0.55);
   --border-light: rgba(255,255,255,0.35);
   --border-dark: rgba(255,255,255,0.15);
-  --grid-line: rgba(255,255,255,0.18);
+
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
+
+  --grid-size: 60px; /* ✅ grid menor */
 }
 
-/* THEMES */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
+  --grid-line: rgba(0,0,0,0.08); /* ✅ grid visível no light */
 }
 
 body[data-theme="dark"] {
   background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
+  --grid-line: rgba(255,255,255,0.14); /* ✅ grid visível no dark */
 }
 
 * {
@@ -38,7 +41,7 @@ body {
   padding: 24px 16px;
 }
 
-/* ✅ GRID OVERLAY NA TELA INTEIRA (EDIT MODE) */
+/* ✅ GRID OVERLAY TELA INTEIRA */
 body.edit-mode::before {
   content: "";
   position: fixed;
@@ -46,7 +49,7 @@ body.edit-mode::before {
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 120px 120px;
+  background-size: var(--grid-size) var(--grid-size);
   pointer-events: none;
   z-index: 0;
 }
@@ -59,7 +62,7 @@ body.edit-mode::before {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
   position: relative;
-  z-index: 1; /* acima do overlay */
+  z-index: 1;
 }
 
 /* WIDGET */
@@ -74,7 +77,12 @@ body.edit-mode::before {
   z-index: 1;
   touch-action: none;
   user-select: none;
-  transition: transform 0.1s linear; /* suave sem “engasgar” */
+
+  /* ✅ posição persistente */
+  --tx: 0px;
+  --ty: 0px;
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
 }
 
 body[data-theme="dark"] .widget {
@@ -89,8 +97,8 @@ body[data-theme="dark"] .widget {
 }
 
 @keyframes wiggle {
-  from { transform: rotate(-0.4deg); }
-  to { transform: rotate(0.4deg); }
+  from { transform: translate(var(--tx), var(--ty)) rotate(-0.4deg); }
+  to   { transform: translate(var(--tx), var(--ty)) rotate(0.4deg); }
 }
 
 .widget.dragging {
@@ -98,6 +106,7 @@ body[data-theme="dark"] .widget {
   cursor: grabbing;
   opacity: 0.9;
   z-index: 10;
+  transition: none;
 }
 
 /* CLOCK */
@@ -110,10 +119,7 @@ body[data-theme="dark"] .widget {
 .clock-date { opacity: 0.6; }
 
 /* FORECAST */
-.forecast {
-  display: flex;
-  justify-content: space-between;
-}
+.forecast { display: flex; justify-content: space-between; }
 
 /* THEME SLIDER */
 .theme-slider {
@@ -128,10 +134,9 @@ body[data-theme="dark"] .widget {
   border: 1px solid var(--border-light);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  align-items: center;
   box-shadow: var(--shadow);
   cursor: pointer;
-  z-index: 20; /* acima do overlay */
+  z-index: 20;
 }
 
 body[data-theme="dark"] .theme-slider {
@@ -139,16 +144,14 @@ body[data-theme="dark"] .theme-slider {
   border-color: var(--border-dark);
 }
 
-/* ✅ CENTRALIZAR ÍCONES/TEXTO */
+/* ✅ CENTRALIZAÇÃO REAL (emoji + texto) */
 .theme-slider span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  display: block;
+  height: 44px;
+  line-height: 44px;
   text-align: center;
   font-size: 14px;
   z-index: 2;
-  line-height: 1;
 }
 
 /* CAPSULE THUMB */
@@ -176,7 +179,7 @@ body[data-theme="dark"] .slider-thumb {
 <body data-theme="light">
 
 <!-- THEME SLIDER -->
-<div class="theme-slider widget" id="slider">
+<div class="theme-slider" id="slider">
   <div class="slider-thumb" id="thumb"></div>
   <span data-mode="light">☀️</span>
   <span data-mode="auto">AUTO</span>
@@ -215,7 +218,7 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// EDIT MODE (mantém como estava: dblclick + hold + sair clicando fora)
+// EDIT MODE
 let editTimer;
 const grid = document.getElementById("grid");
 
@@ -235,18 +238,17 @@ grid.addEventListener("pointerup", () => clearTimeout(editTimer));
 grid.addEventListener("pointerleave", () => clearTimeout(editTimer));
 
 document.body.addEventListener("click", e => {
-  if (!e.target.closest(".widget") && !e.target.closest(".theme-slider")) {
+  if (!e.target.closest(".widget") && !e.target.closest("#slider")) {
     disableEdit();
   }
 });
 
-// ✅ DRAG SUAVE E ESTÁVEL (sem perder eventos)
+// ✅ DRAG + DROP (persistente)
 let dragged = null;
 let startX = 0, startY = 0;
+let baseTX = 0, baseTY = 0;
 
-function setTranslate(el, dx, dy) {
-  el.style.transform = `translate(${dx}px, ${dy}px)`;
-}
+function pxToNum(v){ return Number(String(v).replace("px","")) || 0; }
 
 grid.querySelectorAll(".widget").forEach(widget => {
   widget.addEventListener("pointerdown", e => {
@@ -258,35 +260,41 @@ grid.querySelectorAll(".widget").forEach(widget => {
     startX = e.clientX;
     startY = e.clientY;
 
-    // mantém recebendo eventos mesmo se o ponteiro sair do widget
+    const cs = getComputedStyle(dragged);
+    baseTX = pxToNum(cs.getPropertyValue("--tx"));
+    baseTY = pxToNum(cs.getPropertyValue("--ty"));
+
     dragged.setPointerCapture(e.pointerId);
   });
 
   widget.addEventListener("pointermove", e => {
     if (!dragged || dragged !== widget) return;
+
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    setTranslate(dragged, dx, dy);
+
+    dragged.style.setProperty("--tx", (baseTX + dx) + "px");
+    dragged.style.setProperty("--ty", (baseTY + dy) + "px");
   });
 
   widget.addEventListener("pointerup", e => {
     if (!dragged || dragged !== widget) return;
+
     dragged.classList.remove("dragging");
-    dragged.style.transform = "";
     try { dragged.releasePointerCapture(e.pointerId); } catch(_) {}
     dragged = null;
   });
 
   widget.addEventListener("pointercancel", e => {
     if (!dragged || dragged !== widget) return;
+
     dragged.classList.remove("dragging");
-    dragged.style.transform = "";
     try { dragged.releasePointerCapture(e.pointerId); } catch(_) {}
     dragged = null;
   });
 });
 
-// THEME SLIDER (clique direto na opção, sem ciclo)
+// THEME SLIDER (clique direto na opção)
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
 const positions = { light: 6, auto: 58, dark: 110 };
@@ -308,7 +316,6 @@ slider.querySelectorAll("span").forEach(span => {
   });
 });
 
-// estado inicial
 applyTheme("light");
 </script>
 
