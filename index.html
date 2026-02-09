@@ -267,8 +267,8 @@ body[data-theme="dark"] .slider-thumb{
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget" data-widget-id="w-jarvis">
-    Widget futuro do Jarvis
+  <div class="widget" data-widget-id="w-assistant">
+    <span id="assistantTitle"></span>
   </div>
 
 </div>
@@ -282,6 +282,26 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock,1000);
+
+/* ASSISTANT NAME */
+function getAssistantName(){
+  const v = (localStorage.getItem("assistant_name") || "").trim();
+  return v || "Jarvis";
+}
+function setAssistantName(name){
+  const n = String(name ?? "").trim();
+  if(!n) return false;
+  localStorage.setItem("assistant_name", n);
+  renderAssistantName();
+  return true;
+}
+function renderAssistantName(){
+  const el = document.getElementById("assistantTitle");
+  if(!el) return;
+  const name = getAssistantName();
+  el.textContent = `Widget futuro do ${name}`;
+}
+renderAssistantName();
 
 /* HELPERS */
 const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
@@ -580,8 +600,14 @@ sliderUI.addEventListener("pointercancel", e => {
 
 applyTheme("light");
 
-/* JARVIS HOOKS */
-window.jarvis = {
+/* ASSISTANT HOST API */
+window.assistant = {
+  setName(name){
+    return setAssistantName(name);
+  },
+  getName(){
+    return getAssistantName();
+  },
   removeWidget(id){
     const el = document.querySelector(`[data-widget-id="${id}"]`) || document.getElementById(id);
     if(!el) return false;
