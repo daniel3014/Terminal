@@ -58,108 +58,150 @@ body.edit-mode::before{
   z-index:1;
 }
 
-/* ===== WIDGET (SOMBRA SEMPRE ATRÁS) ===== */
-.widget{
-  background: var(--glass-light);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
-  border-radius: 26px;
-  padding: 22px;
+/* ============================================================
+   ✅ FIX: SOMBRA EM LAYER SEPARADO (NUNCA SOBE SOBRE OUTROS)
+   ============================================================ */
+.widget-wrap{
   position: relative;
-  z-index: 1;
   touch-action: none;
   user-select: none;
 
   /* posição persistente */
   --tx: 0px;
   --ty: 0px;
-  transform: translate(var(--tx), var(--ty));
-  transition: transform 0.06s linear;
-
-  /* ✅ remove box-shadow daqui */
-  box-shadow: none;
 }
 
-/* ✅ sombra sempre em layer abaixo */
-.widget::before{
-  content:"";
+/* sombra separada: fica sempre "atrás" dos widgets */
+.widget-shadow{
   position:absolute;
   inset:0;
   border-radius: 26px;
   box-shadow: var(--shadow);
-  z-index: -1;              /* SEMPRE atrás do widget */
   pointer-events:none;
+
+  /* importante: z-index baixo */
+  z-index: 1;
+
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
 }
 
-body[data-theme="dark"] .widget{
+/* superfície do widget */
+.widget-wrap > .widget{
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
+  border-radius: 26px;
+  padding: 22px;
+
+  position: relative;
+  z-index: 2;
+
+  /* move só a superfície (e a sombra move junto via variável) */
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
+
+  box-shadow: none;
+  touch-action: none;
+  user-select: none;
+}
+
+body[data-theme="dark"] .widget-wrap > .widget{
   background: var(--glass-dark);
   border-color: var(--border-dark);
 }
 
 /* EDIT MODE */
-.edit-mode .widget{
+.edit-mode .widget-wrap > .widget{
   cursor: grab;
+}
+.edit-mode .widget-wrap > .widget,
+.edit-mode .widget-shadow{
   animation: wiggle 0.35s ease-in-out infinite alternate;
 }
 @keyframes wiggle{
   from { transform: translate(var(--tx), var(--ty)) rotate(-0.4deg); }
   to   { transform: translate(var(--tx), var(--ty)) rotate(0.4deg); }
 }
-.widget.dragging{
+
+/* durante drag: sobe só o conteúdo, sombra continua abaixo */
+.widget-wrap.dragging > .widget,
+.widget-wrap.dragging > .widget-shadow{
   animation:none;
-  cursor:grabbing;
-  opacity:0.9;
-  z-index:10;
   transition:none;
 }
+.widget-wrap.dragging > .widget{
+  cursor:grabbing;
+  opacity:0.9;
+  z-index: 30;  /* sobe só a superfície */
+}
 
-/* CLOCK */
-.clock{ grid-column: span 2; text-align:center; }
+/* CLOCK (agora o grid-span precisa estar no WRAP) */
+.widget-wrap.clock{ grid-column: span 2; }
+.widget-wrap.clock > .widget{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 
-/* FORECAST */
-.forecast{ display:flex; justify-content:space-between; }
+/* FORECAST (aplica só no widget, não no wrap) */
+.widget.forecast{ display:flex; justify-content:space-between; }
 
-/* THEME SLIDER (VISUAL MANTIDO) */
-.theme-slider{
+/* ============================================================
+   THEME SLIDER (também com sombra separada)
+   ============================================================ */
+#slider{
   position: fixed;
   top: 20px;
   right: 20px;
   width: 170px;
   height: 44px;
-  border-radius: 999px;
-  background: var(--glass-light);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  cursor: pointer;
   z-index: 20;
 
-  /* "widget" também */
+  /* posição persistente */
   --tx: 0px;
   --ty: 0px;
-  transform: translate(var(--tx), var(--ty));
-  transition: transform 0.06s linear;
-  box-shadow: none;
 }
-.theme-slider::before{
-  content:"";
+
+/* sombra do slider fica atrás do app (não cobre widgets) */
+#slider .slider-shadow{
   position:absolute;
   inset:0;
   border-radius: 999px;
   box-shadow: var(--shadow);
-  z-index:-1;
   pointer-events:none;
+
+  /* abaixo do app (app tem z-index:1) */
+  z-index: 0;
+
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
 }
 
-body[data-theme="dark"] .theme-slider{
+/* UI do slider fica por cima */
+#slider .theme-slider-ui{
+  position:absolute;
+  inset:0;
+  border-radius: 999px;
+
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  cursor: pointer;
+
+  z-index: 40; /* sempre acima dos widgets */
+
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
+}
+
+body[data-theme="dark"] #slider .theme-slider-ui{
   background: var(--glass-dark);
   border-color: var(--border-dark);
 }
 
-.theme-slider span{
+#slider span{
   display:block;
   height:44px;
   line-height:44px;
@@ -192,12 +234,16 @@ body[data-theme="dark"] .slider-thumb{
 
 <body data-theme="light">
 
-<!-- THEME SLIDER (widget) -->
-<div class="theme-slider" id="slider" data-widget-id="slider">
-  <div class="slider-thumb" id="thumb"></div>
-  <span data-mode="light">☀️</span>
-  <span data-mode="auto">AUTO</span>
-  <span data-mode="dark">🌙</span>
+<!-- THEME SLIDER (com sombra separada) -->
+<div id="slider" data-widget-id="slider">
+  <div class="slider-shadow" aria-hidden="true"></div>
+
+  <div class="theme-slider-ui">
+    <div class="slider-thumb" id="thumb"></div>
+    <span data-mode="light">☀️</span>
+    <span data-mode="auto">AUTO</span>
+    <span data-mode="dark">🌙</span>
+  </div>
 </div>
 
 <div class="app" id="grid">
@@ -255,6 +301,39 @@ function intersects(a, b, pad=10){
   return !(a.right <= b.left + pad || a.left >= b.right - pad || a.bottom <= b.top + pad || a.top >= b.bottom - pad);
 }
 
+/* ============================================================
+   ✅ WRAP: cria .widget-wrap + .widget-shadow para cada widget
+   (sem copiar classes que mudam layout interno, ex: forecast)
+   ============================================================ */
+(function wrapWidgetsForShadow(){
+  const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
+
+  widgets.forEach(w => {
+    if (w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
+
+    const wrap = document.createElement("div");
+    wrap.classList.add("widget-wrap");
+
+    // mantém só classes necessárias para layout do grid (ex: clock span 2)
+    if (w.classList.contains("clock")) wrap.classList.add("clock");
+
+    // move data-widget-id pro wrap (evita duplicado)
+    const id = w.getAttribute("data-widget-id");
+    if (id) {
+      wrap.setAttribute("data-widget-id", id);
+      w.removeAttribute("data-widget-id");
+    }
+
+    const shadow = document.createElement("div");
+    shadow.className = "widget-shadow";
+    shadow.setAttribute("aria-hidden", "true");
+
+    w.parentNode.insertBefore(wrap, w);
+    wrap.appendChild(shadow);
+    wrap.appendChild(w);
+  });
+})();
+
 /* EDIT MODE */
 let editTimer;
 const gridEl = document.getElementById("grid");
@@ -268,7 +347,19 @@ gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
 document.body.addEventListener("click", e => { if (!e.target.closest(".widget") && !e.target.closest("#slider")) disableEdit(); });
 
 /* DRAGGABLES */
-const draggableEls = () => Array.from(document.querySelectorAll(".widget, #slider")).filter(el => el.style.display !== "none");
+const draggableEls = () =>
+  Array.from(document.querySelectorAll(".widget-wrap, #slider"))
+    .filter(el => el.style.display !== "none");
+
+/* helpers para colisão usando o “visual” (conteúdo) */
+function visualEl(el){
+  return el.classList && el.classList.contains("widget-wrap")
+    ? el.querySelector(".widget")
+    : el;
+}
+function visualRect(el){
+  return visualEl(el).getBoundingClientRect();
+}
 
 /* SAVE/LOAD */
 function saveLayout(){
@@ -296,12 +387,13 @@ function loadLayout(){
 /* NO OVERLAP SEARCH */
 function findNearestFreeSpot(el, targetTX, targetTY){
   const others = draggableEls().filter(x => x !== el);
-  const curRect = el.getBoundingClientRect();
+  const curRect = visualRect(el);
+
   const {tx: curTX, ty: curTY} = getTXTY(el);
   const baseRect = rectShift(curRect, -curTX, -curTY); // sem transform
 
   const candidateRectAt = (tx,ty) => rectShift(baseRect, tx, ty);
-  const occupied = () => others.map(o => o.getBoundingClientRect());
+  const occupied = () => others.map(o => visualRect(o));
 
   const isFree = (tx,ty) => {
     const r = candidateRectAt(tx,ty);
