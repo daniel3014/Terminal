@@ -86,7 +86,7 @@ body.edit-mode::before{
   transition: transform 0.06s linear;
 }
 
-/* superfície do widget */
+/* superfície do widget (mantém visual original) */
 .widget-wrap > .widget{
   background: var(--glass-light);
   backdrop-filter: var(--blur);
@@ -97,7 +97,6 @@ body.edit-mode::before{
   position: relative;
   z-index: 2;
 
-  /* move só a superfície (e a sombra move junto via variável) */
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
 
@@ -136,17 +135,17 @@ body[data-theme="dark"] .widget-wrap > .widget{
   z-index: 30;  /* sobe só a superfície */
 }
 
-/* CLOCK (agora o grid-span precisa estar no WRAP) */
+/* CLOCK (o grid-span precisa estar no WRAP) */
 .widget-wrap.clock{ grid-column: span 2; }
-.widget-wrap.clock > .widget{ text-align:center; }
+.widget.clock{ text-align:center; }          /* visual original no widget */
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 
-/* FORECAST (aplica só no widget, não no wrap) */
+/* FORECAST (visual original no widget) */
 .widget.forecast{ display:flex; justify-content:space-between; }
 
 /* ============================================================
-   THEME SLIDER (também com sombra separada)
+   THEME SLIDER (visual mantido)
    ============================================================ */
 #slider{
   position: fixed;
@@ -161,22 +160,20 @@ body[data-theme="dark"] .widget-wrap > .widget{
   --ty: 0px;
 }
 
-/* sombra do slider fica atrás do app (não cobre widgets) */
+/* sombra do slider atrás */
 #slider .slider-shadow{
   position:absolute;
   inset:0;
   border-radius: 999px;
   box-shadow: var(--shadow);
   pointer-events:none;
-
-  /* abaixo do app (app tem z-index:1) */
   z-index: 0;
 
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
 }
 
-/* UI do slider fica por cima */
+/* UI do slider por cima */
 #slider .theme-slider-ui{
   position:absolute;
   inset:0;
@@ -190,7 +187,7 @@ body[data-theme="dark"] .widget-wrap > .widget{
   grid-template-columns: repeat(3, 1fr);
   cursor: pointer;
 
-  z-index: 40; /* sempre acima dos widgets */
+  z-index: 40;
 
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
@@ -217,7 +214,7 @@ body[data-theme="dark"] #slider .theme-slider-ui{
   width:54px;
   border-radius:999px;
   left:6px;
-  top:4px;
+  top:4px; /* (44-36)/2 */
   background: rgba(255,255,255,0.65);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.4);
@@ -238,7 +235,7 @@ body[data-theme="dark"] .slider-thumb{
 <div id="slider" data-widget-id="slider">
   <div class="slider-shadow" aria-hidden="true"></div>
 
-  <div class="theme-slider-ui">
+  <div class="theme-slider-ui" id="sliderUI">
     <div class="slider-thumb" id="thumb"></div>
     <span data-mode="light">☀️</span>
     <span data-mode="auto">AUTO</span>
@@ -303,18 +300,18 @@ function intersects(a, b, pad=10){
 
 /* ============================================================
    ✅ WRAP: cria .widget-wrap + .widget-shadow para cada widget
-   (sem copiar classes que mudam layout interno, ex: forecast)
+   - mantém visual no .widget
+   - move apenas classes necessárias de layout (clock) pro wrap
    ============================================================ */
 (function wrapWidgetsForShadow(){
   const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
-
   widgets.forEach(w => {
     if (w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
 
     const wrap = document.createElement("div");
     wrap.classList.add("widget-wrap");
 
-    // mantém só classes necessárias para layout do grid (ex: clock span 2)
+    // preserva layout de grid somente onde necessário
     if (w.classList.contains("clock")) wrap.classList.add("clock");
 
     // move data-widget-id pro wrap (evita duplicado)
@@ -336,15 +333,35 @@ function intersects(a, b, pad=10){
 
 /* EDIT MODE */
 let editTimer;
+let suppressBodyClickUntil = 0; // ✅ impede sair do edit-mode logo após soltar um drag
+
 const gridEl = document.getElementById("grid");
 function enableEdit(){ document.body.classList.add("edit-mode"); }
 function disableEdit(){ document.body.classList.remove("edit-mode"); }
 
-gridEl.addEventListener("dblclick", e => { if (e.target.closest(".widget")) enableEdit(); });
-gridEl.addEventListener("pointerdown", e => { if (!e.target.closest(".widget")) return; editTimer = setTimeout(enableEdit, 500); });
+function isWidgetArea(target){
+  return !!(target.closest(".widget-wrap") || target.closest(".widget") || target.closest("#slider"));
+}
+
+gridEl.addEventListener("dblclick", e => {
+  if (e.target.closest(".widget-wrap") || e.target.closest(".widget")) enableEdit();
+});
+
+gridEl.addEventListener("pointerdown", e => {
+  if (!e.target.closest(".widget-wrap") && !e.target.closest(".widget")) return;
+  editTimer = setTimeout(enableEdit, 500);
+});
+
 gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
 gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
-document.body.addEventListener("click", e => { if (!e.target.closest(".widget") && !e.target.closest("#slider")) disableEdit(); });
+
+document.body.addEventListener("click", e => {
+  // ✅ se acabou de soltar um drag, ignora o click fantasma
+  if (Date.now() < suppressBodyClickUntil) return;
+
+  // ✅ só sai se clicar fora de widget/slider
+  if (!isWidgetArea(e.target)) disableEdit();
+});
 
 /* DRAGGABLES */
 const draggableEls = () =>
@@ -462,6 +479,10 @@ function attachDrag(el){
     dragged.classList.remove("dragging");
     try{ dragged.releasePointerCapture(pid); }catch(_){}
     dragged=null; pid=null;
+
+    // ✅ impede o "click fantasma" sair do edit-mode
+    suppressBodyClickUntil = Date.now() + 250;
+
     saveLayout();
   });
 
@@ -470,25 +491,29 @@ function attachDrag(el){
     dragged.classList.remove("dragging");
     try{ dragged.releasePointerCapture(pid); }catch(_){}
     dragged=null; pid=null;
+
+    suppressBodyClickUntil = Date.now() + 250;
+
     saveLayout();
   });
 }
 draggableEls().forEach(attachDrag);
 loadLayout();
 
-/* THEME SLIDER: CLICK + DRAG-TO-SELECT */
+/* THEME SLIDER: CLICK + DRAG-TO-SELECT (pill centralizado) */
 const slider = document.getElementById("slider");
+const sliderUI = document.getElementById("sliderUI");
 const thumb = document.getElementById("thumb");
 const modes = ["light","auto","dark"];
 let currentMode = "light";
 
 function computeThumbLeft(mode){
   const idx = modes.indexOf(mode);
-  const W = slider.clientWidth;
+  const W = sliderUI.clientWidth;     // ✅ mede o container correto
   const seg = W / 3;
   const tw = thumb.offsetWidth;
   const center = seg * idx + seg/2;
-  return Math.round(center - tw/2);
+  return (center - tw/2);            // ✅ sem arredondar (centraliza perfeito)
 }
 function setThumb(mode, animate=true){
   thumb.style.transition = animate ? "left 0.25s ease" : "none";
@@ -506,14 +531,14 @@ function applyTheme(mode){
   saveLayout();
 }
 function modeFromX(x){
-  const W = slider.clientWidth;
+  const W = sliderUI.clientWidth;
   const third = W/3;
   if(x < third) return "light";
   if(x < third*2) return "auto";
   return "dark";
 }
 
-slider.querySelectorAll("span").forEach(span => {
+sliderUI.querySelectorAll("span").forEach(span => {
   span.addEventListener("click", e => {
     if(document.body.classList.contains("edit-mode")) return;
     e.stopPropagation();
@@ -523,39 +548,39 @@ slider.querySelectorAll("span").forEach(span => {
 
 let themeDrag=false, themePid=null;
 
-slider.addEventListener("pointerdown", e => {
+sliderUI.addEventListener("pointerdown", e => {
   if(document.body.classList.contains("edit-mode")) return;
   themeDrag=true;
   themePid=e.pointerId;
-  slider.setPointerCapture(themePid);
+  sliderUI.setPointerCapture(themePid);
 
-  const r=slider.getBoundingClientRect();
+  const r=sliderUI.getBoundingClientRect();
   const x=e.clientX-r.left;
   setThumb(modeFromX(x), false);
 });
 
-slider.addEventListener("pointermove", e => {
+sliderUI.addEventListener("pointermove", e => {
   if(!themeDrag) return;
-  const r=slider.getBoundingClientRect();
+  const r=sliderUI.getBoundingClientRect();
   const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
   setThumb(modeFromX(x), false);
 });
 
-slider.addEventListener("pointerup", e => {
+sliderUI.addEventListener("pointerup", e => {
   if(!themeDrag) return;
   themeDrag=false;
-  try{ slider.releasePointerCapture(themePid); }catch(_){}
+  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
   themePid=null;
 
-  const r=slider.getBoundingClientRect();
+  const r=sliderUI.getBoundingClientRect();
   const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
   applyTheme(modeFromX(x));
 });
 
-slider.addEventListener("pointercancel", e => {
+sliderUI.addEventListener("pointercancel", e => {
   if(!themeDrag) return;
   themeDrag=false;
-  try{ slider.releasePointerCapture(themePid); }catch(_){}
+  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
   themePid=null;
   applyTheme(currentMode);
 });
