@@ -9,30 +9,20 @@
 :root {
   --glass-light: rgba(255,255,255,0.55);
   --glass-dark: rgba(20,28,45,0.55);
-
   --border-light: rgba(255,255,255,0.35);
   --border-dark: rgba(255,255,255,0.15);
-
-  --track-light: rgba(255,255,255,0.35);
-  --track-dark: rgba(15,23,42,0.75);
-
-  --thumb-light: rgba(255,255,255,0.95);
-  --thumb-dark: rgba(30,41,59,0.45);
-
+  --grid-line: rgba(255,255,255,0.15);
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
-  --glow-light: 0 0 18px rgba(120,180,255,0.35);
-  --glow-dark: 0 0 22px rgba(80,140,255,0.25);
 }
 
-/* THEMES */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
 }
 
 body[data-theme="dark"] {
-  background: linear-gradient(135deg, #020617, #0b1220, #020617);
+  background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
 }
 
@@ -45,16 +35,29 @@ body {
   margin: 0;
   min-height: 100vh;
   padding: 30px 16px;
-  transition: background 0.6s ease, color 0.4s ease;
 }
 
-/* APP GRID */
+/* GRID */
 .app {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  position: relative;
+}
+
+/* GRID OVERLAY (EDIT MODE) */
+.edit-mode .app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 120px 120px;
+  pointer-events: none;
+  border-radius: 20px;
 }
 
 /* WIDGET */
@@ -65,11 +68,33 @@ body {
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
+  cursor: default;
+  transition: transform 0.25s ease;
+  touch-action: none;
 }
 
 body[data-theme="dark"] .widget {
   background: var(--glass-dark);
   border-color: var(--border-dark);
+}
+
+/* EDIT MODE */
+.edit-mode .widget {
+  cursor: grab;
+  animation: wiggle 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  from { transform: rotate(-0.4deg); }
+  to { transform: rotate(0.4deg); }
+}
+
+.widget.dragging {
+  animation: none;
+  opacity: 0.85;
+  cursor: grabbing;
+  z-index: 10;
+  position: relative;
 }
 
 /* CLOCK */
@@ -82,103 +107,14 @@ body[data-theme="dark"] .widget {
 
 /* FORECAST */
 .forecast { display: flex; justify-content: space-between; }
-
-/* ===== SLIDER ===== */
-.theme-slider {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 200px;
-  height: 48px;
-  padding: 6px;
-  border-radius: 999px;
-  backdrop-filter: var(--blur);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: background 0.5s ease, border 0.5s ease;
-  z-index: 100;
-}
-
-body[data-theme="light"] .theme-slider {
-  background: var(--glass-light);
-  border: 1px solid var(--border-light);
-}
-
-body[data-theme="dark"] .theme-slider {
-  background: var(--glass-dark);
-  border: 1px solid var(--border-dark);
-}
-
-/* TRACK */
-.track {
-  position: absolute;
-  inset: 6px;
-  border-radius: 999px;
-  z-index: 1;
-}
-
-body[data-theme="light"] .track { background: var(--track-light); }
-body[data-theme="dark"] .track { background: var(--track-dark); }
-
-/* LABELS */
-.theme-slider span {
-  flex: 1;
-  text-align: center;
-  font-size: 14px;
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0.9;
-}
-
-/* THUMB */
-.slider-thumb {
-  position: absolute;
-  height: 34px;
-  width: 60px; /* voltou maior */
-  top: 7px;
-  left: 7px;
-  border-radius: 999px;
-  backdrop-filter: blur(18px);
-  transition:
-    left 0.45s cubic-bezier(.2,.8,.2,1),
-    background 0.4s ease,
-    border 0.4s ease,
-    box-shadow 0.4s ease;
-  z-index: 2;
-}
-
-/* LIGHT */
-body[data-theme="light"] .slider-thumb {
-  background: var(--thumb-light);
-  border: 1px solid rgba(255,255,255,0.6);
-  box-shadow: var(--shadow), var(--glow-light);
-}
-
-/* DARK = LIQUID GLASS */
-body[data-theme="dark"] .slider-thumb {
-  background: var(--thumb-dark);
-  border: 1px solid rgba(255,255,255,0.25);
-  box-shadow: var(--shadow), var(--glow-dark);
-}
 </style>
 </head>
 
-<body data-theme="auto">
+<body data-theme="light">
 
-<div class="theme-slider" id="slider">
-  <div class="track"></div>
-  <div class="slider-thumb" id="thumb"></div>
-  <span>☀️</span>
-  <span>AUTO</span>
-  <span>🌙</span>
-</div>
+<div class="app" id="grid">
 
-<div class="app">
-  <div class="widget weather">
-    <strong>23°C ☀️</strong><br>
-    Sensação 25° · Chuva 10%
-  </div>
+  <div class="widget weather">23°C ☀️<br>Sensação 25° · Chuva 10%</div>
 
   <div class="widget clock">
     <div class="clock-time" id="time"></div>
@@ -190,6 +126,9 @@ body[data-theme="dark"] .slider-thumb {
     <span>🌧️ 22°</span>
     <span>⛅ 23°</span>
   </div>
+
+  <div class="widget">Widget futuro do Jarvis</div>
+
 </div>
 
 <script>
@@ -202,38 +141,61 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// SLIDER
-const slider = document.getElementById("slider");
-const thumb = document.getElementById("thumb");
+// EDIT MODE
+let editTimer;
+const grid = document.getElementById("grid");
 
-const modes = ["light","auto","dark"];
-const positions = [7, 70, 133]; // ajustado para thumb maior
-let current = 1;
-
-function applyTheme(mode) {
-  if (mode === "auto") {
-    const h = new Date().getHours();
-    document.body.dataset.theme = (h >= 6 && h < 18) ? "light" : "dark";
-  } else {
-    document.body.dataset.theme = mode;
-  }
+function enableEdit() {
+  document.body.classList.add("edit-mode");
 }
 
-function setMode(index) {
-  current = index;
-  thumb.style.left = positions[index] + "px";
-  applyTheme(modes[index]);
+function disableEdit() {
+  document.body.classList.remove("edit-mode");
 }
 
-slider.addEventListener("click", e => {
-  const x = e.offsetX;
-  const w = slider.offsetWidth;
-  if (x < w/3) setMode(0);
-  else if (x < w*2/3) setMode(1);
-  else setMode(2);
+grid.addEventListener("dblclick", e => {
+  if (e.target.closest(".widget")) enableEdit();
 });
 
-setMode(1);
+grid.addEventListener("mousedown", e => {
+  if (!e.target.closest(".widget")) return;
+  editTimer = setTimeout(enableEdit, 500);
+});
+
+grid.addEventListener("mouseup", () => clearTimeout(editTimer));
+grid.addEventListener("mouseleave", () => clearTimeout(editTimer));
+
+document.body.addEventListener("click", e => {
+  if (!e.target.closest(".widget")) disableEdit();
+});
+
+// DRAG LOGIC
+let dragged = null;
+let startX, startY;
+
+grid.querySelectorAll(".widget").forEach(widget => {
+  widget.addEventListener("pointerdown", e => {
+    if (!document.body.classList.contains("edit-mode")) return;
+    dragged = widget;
+    dragged.classList.add("dragging");
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+
+  widget.addEventListener("pointermove", e => {
+    if (!dragged) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    dragged.style.transform = `translate(${dx}px, ${dy}px)`;
+  });
+
+  widget.addEventListener("pointerup", () => {
+    if (!dragged) return;
+    dragged.classList.remove("dragging");
+    dragged.style.transform = "";
+    dragged = null;
+  });
+});
 </script>
 
 </body>
