@@ -6,6 +6,7 @@
 <title>Terminal</title>
 
 <style>
+/* ===== VARS ===== */
 :root{
   --glass-light: rgba(255,255,255,0.55);
   --glass-dark: rgba(20,28,45,0.55);
@@ -22,24 +23,26 @@
   --cols: 12;
 }
 
+/* ===== THEMES ===== */
 body[data-theme="light"]{
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
   --grid-line: rgba(0,0,0,0.08);
-  --preview-border: rgba(15, 23, 42, 0.22);
-  --preview-fill: rgba(255,255,255,0.22);
+  --preview-border: rgba(15,23,42,.22);
+  --preview-fill: rgba(255,255,255,.22);
 }
 body[data-theme="dark"]{
   background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
-  --grid-line: rgba(255,255,255,0.14);
-  --preview-border: rgba(255,255,255,0.22);
-  --preview-fill: rgba(255,255,255,0.08);
+  --grid-line: rgba(255,255,255,.14);
+  --preview-border: rgba(255,255,255,.22);
+  --preview-fill: rgba(255,255,255,.08);
 }
 
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 body{ margin:0; min-height:100vh; padding:24px 16px; }
 
+/* ===== GRID OVERLAY ===== */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -52,6 +55,7 @@ body.edit-mode::before{
   z-index:0;
 }
 
+/* ===== GRID ===== */
 .app{
   max-width:1200px;
   margin:auto;
@@ -64,16 +68,15 @@ body.edit-mode::before{
   z-index:1;
 }
 
+/* ===== WIDGET ===== */
 .widget-wrap{
   position:relative;
   --col:1;
   --row:1;
   --w:4;
   --h:2;
-
   grid-column: var(--col) / span var(--w);
   grid-row: var(--row) / span var(--h);
-
   touch-action:none;
   user-select:none;
 }
@@ -84,7 +87,6 @@ body.edit-mode::before{
   border-radius: calc(26px - var(--shadow-inset));
   box-shadow: var(--shadow);
   pointer-events:none;
-  z-index:1;
 }
 
 .widget-wrap > .widget{
@@ -96,7 +98,6 @@ body.edit-mode::before{
   border-radius:26px;
   padding:22px;
   position:relative;
-  z-index:2;
 }
 
 body[data-theme="dark"] .widget-wrap > .widget{
@@ -104,39 +105,74 @@ body[data-theme="dark"] .widget-wrap > .widget{
   border-color: var(--border-dark);
 }
 
-.edit-mode .widget-wrap > .widget{ cursor:grab; }
+/* ===== PREVIEW ===== */
+.widget-wrap.drop-preview .widget{
+  background: var(--preview-fill);
+  border:1.5px dashed var(--preview-border);
+  backdrop-filter:none;
+}
+.widget-wrap.drop-preview .widget-shadow{
+  box-shadow:none;
+}
 
+/* ===== DRAG ===== */
 .widget-wrap.dragging{
   position:fixed !important;
   pointer-events:none;
   z-index:50;
 }
 
-.widget-wrap.drop-preview .widget{
-  background: var(--preview-fill);
-  border:1.5px dashed var(--preview-border);
-  backdrop-filter:none;
-}
-
-.widget-wrap.drop-preview .widget-shadow{
-  box-shadow:none;
-}
-
-/* CLOCK / FORECAST */
+/* ===== CLOCK ===== */
 .widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:.6; }
+
+/* ===== FORECAST ===== */
 .widget.forecast{ display:flex; justify-content:space-between; }
+
+/* ===== EDIT TOGGLE ===== */
+.edit-toggle{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  height:44px;
+  padding:0 14px;
+  border-radius:999px;
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border:1px solid var(--border-light);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  z-index:90;
+}
+body[data-theme="dark"] .edit-toggle{
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
+}
+.edit-toggle .dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.3);
+}
+body.edit-mode .edit-toggle .dot{
+  background:#22c55e;
+}
 </style>
 </head>
 
 <body>
 
-<div class="app" id="grid">
+<div class="edit-toggle" id="editToggle">
+  <div class="dot"></div>
+  <div id="editToggleText">Editar</div>
+</div>
 
-  <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
-    <strong>23°C ☀️</strong><br>
-    Sensação 25° · Chuva 10%
+<div class="app" id="grid">
+  <div class="widget" data-widget-id="w-weather" data-w="4" data-h="2">
+    <strong>23°C ☀️</strong><br>Sensação 25°
   </div>
 
   <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
@@ -145,15 +181,12 @@ body[data-theme="dark"] .widget-wrap > .widget{
   </div>
 
   <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
-    <span>☀️ 24°</span>
-    <span>🌧️ 22°</span>
-    <span>⛅ 23°</span>
+    <span>☀️ 24°</span><span>🌧️ 22°</span><span>⛅ 23°</span>
   </div>
-
 </div>
 
 <script>
-/* CLOCK */
+/* ===== CLOCK ===== */
 function updateClock(){
   const n=new Date();
   time.textContent=n.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -161,15 +194,15 @@ function updateClock(){
 }
 updateClock(); setInterval(updateClock,1000);
 
-/* GRID HELPERS */
-const gridEl=document.getElementById("grid");
+/* ===== GRID HELPERS ===== */
+const grid=document.getElementById("grid");
 const GRID=60, GAP=18;
 const HYSTERESIS=0.65;
 
 function pitch(){ return GRID+GAP; }
 
 function computeCols(){
-  const cols=Math.max(1,Math.floor((gridEl.clientWidth+GAP)/pitch()));
+  const cols=Math.max(1,Math.floor((grid.clientWidth+GAP)/pitch()));
   document.documentElement.style.setProperty("--cols",cols);
   return cols;
 }
@@ -188,33 +221,40 @@ function wrapWidgets(){
     wrap.appendChild(w);
   });
 }
-wrapWidgets();
-computeCols();
+wrapWidgets(); computeCols();
 
-/* DRAG */
+/* ===== EDIT MODE ===== */
+const editToggle=document.getElementById("editToggle");
+const editText=document.getElementById("editToggleText");
+editToggle.onclick=()=>{
+  document.body.classList.toggle("edit-mode");
+  editText.textContent=document.body.classList.contains("edit-mode")?"Concluir":"Editar";
+};
+
+/* ===== DRAG ===== */
 let dragged=null, preview=null, offX=0, offY=0;
 
-function cellFromCenter(cx,cy){
-  const r=gridEl.getBoundingClientRect();
-  const x=cx-r.left;
-  const raw=x/pitch();
+function cellFromCenter(cx){
+  const r=grid.getBoundingClientRect();
+  const raw=(cx-r.left)/pitch();
   const base=Math.floor(raw);
   const frac=raw-base;
-  const col=(frac>HYSTERESIS?base+1:base)+1;
-  return Math.max(1,Math.min(col,computeCols()));
+  let col=(frac>HYSTERESIS?base+1:base)+1;
+  const maxCol=computeCols()-parseInt(getComputedStyle(dragged).getPropertyValue("--w"))+1;
+  return Math.max(1,Math.min(col,maxCol));
 }
 
 function makePreview(src){
   const p=document.createElement("div");
   p.className="widget-wrap drop-preview";
-  const cs=getComputedStyle(src);
-  ["--w","--h","--col","--row"].forEach(v=>p.style.setProperty(v,cs.getPropertyValue(v)));
+  ["--w","--h","--col","--row"].forEach(v=>p.style.setProperty(v,getComputedStyle(src).getPropertyValue(v)));
   p.innerHTML=`<div class="widget-shadow"></div><div class="widget"></div>`;
   return p;
 }
 
 document.querySelectorAll(".widget-wrap").forEach(w=>{
-  w.addEventListener("pointerdown",e=>{
+  w.onpointerdown=e=>{
+    if(!document.body.classList.contains("edit-mode")) return;
     dragged=w;
     const r=w.getBoundingClientRect();
     offX=e.clientX-r.left;
@@ -227,31 +267,28 @@ document.querySelectorAll(".widget-wrap").forEach(w=>{
       width:r.width+"px", height:r.height+"px"
     });
     w.setPointerCapture(e.pointerId);
-  });
+  };
 
-  w.addEventListener("pointermove",e=>{
+  w.onpointermove=e=>{
     if(!dragged) return;
     dragged.style.left=(e.clientX-offX)+"px";
     dragged.style.top=(e.clientY-offY)+"px";
-
     const centerX=e.clientX-offX+dragged.offsetWidth/2;
-    const col=cellFromCenter(centerX,0);
-    preview.style.setProperty("--col",col);
-  });
+    preview.style.setProperty("--col",cellFromCenter(centerX));
+  };
 
-  w.addEventListener("pointerup",e=>{
+  w.onpointerup=e=>{
     if(!dragged) return;
-    dragged.classList.remove("dragging");
     dragged.style.cssText="";
     dragged.style.setProperty("--col",preview.style.getPropertyValue("--col"));
-    preview.remove();
-    preview=null;
+    dragged.classList.remove("dragging");
+    preview.remove(); preview=null;
     dragged.releasePointerCapture(e.pointerId);
     dragged=null;
-  });
+  };
 });
 
-/* THEME */
+/* ===== THEME (AUTO DEFAULT) ===== */
 function applyTheme(mode){
   if(mode==="auto"){
     const h=new Date().getHours();
