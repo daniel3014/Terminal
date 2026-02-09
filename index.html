@@ -20,6 +20,7 @@
   --shadow-inset: 12px;
 
   --cols: 12;
+  --cell-w: 60px; /* calculado via JS */
 }
 
 body[data-theme="light"]{
@@ -40,6 +41,7 @@ body[data-theme="dark"]{
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 body{ margin:0; min-height:100vh; padding:24px 16px; }
 
+/* GRID OVERLAY */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -47,12 +49,13 @@ body.edit-mode::before{
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: calc(var(--grid-size) + var(--grid-gap)) calc(var(--grid-size) + var(--grid-gap));
+  background-size:
+    calc(var(--cell-w) + var(--grid-gap)) calc(var(--grid-size) + var(--grid-gap));
   pointer-events:none;
   z-index:0;
 }
 
-/* ✅ agora o grid ocupa toda a largura disponível (isso destrava as laterais) */
+/* GRID */
 .app{
   width: 100%;
   max-width: 100%;
@@ -61,7 +64,7 @@ body.edit-mode::before{
   z-index:1;
 
   display:grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, var(--grid-size)));
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); /* ocupa 100% */
   grid-auto-rows: var(--grid-size);
   gap: var(--grid-gap);
   align-content:start;
@@ -69,6 +72,7 @@ body.edit-mode::before{
   overflow: visible;
 }
 
+/* WIDGET */
 .widget-wrap{
   position:relative;
 
@@ -116,6 +120,7 @@ body[data-theme="dark"] .widget-wrap > .widget{
   border-color: var(--border-dark);
 }
 
+/* EDIT MODE */
 .edit-mode .widget-wrap > .widget{ cursor:grab; }
 .edit-mode .widget-wrap > .widget,
 .edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
@@ -154,11 +159,13 @@ body[data-theme="dark"] .widget-wrap > .widget{
   backdrop-filter: none;
 }
 
+/* CLOCK / FORECAST */
 .widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 .widget.forecast{ display:flex; justify-content:space-between; }
 
+/* SLIDER (widget) */
 #slider{
   position: fixed;
   top: 20px;
@@ -234,6 +241,7 @@ body[data-theme="dark"] .slider-thumb{
   border-color: rgba(255,255,255,0.25);
 }
 
+/* EDIT TOGGLE */
 .edit-toggle{
   position: fixed;
   right: 20px;
@@ -354,14 +362,15 @@ const gridEl = document.getElementById("grid");
 const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
 const GAP  = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-gap")) || 18;
 
-function pitch(){ return GRID + GAP; }
-
 function computeCols(){
   const w = gridEl.clientWidth;
-  const p = pitch();
-  const cols = Math.max(1, Math.floor((w + GAP) / p));
+  const pitchMin = GRID + GAP;
+  const cols = Math.max(1, Math.floor((w + GAP) / pitchMin));
   document.documentElement.style.setProperty("--cols", cols);
-  return cols;
+
+  const cellW = (w - (cols - 1) * GAP) / cols;
+  document.documentElement.style.setProperty("--cell-w", cellW + "px");
+  return { cols, cellW };
 }
 
 function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
@@ -392,7 +401,7 @@ function setGridSize(el, w, h){
 }
 
 function buildOccupancy(exceptEl){
-  const cols = computeCols();
+  const { cols } = computeCols();
   const occ = new Set();
 
   function mark(col,row){ occ.add(col + ":" + row); }
@@ -425,7 +434,7 @@ function fitsAt(occ, col, row, w, h){
   return true;
 }
 
-function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
+function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h, prefer){
   const occ = buildOccupancy(exceptEl);
 
   const maxCol = Math.max(1, occ.cols - w + 1);
@@ -435,6 +444,7 @@ function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
   let tc = clampCol(targetCol);
   let tr = clampRow(targetRow);
 
+  if(prefer && fitsAt(occ, prefer.col, prefer.row, w, h)) return { col: prefer.col, row: prefer.row };
   if(fitsAt(occ, tc, tr, w, h)) return {col: tc, row: tr};
 
   const maxRings = 24;
@@ -534,7 +544,7 @@ function loadLayout(){
 }
 
 function packInitial(){
-  const cols = computeCols();
+  const { cols } = computeCols();
   const wraps = allWidgetWraps();
 
   const occ = new Set();
@@ -664,33 +674,46 @@ let dragPid = null;
 let dragOffX = 0;
 let dragOffY = 0;
 
-const SNAP_HYST = 0.18;
+const SNAP_DEADZONE = 0.18;
 let snapCol = null;
 let snapRow = null;
+let lastTargetCol = null;
+let lastTargetRow = null;
+let lastBest = null;
 
 function gridOrigin(){
   return gridEl.getBoundingClientRect();
 }
 
-function hysteresisStep(rawCell, lastCell){
-  if(lastCell == null) return Math.round(rawCell);
-  if(rawCell > lastCell + 0.5 + SNAP_HYST) return lastCell + 1;
-  if(rawCell < lastCell - 0.5 - SNAP_HYST) return lastCell - 1;
-  return lastCell;
+function pitchX(){
+  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
+  return cellW + GAP;
+}
+function pitchY(){
+  return GRID + GAP;
 }
 
-function cellFromCenter(centerX, centerY, w, h){
+function hysteresisDeadzone(rawCell, lastCell){
+  if(lastCell == null) return Math.round(rawCell);
+
+  const keepMin = lastCell - (0.5 - SNAP_DEADZONE);
+  const keepMax = lastCell + (0.5 - SNAP_DEADZONE);
+
+  if(rawCell >= keepMin && rawCell <= keepMax) return lastCell;
+  return Math.round(rawCell);
+}
+
+function cellFromCenter(centerX, centerY, w){
   const r = gridOrigin();
-  const p = pitch();
 
-  const rawCol = ((centerX - r.left) / p) + 1;
-  const rawRow = ((centerY - r.top)  / p) + 1;
+  const rawCol = ((centerX - r.left) / pitchX()) + 1;
+  const rawRow = ((centerY - r.top)  / pitchY()) + 1;
 
-  const cols = computeCols();
+  const { cols } = computeCols();
   const maxCol = Math.max(1, cols - w + 1);
 
-  snapCol = hysteresisStep(rawCol, snapCol);
-  snapRow = hysteresisStep(rawRow, snapRow);
+  snapCol = hysteresisDeadzone(rawCol, snapCol);
+  snapRow = hysteresisDeadzone(rawRow, snapRow);
 
   const col = Math.max(1, Math.min(maxCol, snapCol));
   const row = Math.max(1, snapRow);
@@ -711,11 +734,6 @@ function makeDropPreview(fromEl){
 }
 
 function animateSettle(el, targetRect){
-  const startLeft = parseFloat(el.style.left) || 0;
-  const startTop  = parseFloat(el.style.top)  || 0;
-  const startW    = parseFloat(el.style.width)  || el.getBoundingClientRect().width;
-  const startH    = parseFloat(el.style.height) || el.getBoundingClientRect().height;
-
   el.style.transition = "left 260ms cubic-bezier(.2,.9,.2,1), top 260ms cubic-bezier(.2,.9,.2,1), width 260ms cubic-bezier(.2,.9,.2,1), height 260ms cubic-bezier(.2,.9,.2,1)";
   el.style.left = targetRect.left + "px";
   el.style.top  = targetRect.top + "px";
@@ -753,6 +771,9 @@ function attachWidgetDrag(el){
     const start = getGridPos(dragged);
     snapCol = start.col;
     snapRow = start.row;
+    lastTargetCol = null;
+    lastTargetRow = null;
+    lastBest = { col: start.col, row: start.row };
 
     preview = makeDropPreview(dragged);
     dragged.parentNode.insertBefore(preview, dragged.nextSibling);
@@ -783,8 +804,18 @@ function attachWidgetDrag(el){
     const centerX = left + width / 2;
     const centerY = top  + height / 2;
 
-    const cell = cellFromCenter(centerX, centerY, w, h);
-    const best = findNearestFreeCell(dragged, cell.col, cell.row, w, h);
+    const target = cellFromCenter(centerX, centerY, w);
+
+    if(target.col === lastTargetCol && target.row === lastTargetRow && lastBest){
+      setGridPos(preview, lastBest.col, lastBest.row);
+      return;
+    }
+
+    lastTargetCol = target.col;
+    lastTargetRow = target.row;
+
+    const best = findNearestFreeCell(dragged, target.col, target.row, w, h, lastBest);
+    lastBest = best;
     setGridPos(preview, best.col, best.row);
   });
 
@@ -806,6 +837,9 @@ function attachWidgetDrag(el){
 
     snapCol = null;
     snapRow = null;
+    lastTargetCol = null;
+    lastTargetRow = null;
+    lastBest = null;
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
@@ -1032,10 +1066,10 @@ window.assistant = {
 
 /* INIT */
 ensureWrappedWidgets();
-let lastCols = computeCols();
+let lastCols = computeCols().cols;
 
 const ro = new ResizeObserver(() => {
-  const newCols = computeCols();
+  const newCols = computeCols().cols;
   if(newCols !== lastCols){
     reflowForCols(lastCols, newCols);
     lastCols = newCols;
