@@ -17,28 +17,29 @@
 
   --grid-size: 60px;
   --grid-gap: 18px;
-  --snap-inset: 6px;
   --shadow-inset: 12px;
 
   --cols: 12;
 }
 
-/* THEMES */
 body[data-theme="light"]{
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
   --grid-line: rgba(0,0,0,0.08);
+  --preview-border: rgba(15, 23, 42, 0.22);
+  --preview-fill: rgba(255,255,255,0.22);
 }
 body[data-theme="dark"]{
   background: linear-gradient(135deg, #020617, #0b1220);
   color: #e5e7eb;
   --grid-line: rgba(255,255,255,0.14);
+  --preview-border: rgba(255,255,255,0.22);
+  --preview-fill: rgba(255,255,255,0.08);
 }
 
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 body{ margin:0; min-height:100vh; padding:24px 16px; }
 
-/* GRID OVERLAY (EDIT MODE) */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -51,7 +52,6 @@ body.edit-mode::before{
   z-index:0;
 }
 
-/* GRID CONTAINER */
 .app{
   max-width:1200px;
   margin:auto;
@@ -59,13 +59,14 @@ body.edit-mode::before{
   z-index:1;
 
   display:grid;
-  grid-template-columns: repeat(var(--cols), var(--grid-size));
+  grid-template-columns: repeat(var(--cols), minmax(0, var(--grid-size)));
   grid-auto-rows: var(--grid-size);
   gap: var(--grid-gap);
   align-content:start;
+
+  overflow: visible;
 }
 
-/* GRID ITEM */
 .widget-wrap{
   position:relative;
 
@@ -113,7 +114,6 @@ body[data-theme="dark"] .widget-wrap > .widget{
   border-color: var(--border-dark);
 }
 
-/* EDIT MODE */
 .edit-mode .widget-wrap > .widget{ cursor:grab; }
 .edit-mode .widget-wrap > .widget,
 .edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
@@ -128,26 +128,35 @@ body[data-theme="dark"] .widget-wrap > .widget{
   animation:none;
 }
 
-/* FIXED DRAG VISUAL */
 .widget-wrap.dragging{
   z-index: 50;
 }
+
 .widget-wrap.dragging.fixed{
   position: fixed !important;
   margin: 0 !important;
   pointer-events: none;
 }
-.widget-wrap.placeholder{
-  opacity: 0.0;
+
+.widget-wrap.drop-preview{
+  z-index: 0;
 }
 
-/* CLOCK / FORECAST */
+.widget-wrap.drop-preview .widget-shadow{
+  box-shadow: none;
+}
+
+.widget-wrap.drop-preview .widget{
+  background: var(--preview-fill);
+  border: 1.5px dashed var(--preview-border);
+  backdrop-filter: none;
+}
+
 .widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 .widget.forecast{ display:flex; justify-content:space-between; }
 
-/* THEME SLIDER */
 #slider{
   position: fixed;
   top: 20px;
@@ -222,6 +231,49 @@ body[data-theme="dark"] .slider-thumb{
   background: rgba(255,255,255,0.15);
   border-color: rgba(255,255,255,0.25);
 }
+
+.edit-toggle{
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+  user-select: none;
+
+  z-index: 90;
+  box-shadow: var(--shadow);
+}
+
+body[data-theme="dark"] .edit-toggle{
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
+}
+
+.edit-toggle .dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+body[data-theme="dark"] .edit-toggle .dot{
+  background: rgba(255,255,255,0.22);
+}
+
+body.edit-mode .edit-toggle .dot{
+  background: rgba(34, 197, 94, 0.7);
+}
 </style>
 </head>
 
@@ -237,25 +289,30 @@ body[data-theme="dark"] .slider-thumb{
   </div>
 </div>
 
+<div class="edit-toggle" id="editToggle" role="button" tabindex="0" aria-label="Alternar modo de edição">
+  <div class="dot" aria-hidden="true"></div>
+  <div id="editToggleText">Editar</div>
+</div>
+
 <div class="app" id="grid">
 
-  <div class="widget weather" data-widget-id="w-weather">
+  <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
     <strong>23°C ☀️</strong><br>
     Sensação 25° · Chuva 10%
   </div>
 
-  <div class="widget clock" data-widget-id="w-clock">
+  <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
     <div class="clock-time" id="time"></div>
     <div class="clock-date" id="date"></div>
   </div>
 
-  <div class="widget forecast" data-widget-id="w-forecast">
+  <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
     <span>☀️ 24°</span>
     <span>🌧️ 22°</span>
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget" data-widget-id="w-assistant">
+  <div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
     <span id="assistantTitle"></span>
   </div>
 
@@ -306,32 +363,6 @@ function computeCols(){
 }
 
 function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
-
-function ensureWrappedWidgets(){
-  const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
-  widgets.forEach(w => {
-    if(w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
-
-    const wrap = document.createElement("div");
-    wrap.className = "widget-wrap";
-    wrap.style.setProperty("--w", String((w.classList.contains("clock")) ? 8 : 4));
-    wrap.style.setProperty("--h", String((w.classList.contains("clock")) ? 3 : 2));
-
-    const id = w.getAttribute("data-widget-id");
-    if(id){
-      wrap.setAttribute("data-widget-id", id);
-      w.removeAttribute("data-widget-id");
-    }
-
-    const shadow = document.createElement("div");
-    shadow.className = "widget-shadow";
-    shadow.setAttribute("aria-hidden","true");
-
-    w.parentNode.insertBefore(wrap, w);
-    wrap.appendChild(shadow);
-    wrap.appendChild(w);
-  });
-}
 
 function allWidgetWraps(){
   return Array.from(document.querySelectorAll(".widget-wrap"))
@@ -395,7 +426,7 @@ function fitsAt(occ, col, row, w, h){
 function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
   const occ = buildOccupancy(exceptEl);
 
-  const clampCol = (c) => Math.max(1, Math.min(occ.cols - w + 1, c));
+  const clampCol = (c) => Math.max(1, Math.min(Math.max(1, occ.cols - w + 1), c));
   const clampRow = (r) => Math.max(1, r);
 
   let tc = clampCol(targetCol);
@@ -417,11 +448,43 @@ function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
   return {col: tc, row: tr};
 }
 
+/* WRAP WIDGETS */
+function ensureWrappedWidgets(){
+  const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
+  widgets.forEach(w => {
+    if(w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "widget-wrap";
+
+    const dw = parseInt(w.getAttribute("data-w")) || (w.classList.contains("clock") ? 8 : 4);
+    const dh = parseInt(w.getAttribute("data-h")) || (w.classList.contains("clock") ? 3 : 2);
+    wrap.style.setProperty("--w", String(dw));
+    wrap.style.setProperty("--h", String(dh));
+
+    const id = w.getAttribute("data-widget-id");
+    if(id){
+      wrap.setAttribute("data-widget-id", id);
+      w.removeAttribute("data-widget-id");
+    }
+
+    const shadow = document.createElement("div");
+    shadow.className = "widget-shadow";
+    shadow.setAttribute("aria-hidden","true");
+
+    w.parentNode.insertBefore(wrap, w);
+    wrap.appendChild(shadow);
+    wrap.appendChild(w);
+  });
+}
+
 /* LAYOUT SAVE/LOAD */
-const LAYOUT_KEY = "terminal_layout_v3";
+let activeProfile = (localStorage.getItem("layout_profile") || "default").trim() || "default";
+function layoutKey(){ return "terminal_layout_v3_" + activeProfile; }
 
 function saveLayout(){
-  const data = {};
+  const data = { _meta: { profile: activeProfile } };
+
   for(const el of allWidgetWraps()){
     const id = el.getAttribute("data-widget-id");
     if(!id) continue;
@@ -439,11 +502,11 @@ function saveLayout(){
     };
   }
 
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(data));
+  localStorage.setItem(layoutKey(), JSON.stringify(data));
 }
 
 function loadLayout(){
-  const raw = localStorage.getItem(LAYOUT_KEY);
+  const raw = localStorage.getItem(layoutKey());
   if(!raw) return false;
   let data; try{ data = JSON.parse(raw); } catch { return false; }
 
@@ -516,15 +579,45 @@ function packInitial(){
   }
 }
 
+function reflowForCols(oldCols, newCols){
+  const wraps = allWidgetWraps();
+
+  const desired = wraps.map(el => {
+    const p = getGridPos(el);
+    const ratio = (oldCols <= 1) ? 0 : (p.col - 1) / (oldCols - 1);
+    const newCol = Math.round(ratio * Math.max(0, newCols - 1)) + 1;
+    return { el, row: p.row, col: newCol, w: p.w, h: p.h };
+  });
+
+  desired.sort((a,b) => (a.row - b.row) || (a.col - b.col));
+
+  for(const it of desired){
+    setGridPos(it.el, it.col, it.row);
+  }
+
+  for(const it of desired){
+    const best = findNearestFreeCell(it.el, it.col, it.row, it.w, it.h);
+    setGridPos(it.el, best.col, best.row);
+  }
+
+  saveLayout();
+}
+
 /* EDIT MODE */
 let editTimer;
 let suppressBodyClickUntil = 0;
 
-function enableEdit(){ document.body.classList.add("edit-mode"); }
-function disableEdit(){ document.body.classList.remove("edit-mode"); }
+function enableEdit(){
+  document.body.classList.add("edit-mode");
+  editToggleText.textContent = "Concluir";
+}
+function disableEdit(){
+  document.body.classList.remove("edit-mode");
+  editToggleText.textContent = "Editar";
+}
 
 function isWidgetArea(target){
-  return !!(target.closest(".widget-wrap") || target.closest(".widget") || target.closest("#slider"));
+  return !!(target.closest(".widget-wrap") || target.closest(".widget") || target.closest("#slider") || target.closest("#editToggle"));
 }
 
 gridEl.addEventListener("dblclick", e => {
@@ -544,9 +637,26 @@ document.body.addEventListener("click", e => {
   if(!isWidgetArea(e.target)) disableEdit();
 });
 
+const editToggle = document.getElementById("editToggle");
+const editToggleText = document.getElementById("editToggleText");
+
+editToggle.addEventListener("click", e => {
+  e.stopPropagation();
+  if(document.body.classList.contains("edit-mode")) disableEdit();
+  else enableEdit();
+});
+
+editToggle.addEventListener("keydown", e => {
+  if(e.key === "Enter" || e.key === " "){
+    e.preventDefault();
+    if(document.body.classList.contains("edit-mode")) disableEdit();
+    else enableEdit();
+  }
+});
+
 /* WIDGET DRAG (GRID) */
 let dragged = null;
-let placeholder = null;
+let preview = null;
 let dragPid = null;
 let dragOffX = 0;
 let dragOffY = 0;
@@ -561,9 +671,9 @@ function pointToCell(clientX, clientY){
   return { col, row };
 }
 
-function makePlaceholder(fromEl){
+function makeDropPreview(fromEl){
   const ph = document.createElement("div");
-  ph.className = "widget-wrap placeholder";
+  ph.className = "widget-wrap drop-preview";
   const {w,h,col,row} = getGridPos(fromEl);
   ph.style.setProperty("--w", String(w));
   ph.style.setProperty("--h", String(h));
@@ -586,8 +696,8 @@ function attachWidgetDrag(el){
     dragOffX = e.clientX - rect.left;
     dragOffY = e.clientY - rect.top;
 
-    placeholder = makePlaceholder(dragged);
-    dragged.parentNode.insertBefore(placeholder, dragged.nextSibling);
+    preview = makeDropPreview(dragged);
+    dragged.parentNode.insertBefore(preview, dragged.nextSibling);
 
     dragged.classList.add("fixed");
     dragged.style.left = rect.left + "px";
@@ -608,15 +718,18 @@ function attachWidgetDrag(el){
     dragged.style.top  = top + "px";
 
     const {w,h} = getGridPos(dragged);
-    const cell = pointToCell(e.clientX - dragOffX + (GRID/2), e.clientY - dragOffY + (GRID/2));
+    const anchorX = e.clientX - dragOffX + (GRID * 0.5);
+    const anchorY = e.clientY - dragOffY + (GRID * 0.5);
+    const cell = pointToCell(anchorX, anchorY);
+
     const best = findNearestFreeCell(dragged, cell.col, cell.row, w, h);
-    setGridPos(placeholder, best.col, best.row);
+    setGridPos(preview, best.col, best.row);
   });
 
   function endDrag(){
     if(!dragged) return;
 
-    const {col,row} = getGridPos(placeholder);
+    const {col,row} = getGridPos(preview);
     setGridPos(dragged, col, row);
 
     dragged.classList.remove("fixed");
@@ -626,9 +739,9 @@ function attachWidgetDrag(el){
     dragged.style.width = "";
     dragged.style.height = "";
 
-    if(placeholder){
-      placeholder.remove();
-      placeholder = null;
+    if(preview){
+      preview.remove();
+      preview = null;
     }
 
     try{ dragged.releasePointerCapture(dragPid); }catch(_){}
@@ -648,10 +761,36 @@ function attachWidgetDrag(el){
     if(!dragged || dragged !== el) return;
     endDrag();
   });
+
+  el.addEventListener("contextmenu", e => {
+    if(!document.body.classList.contains("edit-mode")) return;
+    e.preventDefault();
+
+    const sizes = [
+      {w:3,h:2},
+      {w:4,h:2},
+      {w:6,h:2},
+      {w:8,h:3}
+    ];
+
+    const cur = getGridPos(el);
+    let idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
+    idx = (idx + 1) % sizes.length;
+    const next = sizes[idx];
+
+    setGridSize(el, next.w, next.h);
+    const best = findNearestFreeCell(el, cur.col, cur.row, next.w, next.h);
+    setGridPos(el, best.col, best.row);
+
+    suppressBodyClickUntil = Date.now() + 250;
+    saveLayout();
+  });
 }
 
 /* SLIDER DRAG (FREE) */
+const slider = document.getElementById("slider");
 let sDragged=false, sPid=null, sStartX=0, sStartY=0, sBaseTX=0, sBaseTY=0;
+
 function getSliderTXTY(){
   const cs = getComputedStyle(slider);
   return { tx: pxToNum(cs.getPropertyValue("--tx")), ty: pxToNum(cs.getPropertyValue("--ty")) };
@@ -661,7 +800,6 @@ function setSliderTXTY(tx,ty){
   slider.style.setProperty("--ty", ty + "px");
 }
 
-const slider = document.getElementById("slider");
 slider.addEventListener("pointerdown", e => {
   if(!document.body.classList.contains("edit-mode")) return;
   sDragged=true;
@@ -778,38 +916,51 @@ sliderUI.addEventListener("pointercancel", e => {
 window.assistant = {
   setName(name){ return setAssistantName(name); },
   getName(){ return getAssistantName(); },
+
+  setProfile(name){
+    const n = String(name ?? "").trim();
+    if(!n) return false;
+    localStorage.setItem("layout_profile", n);
+    activeProfile = n;
+    const loaded = loadLayout();
+    if(!loaded) packInitial();
+    return true;
+  },
+  getProfile(){
+    return activeProfile;
+  },
+
   removeWidget(id){
     const el = document.querySelector(`[data-widget-id="${id}"]`);
     if(!el) return false;
     el.style.display = "none";
-    const raw = localStorage.getItem(LAYOUT_KEY);
+    const raw = localStorage.getItem(layoutKey());
     const data = raw ? JSON.parse(raw) : {};
     data[id] = { ...(data[id]||{}), hidden: true };
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(data));
+    localStorage.setItem(layoutKey(), JSON.stringify(data));
     return true;
   },
   showWidget(id){
     const el = document.querySelector(`[data-widget-id="${id}"]`);
     if(!el) return false;
     el.style.display = "";
-    const raw = localStorage.getItem(LAYOUT_KEY);
+    const raw = localStorage.getItem(layoutKey());
     const data = raw ? JSON.parse(raw) : {};
     if(data[id]) data[id].hidden = false;
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(data));
+    localStorage.setItem(layoutKey(), JSON.stringify(data));
     return true;
   }
 };
 
 /* INIT */
 ensureWrappedWidgets();
-computeCols();
+let lastCols = computeCols();
 
 const ro = new ResizeObserver(() => {
-  const prev = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--cols")) || 12;
-  const now = computeCols();
-  if(now !== prev){
-    const loaded = loadLayout();
-    if(!loaded) packInitial();
+  const newCols = computeCols();
+  if(newCols !== lastCols){
+    reflowForCols(lastCols, newCols);
+    lastCols = newCols;
   }
 });
 ro.observe(gridEl);
