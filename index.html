@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terminal</title>
 
 <style>
@@ -11,11 +11,14 @@
   --glass-dark: rgba(20,28,45,0.55);
   --border-light: rgba(255,255,255,0.35);
   --border-dark: rgba(255,255,255,0.15);
-  --grid-line: rgba(255,255,255,0.15);
+  --track-light: rgba(255,255,255,0.35);
+  --track-dark: rgba(15,23,42,0.75);
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
+  --grid-line: rgba(255,255,255,0.15);
 }
 
+/* THEMES */
 body[data-theme="light"] {
   background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   color: #0f172a;
@@ -37,17 +40,14 @@ body {
   padding: 30px 16px;
 }
 
-/* GRID */
+/* APP GRID */
 .app {
   max-width: 1100px;
   margin: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
   position: relative;
 }
 
-/* GRID OVERLAY (EDIT MODE) */
+/* GRID OVERLAY */
 .edit-mode .app::before {
   content: "";
   position: absolute;
@@ -62,15 +62,15 @@ body {
 
 /* WIDGET */
 .widget {
+  position: absolute;
   background: var(--glass-light);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border-light);
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  cursor: default;
-  transition: transform 0.25s ease;
   touch-action: none;
+  transition: box-shadow 0.2s ease;
 }
 
 body[data-theme="dark"] .widget {
@@ -91,43 +91,99 @@ body[data-theme="dark"] .widget {
 
 .widget.dragging {
   animation: none;
-  opacity: 0.85;
   cursor: grabbing;
   z-index: 10;
-  position: relative;
+}
+
+/* ===== SLIDER ===== */
+.theme-slider {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  height: 48px;
+  padding: 6px;
+  border-radius: 999px;
+  backdrop-filter: var(--blur);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+body[data-theme="light"] .theme-slider {
+  background: var(--glass-light);
+  border: 1px solid var(--border-light);
+}
+
+body[data-theme="dark"] .theme-slider {
+  background: var(--glass-dark);
+  border: 1px solid var(--border-dark);
+}
+
+.track {
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  background: var(--track-light);
+  z-index: 1;
+}
+
+body[data-theme="dark"] .track {
+  background: var(--track-dark);
+}
+
+.slider-thumb {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 60px;
+  height: 34px;
+  border-radius: 999px;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.3);
+  z-index: 2;
+  transition: left 0.4s cubic-bezier(.2,.8,.2,1);
+}
+
+.theme-slider span {
+  flex: 1;
+  text-align: center;
+  z-index: 3;
+  pointer-events: none;
 }
 
 /* CLOCK */
-.clock { grid-column: span 2; text-align: center; }
-.clock-time { font-size: 64px; }
-.clock-date { opacity: 0.6; }
-
-/* WEATHER */
-.weather strong { font-size: 28px; }
-
-/* FORECAST */
-.forecast { display: flex; justify-content: space-between; }
+.clock-time { font-size: 56px; text-align:center; }
+.clock-date { text-align:center; opacity:0.6; }
 </style>
 </head>
 
-<body data-theme="light">
+<body data-theme="auto">
+
+<!-- SLIDER -->
+<div class="theme-slider" id="slider">
+  <div class="track"></div>
+  <div class="slider-thumb" id="thumb"></div>
+  <span>☀️</span>
+  <span>AUTO</span>
+  <span>🌙</span>
+</div>
 
 <div class="app" id="grid">
 
-  <div class="widget weather">23°C ☀️<br>Sensação 25° · Chuva 10%</div>
+  <div class="widget" style="top:40px;left:40px;width:260px">
+    23°C ☀️<br>Sensação 25°
+  </div>
 
-  <div class="widget clock">
+  <div class="widget" style="top:40px;left:340px;width:320px">
     <div class="clock-time" id="time"></div>
     <div class="clock-date" id="date"></div>
   </div>
 
-  <div class="widget forecast">
-    <span>☀️ 24°</span>
-    <span>🌧️ 22°</span>
-    <span>⛅ 23°</span>
+  <div class="widget" style="top:220px;left:40px;width:260px">
+    ☀️ 24° · 🌧️ 22° · ⛅ 23°
   </div>
-
-  <div class="widget">Widget futuro do Jarvis</div>
 
 </div>
 
@@ -141,61 +197,98 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-// EDIT MODE
-let editTimer;
+/* ===== THEME SLIDER ===== */
+const thumb = document.getElementById("thumb");
+const slider = document.getElementById("slider");
+const modes = ["light","auto","dark"];
+const positions = [7,70,133];
+let current = 1;
+
+function applyTheme(mode){
+  if(mode==="auto"){
+    const h=new Date().getHours();
+    document.body.dataset.theme = (h>=6 && h<18)?"light":"dark";
+  } else document.body.dataset.theme = mode;
+}
+
+function setMode(i){
+  current=i;
+  thumb.style.left=positions[i]+"px";
+  applyTheme(modes[i]);
+}
+
+slider.addEventListener("click",e=>{
+  const x=e.offsetX,w=slider.offsetWidth;
+  if(x<w/3)setMode(0);
+  else if(x<w*2/3)setMode(1);
+  else setMode(2);
+});
+
+setMode(1);
+
+/* ===== EDIT MODE ===== */
 const grid = document.getElementById("grid");
+let editTimer;
 
-function enableEdit() {
-  document.body.classList.add("edit-mode");
-}
-
-function disableEdit() {
-  document.body.classList.remove("edit-mode");
-}
-
-grid.addEventListener("dblclick", e => {
-  if (e.target.closest(".widget")) enableEdit();
+grid.addEventListener("dblclick",e=>{
+  if(e.target.closest(".widget")) document.body.classList.add("edit-mode");
 });
 
-grid.addEventListener("mousedown", e => {
-  if (!e.target.closest(".widget")) return;
-  editTimer = setTimeout(enableEdit, 500);
+grid.addEventListener("pointerdown",e=>{
+  if(!e.target.closest(".widget"))return;
+  editTimer=setTimeout(()=>document.body.classList.add("edit-mode"),500);
 });
 
-grid.addEventListener("mouseup", () => clearTimeout(editTimer));
-grid.addEventListener("mouseleave", () => clearTimeout(editTimer));
-
-document.body.addEventListener("click", e => {
-  if (!e.target.closest(".widget")) disableEdit();
+grid.addEventListener("pointerup",()=>clearTimeout(editTimer));
+document.body.addEventListener("click",e=>{
+  if(!e.target.closest(".widget")) document.body.classList.remove("edit-mode");
 });
 
-// DRAG LOGIC
-let dragged = null;
-let startX, startY;
+/* ===== DRAG + SAVE ===== */
+let dragged, offsetX, offsetY;
 
-grid.querySelectorAll(".widget").forEach(widget => {
-  widget.addEventListener("pointerdown", e => {
-    if (!document.body.classList.contains("edit-mode")) return;
-    dragged = widget;
+document.querySelectorAll(".widget").forEach(w=>{
+  w.addEventListener("pointerdown",e=>{
+    if(!document.body.classList.contains("edit-mode"))return;
+    dragged=w;
     dragged.classList.add("dragging");
-    startX = e.clientX;
-    startY = e.clientY;
-  });
-
-  widget.addEventListener("pointermove", e => {
-    if (!dragged) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    dragged.style.transform = `translate(${dx}px, ${dy}px)`;
-  });
-
-  widget.addEventListener("pointerup", () => {
-    if (!dragged) return;
-    dragged.classList.remove("dragging");
-    dragged.style.transform = "";
-    dragged = null;
+    offsetX=e.clientX-w.offsetLeft;
+    offsetY=e.clientY-w.offsetTop;
   });
 });
+
+document.addEventListener("pointermove",e=>{
+  if(!dragged)return;
+  dragged.style.left=(e.clientX-offsetX)+"px";
+  dragged.style.top=(e.clientY-offsetY)+"px";
+});
+
+document.addEventListener("pointerup",()=>{
+  if(!dragged)return;
+  dragged.classList.remove("dragging");
+  saveLayout();
+  dragged=null;
+});
+
+/* SAVE / LOAD */
+function saveLayout(){
+  const data=[...document.querySelectorAll(".widget")].map(w=>({
+    top:w.style.top,left:w.style.left,width:w.style.width
+  }));
+  localStorage.setItem("layout",JSON.stringify(data));
+}
+
+function loadLayout(){
+  const data=JSON.parse(localStorage.getItem("layout")||"[]");
+  document.querySelectorAll(".widget").forEach((w,i)=>{
+    if(data[i]){
+      w.style.top=data[i].top;
+      w.style.left=data[i].left;
+      w.style.width=data[i].width;
+    }
+  });
+}
+loadLayout();
 </script>
 
 </body>
