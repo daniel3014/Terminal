@@ -11,7 +11,7 @@
   --border: rgba(255,255,255,0.35);
   --blur: blur(22px);
   --shadow: 0 20px 40px rgba(0,0,0,0.12);
-  --grid-size: 120px;
+  --grid-size: 80px; /* 🔹 grid menor */
 }
 
 * {
@@ -32,8 +32,8 @@ body.edit-mode::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
   pointer-events: none;
   z-index: 0;
@@ -56,7 +56,6 @@ body.edit-mode::before {
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  transition: transform 0.2s ease;
   user-select: none;
 }
 
@@ -66,8 +65,8 @@ body.edit-mode::before {
 }
 
 @keyframes wiggle {
-  from { transform: rotate(-0.5deg); }
-  to   { transform: rotate(0.5deg); }
+  from { transform: rotate(-0.4deg); }
+  to   { transform: rotate(0.4deg); }
 }
 
 /* CLOCK */
@@ -95,7 +94,7 @@ body.edit-mode::before {
   justify-content: space-between;
 }
 
-/* THEME SLIDER (inalterado visualmente) */
+/* THEME SLIDER — INTACTO */
 .theme-slider {
   position: fixed;
   top: 20px;
@@ -158,7 +157,7 @@ body.edit-mode::before {
     Sensação 25° · Chuva 10%
   </div>
 
-  <div class="widget clock" style="left:300px;top:0">
+  <div class="widget clock" style="left:320px;top:0">
     <div class="clock-time" id="time"></div>
     <div class="clock-date" id="date"></div>
   </div>
@@ -169,7 +168,7 @@ body.edit-mode::before {
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget" style="left:300px;top:200px">
+  <div class="widget" style="left:320px;top:200px">
     Widget futuro do Jarvis
   </div>
 
@@ -186,36 +185,33 @@ updateClock();
 setInterval(updateClock,1000);
 
 /* EDIT MODE */
-let holdTimer;
 let edit = false;
 
-function enterEdit() {
-  edit = true;
-  document.body.classList.add("edit-mode");
-}
-
-function exitEdit() {
-  edit = false;
-  document.body.classList.remove("edit-mode");
-}
-
 document.addEventListener("dblclick", e => {
-  if (e.target.classList.contains("widget")) enterEdit();
-  else exitEdit();
+  if (e.target.closest(".widget")) {
+    edit = true;
+    document.body.classList.add("edit-mode");
+  } else {
+    edit = false;
+    document.body.classList.remove("edit-mode");
+  }
 });
 
-/* DRAG + SNAP */
-const grid = document.documentElement;
+/* DRAG + SNAP (SUAVE) */
 const size = parseInt(getComputedStyle(document.documentElement)
-              .getPropertyValue("--grid-size"));
+  .getPropertyValue("--grid-size"));
 
-let active, offsetX, offsetY;
+let active = null;
+let offsetX = 0;
+let offsetY = 0;
 
 document.addEventListener("mousedown", e => {
-  if (!edit || !e.target.classList.contains("widget")) return;
+  if (!edit) return;
+  const widget = e.target.closest(".widget");
+  if (!widget) return;
 
-  active = e.target;
-  const rect = active.getBoundingClientRect();
+  active = widget;
+  const rect = widget.getBoundingClientRect();
   offsetX = e.clientX - rect.left;
   offsetY = e.clientY - rect.top;
 
@@ -232,8 +228,18 @@ function move(e) {
 function drop() {
   if (!active) return;
 
-  const x = Math.round(active.offsetLeft / size) * size;
-  const y = Math.round(active.offsetTop / size) * size;
+  let x = Math.round(active.offsetLeft / size) * size;
+  let y = Math.round(active.offsetTop / size) * size;
+
+  // evita sobreposição simples
+  document.querySelectorAll(".widget").forEach(w => {
+    if (w !== active) {
+      if (Math.abs(w.offsetLeft - x) < size &&
+          Math.abs(w.offsetTop - y) < size) {
+        y += size;
+      }
+    }
+  });
 
   active.style.left = x + "px";
   active.style.top  = y + "px";
