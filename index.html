@@ -7,26 +7,11 @@
 
 <style>
 :root {
-  --glass-light: rgba(255,255,255,0.55);
-  --glass-dark: rgba(20,28,45,0.55);
-  --border-light: rgba(255,255,255,0.35);
-  --border-dark: rgba(255,255,255,0.15);
-  --track-light: rgba(255,255,255,0.35);
-  --track-dark: rgba(15,23,42,0.75);
+  --glass: rgba(255,255,255,0.55);
+  --border: rgba(255,255,255,0.35);
   --blur: blur(22px);
-  --shadow: 0 25px 50px rgba(0,0,0,0.25);
-  --grid-line: rgba(255,255,255,0.15);
-}
-
-/* THEMES */
-body[data-theme="light"] {
-  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
-  color: #0f172a;
-}
-
-body[data-theme="dark"] {
-  background: linear-gradient(135deg, #020617, #0b1220);
-  color: #e5e7eb;
+  --shadow: 0 20px 40px rgba(0,0,0,0.12);
+  --grid-size: 120px;
 }
 
 * {
@@ -37,158 +22,161 @@ body[data-theme="dark"] {
 body {
   margin: 0;
   min-height: 100vh;
+  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
   padding: 30px 16px;
 }
 
-/* APP GRID */
-.app {
-  max-width: 1100px;
-  margin: auto;
-  position: relative;
-}
-
-/* GRID OVERLAY */
-.edit-mode .app::before {
+/* GRID VISUAL */
+body.edit-mode::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 120px 120px;
+    linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
   pointer-events: none;
-  border-radius: 20px;
+  z-index: 0;
+}
+
+/* APP */
+.app {
+  position: relative;
+  max-width: 1100px;
+  margin: auto;
 }
 
 /* WIDGET */
 .widget {
   position: absolute;
-  background: var(--glass-light);
+  width: 280px;
+  background: var(--glass);
   backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: 26px;
   box-shadow: var(--shadow);
   padding: 22px;
-  touch-action: none;
-  transition: box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
+  user-select: none;
 }
 
-body[data-theme="dark"] .widget {
-  background: var(--glass-dark);
-  border-color: var(--border-dark);
-}
-
-/* EDIT MODE */
 .edit-mode .widget {
   cursor: grab;
   animation: wiggle 0.35s ease-in-out infinite alternate;
 }
 
 @keyframes wiggle {
-  from { transform: rotate(-0.4deg); }
-  to { transform: rotate(0.4deg); }
+  from { transform: rotate(-0.5deg); }
+  to   { transform: rotate(0.5deg); }
 }
 
-.widget.dragging {
-  animation: none;
-  cursor: grabbing;
-  z-index: 10;
+/* CLOCK */
+.clock {
+  width: 560px;
+  text-align: center;
 }
 
-/* ===== SLIDER ===== */
+.clock-time {
+  font-size: 64px;
+}
+
+.clock-date {
+  opacity: 0.6;
+}
+
+/* WEATHER */
+.weather strong {
+  font-size: 28px;
+}
+
+/* FORECAST */
+.forecast {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* THEME SLIDER (inalterado visualmente) */
 .theme-slider {
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 200px;
-  height: 48px;
-  padding: 6px;
-  border-radius: 999px;
+  width: 160px;
+  padding: 10px;
+  border-radius: 30px;
+  background: var(--glass);
   backdrop-filter: var(--blur);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 100;
-}
-
-body[data-theme="light"] .theme-slider {
-  background: var(--glass-light);
-  border: 1px solid var(--border-light);
-}
-
-body[data-theme="dark"] .theme-slider {
-  background: var(--glass-dark);
-  border: 1px solid var(--border-dark);
+  border: 1px solid var(--border);
+  z-index: 10;
 }
 
 .track {
+  position: relative;
+  height: 36px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 18px;
+}
+
+.thumb {
   position: absolute;
-  inset: 6px;
-  border-radius: 999px;
-  background: var(--track-light);
-  z-index: 1;
+  top: 4px;
+  left: 60px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: var(--shadow);
 }
 
-body[data-theme="dark"] .track {
-  background: var(--track-dark);
+.labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-top: 6px;
+  opacity: 0.7;
 }
-
-.slider-thumb {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  width: 60px;
-  height: 34px;
-  border-radius: 999px;
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.3);
-  z-index: 2;
-  transition: left 0.4s cubic-bezier(.2,.8,.2,1);
-}
-
-.theme-slider span {
-  flex: 1;
-  text-align: center;
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* CLOCK */
-.clock-time { font-size: 56px; text-align:center; }
-.clock-date { text-align:center; opacity:0.6; }
 </style>
 </head>
 
-<body data-theme="auto">
+<body>
 
 <!-- SLIDER -->
-<div class="theme-slider" id="slider">
-  <div class="track"></div>
-  <div class="slider-thumb" id="thumb"></div>
-  <span>☀️</span>
-  <span>AUTO</span>
-  <span>🌙</span>
+<div class="theme-slider">
+  <div class="track">
+    <div class="thumb"></div>
+  </div>
+  <div class="labels">
+    <span>☀️</span>
+    <span>AUTO</span>
+    <span>🌙</span>
+  </div>
 </div>
 
-<div class="app" id="grid">
+<div class="app" id="app">
 
-  <div class="widget" style="top:40px;left:40px;width:260px">
-    23°C ☀️<br>Sensação 25°
+  <div class="widget weather" style="left:0;top:0">
+    <strong>23°C ☀️</strong><br>
+    Sensação 25° · Chuva 10%
   </div>
 
-  <div class="widget" style="top:40px;left:340px;width:320px">
+  <div class="widget clock" style="left:300px;top:0">
     <div class="clock-time" id="time"></div>
     <div class="clock-date" id="date"></div>
   </div>
 
-  <div class="widget" style="top:220px;left:40px;width:260px">
-    ☀️ 24° · 🌧️ 22° · ⛅ 23°
+  <div class="widget forecast" style="left:0;top:160px">
+    <span>☀️ 24°</span>
+    <span>🌧️ 22°</span>
+    <span>⛅ 23°</span>
+  </div>
+
+  <div class="widget" style="left:300px;top:200px">
+    Widget futuro do Jarvis
   </div>
 
 </div>
 
 <script>
-// CLOCK
+/* CLOCK */
 function updateClock() {
   const now = new Date();
   time.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -197,98 +185,63 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-/* ===== THEME SLIDER ===== */
-const thumb = document.getElementById("thumb");
-const slider = document.getElementById("slider");
-const modes = ["light","auto","dark"];
-const positions = [7,70,133];
-let current = 1;
+/* EDIT MODE */
+let holdTimer;
+let edit = false;
 
-function applyTheme(mode){
-  if(mode==="auto"){
-    const h=new Date().getHours();
-    document.body.dataset.theme = (h>=6 && h<18)?"light":"dark";
-  } else document.body.dataset.theme = mode;
+function enterEdit() {
+  edit = true;
+  document.body.classList.add("edit-mode");
 }
 
-function setMode(i){
-  current=i;
-  thumb.style.left=positions[i]+"px";
-  applyTheme(modes[i]);
+function exitEdit() {
+  edit = false;
+  document.body.classList.remove("edit-mode");
 }
 
-slider.addEventListener("click",e=>{
-  const x=e.offsetX,w=slider.offsetWidth;
-  if(x<w/3)setMode(0);
-  else if(x<w*2/3)setMode(1);
-  else setMode(2);
+document.addEventListener("dblclick", e => {
+  if (e.target.classList.contains("widget")) enterEdit();
+  else exitEdit();
 });
 
-setMode(1);
+/* DRAG + SNAP */
+const grid = document.documentElement;
+const size = parseInt(getComputedStyle(document.documentElement)
+              .getPropertyValue("--grid-size"));
 
-/* ===== EDIT MODE ===== */
-const grid = document.getElementById("grid");
-let editTimer;
+let active, offsetX, offsetY;
 
-grid.addEventListener("dblclick",e=>{
-  if(e.target.closest(".widget")) document.body.classList.add("edit-mode");
+document.addEventListener("mousedown", e => {
+  if (!edit || !e.target.classList.contains("widget")) return;
+
+  active = e.target;
+  const rect = active.getBoundingClientRect();
+  offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+
+  document.addEventListener("mousemove", move);
+  document.addEventListener("mouseup", drop);
 });
 
-grid.addEventListener("pointerdown",e=>{
-  if(!e.target.closest(".widget"))return;
-  editTimer=setTimeout(()=>document.body.classList.add("edit-mode"),500);
-});
-
-grid.addEventListener("pointerup",()=>clearTimeout(editTimer));
-document.body.addEventListener("click",e=>{
-  if(!e.target.closest(".widget")) document.body.classList.remove("edit-mode");
-});
-
-/* ===== DRAG + SAVE ===== */
-let dragged, offsetX, offsetY;
-
-document.querySelectorAll(".widget").forEach(w=>{
-  w.addEventListener("pointerdown",e=>{
-    if(!document.body.classList.contains("edit-mode"))return;
-    dragged=w;
-    dragged.classList.add("dragging");
-    offsetX=e.clientX-w.offsetLeft;
-    offsetY=e.clientY-w.offsetTop;
-  });
-});
-
-document.addEventListener("pointermove",e=>{
-  if(!dragged)return;
-  dragged.style.left=(e.clientX-offsetX)+"px";
-  dragged.style.top=(e.clientY-offsetY)+"px";
-});
-
-document.addEventListener("pointerup",()=>{
-  if(!dragged)return;
-  dragged.classList.remove("dragging");
-  saveLayout();
-  dragged=null;
-});
-
-/* SAVE / LOAD */
-function saveLayout(){
-  const data=[...document.querySelectorAll(".widget")].map(w=>({
-    top:w.style.top,left:w.style.left,width:w.style.width
-  }));
-  localStorage.setItem("layout",JSON.stringify(data));
+function move(e) {
+  if (!active) return;
+  active.style.left = e.clientX - offsetX + "px";
+  active.style.top  = e.clientY - offsetY + "px";
 }
 
-function loadLayout(){
-  const data=JSON.parse(localStorage.getItem("layout")||"[]");
-  document.querySelectorAll(".widget").forEach((w,i)=>{
-    if(data[i]){
-      w.style.top=data[i].top;
-      w.style.left=data[i].left;
-      w.style.width=data[i].width;
-    }
-  });
+function drop() {
+  if (!active) return;
+
+  const x = Math.round(active.offsetLeft / size) * size;
+  const y = Math.round(active.offsetTop / size) * size;
+
+  active.style.left = x + "px";
+  active.style.top  = y + "px";
+
+  active = null;
+  document.removeEventListener("mousemove", move);
+  document.removeEventListener("mouseup", drop);
 }
-loadLayout();
 </script>
 
 </body>
