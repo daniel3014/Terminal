@@ -16,7 +16,9 @@
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
 
   --grid-size: 60px;
-  --snap-inset: 6px; /* ✅ espaço elegante dentro do retângulo */
+  --snap-inset: 6px;
+
+  --shadow-ring: 18px;
 }
 
 /* THEMES */
@@ -34,7 +36,7 @@ body[data-theme="dark"] {
 * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 body { margin: 0; min-height: 100vh; padding: 24px 16px; }
 
-/* GRID OVERLAY TELA INTEIRA (EDIT MODE) */
+/* GRID OVERLAY (EDIT MODE) */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -58,35 +60,37 @@ body.edit-mode::before{
   z-index:1;
 }
 
-/* ============================================================
-   ✅ FIX: SOMBRA EM LAYER SEPARADO (NUNCA SOBE SOBRE OUTROS)
-   ============================================================ */
+/* WIDGET WRAP */
 .widget-wrap{
   position: relative;
   touch-action: none;
   user-select: none;
 
-  /* posição persistente */
   --tx: 0px;
   --ty: 0px;
 }
 
-/* sombra separada: fica sempre "atrás" dos widgets */
+/* SHADOW LAYER (HOLLOW CENTER) */
 .widget-shadow{
   position:absolute;
   inset:0;
   border-radius: 26px;
   box-shadow: var(--shadow);
   pointer-events:none;
-
-  /* importante: z-index baixo */
   z-index: 1;
 
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
+
+  padding: var(--shadow-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
-/* superfície do widget (mantém visual original) */
+/* WIDGET SURFACE */
 .widget-wrap > .widget{
   background: var(--glass-light);
   backdrop-filter: var(--blur);
@@ -123,7 +127,7 @@ body[data-theme="dark"] .widget-wrap > .widget{
   to   { transform: translate(var(--tx), var(--ty)) rotate(0.4deg); }
 }
 
-/* durante drag: sobe só o conteúdo, sombra continua abaixo */
+/* DRAG */
 .widget-wrap.dragging > .widget,
 .widget-wrap.dragging > .widget-shadow{
   animation:none;
@@ -132,21 +136,19 @@ body[data-theme="dark"] .widget-wrap > .widget{
 .widget-wrap.dragging > .widget{
   cursor:grabbing;
   opacity:0.9;
-  z-index: 30;  /* sobe só a superfície */
+  z-index: 30;
 }
 
-/* CLOCK (o grid-span precisa estar no WRAP) */
+/* CLOCK */
 .widget-wrap.clock{ grid-column: span 2; }
-.widget.clock{ text-align:center; }          /* visual original no widget */
+.widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 
-/* FORECAST (visual original no widget) */
+/* FORECAST */
 .widget.forecast{ display:flex; justify-content:space-between; }
 
-/* ============================================================
-   THEME SLIDER (visual mantido)
-   ============================================================ */
+/* THEME SLIDER */
 #slider{
   position: fixed;
   top: 20px;
@@ -155,12 +157,11 @@ body[data-theme="dark"] .widget-wrap > .widget{
   height: 44px;
   z-index: 20;
 
-  /* posição persistente */
   --tx: 0px;
   --ty: 0px;
 }
 
-/* sombra do slider atrás */
+/* SLIDER SHADOW (HOLLOW CENTER) */
 #slider .slider-shadow{
   position:absolute;
   inset:0;
@@ -171,9 +172,16 @@ body[data-theme="dark"] .widget-wrap > .widget{
 
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
+
+  padding: var(--shadow-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
-/* UI do slider por cima */
+/* SLIDER UI */
 #slider .theme-slider-ui{
   position:absolute;
   inset:0;
@@ -207,14 +215,13 @@ body[data-theme="dark"] #slider .theme-slider-ui{
   z-index:2;
 }
 
-/* capsule thumb */
 .slider-thumb{
   position:absolute;
   height:36px;
   width:54px;
   border-radius:999px;
   left:6px;
-  top:4px; /* (44-36)/2 */
+  top:4px;
   background: rgba(255,255,255,0.65);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.4);
@@ -231,7 +238,6 @@ body[data-theme="dark"] .slider-thumb{
 
 <body data-theme="light">
 
-<!-- THEME SLIDER (com sombra separada) -->
 <div id="slider" data-widget-id="slider">
   <div class="slider-shadow" aria-hidden="true"></div>
 
@@ -288,7 +294,6 @@ function getTXTY(el){
 }
 function setTXTY(el, tx, ty){ el.style.setProperty("--tx", tx + "px"); el.style.setProperty("--ty", ty + "px"); }
 
-/* snap com inset elegante */
 function snap(n){ return Math.round(n / GRID) * GRID + INSET; }
 
 function rectShift(rect, dx, dy){
@@ -298,11 +303,7 @@ function intersects(a, b, pad=10){
   return !(a.right <= b.left + pad || a.left >= b.right - pad || a.bottom <= b.top + pad || a.top >= b.bottom - pad);
 }
 
-/* ============================================================
-   ✅ WRAP: cria .widget-wrap + .widget-shadow para cada widget
-   - mantém visual no .widget
-   - move apenas classes necessárias de layout (clock) pro wrap
-   ============================================================ */
+/* WRAP WIDGETS */
 (function wrapWidgetsForShadow(){
   const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
   widgets.forEach(w => {
@@ -311,10 +312,8 @@ function intersects(a, b, pad=10){
     const wrap = document.createElement("div");
     wrap.classList.add("widget-wrap");
 
-    // preserva layout de grid somente onde necessário
     if (w.classList.contains("clock")) wrap.classList.add("clock");
 
-    // move data-widget-id pro wrap (evita duplicado)
     const id = w.getAttribute("data-widget-id");
     if (id) {
       wrap.setAttribute("data-widget-id", id);
@@ -333,7 +332,7 @@ function intersects(a, b, pad=10){
 
 /* EDIT MODE */
 let editTimer;
-let suppressBodyClickUntil = 0; // ✅ impede sair do edit-mode logo após soltar um drag
+let suppressBodyClickUntil = 0;
 
 const gridEl = document.getElementById("grid");
 function enableEdit(){ document.body.classList.add("edit-mode"); }
@@ -356,10 +355,7 @@ gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
 gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
 
 document.body.addEventListener("click", e => {
-  // ✅ se acabou de soltar um drag, ignora o click fantasma
   if (Date.now() < suppressBodyClickUntil) return;
-
-  // ✅ só sai se clicar fora de widget/slider
   if (!isWidgetArea(e.target)) disableEdit();
 });
 
@@ -368,7 +364,6 @@ const draggableEls = () =>
   Array.from(document.querySelectorAll(".widget-wrap, #slider"))
     .filter(el => el.style.display !== "none");
 
-/* helpers para colisão usando o “visual” (conteúdo) */
 function visualEl(el){
   return el.classList && el.classList.contains("widget-wrap")
     ? el.querySelector(".widget")
@@ -407,7 +402,7 @@ function findNearestFreeSpot(el, targetTX, targetTY){
   const curRect = visualRect(el);
 
   const {tx: curTX, ty: curTY} = getTXTY(el);
-  const baseRect = rectShift(curRect, -curTX, -curTY); // sem transform
+  const baseRect = rectShift(curRect, -curTX, -curTY);
 
   const candidateRectAt = (tx,ty) => rectShift(baseRect, tx, ty);
   const occupied = () => others.map(o => visualRect(o));
@@ -436,7 +431,7 @@ function findNearestFreeSpot(el, targetTX, targetTY){
       {tx: targetTX - step, ty: targetTY - step},
     ];
     for(const t of tests){
-      const stx = snap(t.tx - INSET); // snap() já adiciona INSET; aqui evitamos acumular
+      const stx = snap(t.tx - INSET);
       const sty = snap(t.ty - INSET);
       if(isFree(stx, sty)) return {tx: stx, ty: sty};
     }
@@ -480,7 +475,6 @@ function attachDrag(el){
     try{ dragged.releasePointerCapture(pid); }catch(_){}
     dragged=null; pid=null;
 
-    // ✅ impede o "click fantasma" sair do edit-mode
     suppressBodyClickUntil = Date.now() + 250;
 
     saveLayout();
@@ -500,8 +494,7 @@ function attachDrag(el){
 draggableEls().forEach(attachDrag);
 loadLayout();
 
-/* THEME SLIDER: CLICK + DRAG-TO-SELECT (pill centralizado) */
-const slider = document.getElementById("slider");
+/* THEME SLIDER */
 const sliderUI = document.getElementById("sliderUI");
 const thumb = document.getElementById("thumb");
 const modes = ["light","auto","dark"];
@@ -509,11 +502,11 @@ let currentMode = "light";
 
 function computeThumbLeft(mode){
   const idx = modes.indexOf(mode);
-  const W = sliderUI.clientWidth;     // ✅ mede o container correto
+  const W = sliderUI.clientWidth;
   const seg = W / 3;
   const tw = thumb.offsetWidth;
   const center = seg * idx + seg/2;
-  return (center - tw/2);            // ✅ sem arredondar (centraliza perfeito)
+  return (center - tw/2);
 }
 function setThumb(mode, animate=true){
   thumb.style.transition = animate ? "left 0.25s ease" : "none";
@@ -585,7 +578,6 @@ sliderUI.addEventListener("pointercancel", e => {
   applyTheme(currentMode);
 });
 
-// init
 applyTheme("light");
 
 /* JARVIS HOOKS */
