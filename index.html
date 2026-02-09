@@ -16,6 +16,7 @@
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
 
   --grid-size: 60px;
+  --snap-inset: 6px; /* ✅ espaço elegante dentro do retângulo */
 }
 
 /* THEMES */
@@ -57,13 +58,12 @@ body.edit-mode::before{
   z-index:1;
 }
 
-/* WIDGET */
+/* ===== WIDGET (SOMBRA SEMPRE ATRÁS) ===== */
 .widget{
   background: var(--glass-light);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border-light);
   border-radius: 26px;
-  box-shadow: var(--shadow);
   padding: 22px;
   position: relative;
   z-index: 1;
@@ -75,6 +75,20 @@ body.edit-mode::before{
   --ty: 0px;
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
+
+  /* ✅ remove box-shadow daqui */
+  box-shadow: none;
+}
+
+/* ✅ sombra sempre em layer abaixo */
+.widget::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  z-index: -1;              /* SEMPRE atrás do widget */
+  pointer-events:none;
 }
 
 body[data-theme="dark"] .widget{
@@ -120,15 +134,24 @@ body[data-theme="dark"] .widget{
   border: 1px solid var(--border-light);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  box-shadow: var(--shadow);
   cursor: pointer;
   z-index: 20;
 
-  /* para virar "widget" também */
+  /* "widget" também */
   --tx: 0px;
   --ty: 0px;
   transform: translate(var(--tx), var(--ty));
   transition: transform 0.06s linear;
+  box-shadow: none;
+}
+.theme-slider::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  z-index:-1;
+  pointer-events:none;
 }
 
 body[data-theme="dark"] .theme-slider{
@@ -136,7 +159,6 @@ body[data-theme="dark"] .theme-slider{
   border-color: var(--border-dark);
 }
 
-/* centralização real (emoji + texto) */
 .theme-slider span{
   display:block;
   height:44px;
@@ -150,9 +172,9 @@ body[data-theme="dark"] .theme-slider{
 .slider-thumb{
   position:absolute;
   height:36px;
-  width:54px;          /* mantém o visual */
-  border-radius:999px; /* capsule */
-  left:6px;            /* será ajustado via JS para centralizar */
+  width:54px;
+  border-radius:999px;
+  left:6px;
   top:4px;
   background: rgba(255,255,255,0.65);
   backdrop-filter: blur(12px);
@@ -170,7 +192,7 @@ body[data-theme="dark"] .slider-thumb{
 
 <body data-theme="light">
 
-<!-- THEME SLIDER (AGORA TAMBÉM É WIDGET) -->
+<!-- THEME SLIDER (widget) -->
 <div class="theme-slider" id="slider" data-widget-id="slider">
   <div class="slider-thumb" id="thumb"></div>
   <span data-mode="light">☀️</span>
@@ -203,7 +225,7 @@ body[data-theme="dark"] .slider-thumb{
 </div>
 
 <script>
-/* ================= CLOCK ================= */
+/* CLOCK */
 function updateClock() {
   const now = new Date();
   time.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -212,74 +234,43 @@ function updateClock() {
 updateClock();
 setInterval(updateClock,1000);
 
-/* ================= HELPERS ================= */
+/* HELPERS */
 const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
+const INSET = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--snap-inset")) || 6;
 
 function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
-
 function getTXTY(el){
   const cs = getComputedStyle(el);
-  return {
-    tx: pxToNum(cs.getPropertyValue("--tx")),
-    ty: pxToNum(cs.getPropertyValue("--ty"))
-  };
+  return { tx: pxToNum(cs.getPropertyValue("--tx")), ty: pxToNum(cs.getPropertyValue("--ty")) };
 }
+function setTXTY(el, tx, ty){ el.style.setProperty("--tx", tx + "px"); el.style.setProperty("--ty", ty + "px"); }
 
-function setTXTY(el, tx, ty){
-  el.style.setProperty("--tx", tx + "px");
-  el.style.setProperty("--ty", ty + "px");
-}
-
-function snap(n){ return Math.round(n / GRID) * GRID; }
+/* snap com inset elegante */
+function snap(n){ return Math.round(n / GRID) * GRID + INSET; }
 
 function rectShift(rect, dx, dy){
-  return {
-    left: rect.left + dx,
-    top: rect.top + dy,
-    right: rect.right + dx,
-    bottom: rect.bottom + dy,
-    width: rect.width,
-    height: rect.height
-  };
+  return { left: rect.left+dx, top: rect.top+dy, right: rect.right+dx, bottom: rect.bottom+dy, width: rect.width, height: rect.height };
+}
+function intersects(a, b, pad=10){
+  return !(a.right <= b.left + pad || a.left >= b.right - pad || a.bottom <= b.top + pad || a.top >= b.bottom - pad);
 }
 
-function intersects(a, b, pad=8){
-  return !(a.right <= b.left + pad ||
-           a.left >= b.right - pad ||
-           a.bottom <= b.top + pad ||
-           a.top >= b.bottom - pad);
-}
-
-/* ================= EDIT MODE (igual estava) ================= */
+/* EDIT MODE */
 let editTimer;
 const gridEl = document.getElementById("grid");
 function enableEdit(){ document.body.classList.add("edit-mode"); }
 function disableEdit(){ document.body.classList.remove("edit-mode"); }
 
-gridEl.addEventListener("dblclick", e => {
-  if (e.target.closest(".widget")) enableEdit();
-});
-
-gridEl.addEventListener("pointerdown", e => {
-  if (!e.target.closest(".widget")) return;
-  editTimer = setTimeout(enableEdit, 500);
-});
+gridEl.addEventListener("dblclick", e => { if (e.target.closest(".widget")) enableEdit(); });
+gridEl.addEventListener("pointerdown", e => { if (!e.target.closest(".widget")) return; editTimer = setTimeout(enableEdit, 500); });
 gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
 gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
+document.body.addEventListener("click", e => { if (!e.target.closest(".widget") && !e.target.closest("#slider")) disableEdit(); });
 
-document.body.addEventListener("click", e => {
-  if (!e.target.closest(".widget") && !e.target.closest("#slider")) disableEdit();
-});
+/* DRAGGABLES */
+const draggableEls = () => Array.from(document.querySelectorAll(".widget, #slider")).filter(el => el.style.display !== "none");
 
-/* ================= DRAG + SNAP + NO OVERLAP + SAVE ================= */
-const draggableEls = () => Array.from(document.querySelectorAll(".widget, #slider"))
-  .filter(el => el.style.display !== "none");
-
-let dragged = null;
-let startX = 0, startY = 0;
-let baseTX = 0, baseTY = 0;
-let pointerId = null;
-
+/* SAVE/LOAD */
 function saveLayout(){
   const data = {};
   draggableEls().forEach(el => {
@@ -288,47 +279,41 @@ function saveLayout(){
     const {tx,ty} = getTXTY(el);
     data[id] = { tx, ty, hidden: false };
   });
-  localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+  localStorage.setItem("terminal_layout_v2", JSON.stringify(data));
 }
-
 function loadLayout(){
-  const raw = localStorage.getItem("terminal_layout_v1");
+  const raw = localStorage.getItem("terminal_layout_v2");
   if(!raw) return;
-  let data;
-  try { data = JSON.parse(raw); } catch { return; }
-
+  let data; try{ data = JSON.parse(raw); } catch { return; }
   draggableEls().forEach(el => {
     const id = el.getAttribute("data-widget-id");
     if(!id || !data[id]) return;
     setTXTY(el, data[id].tx ?? 0, data[id].ty ?? 0);
-    if(data[id].hidden) el.style.display = "none";
+    if(data[id].hidden) el.style.display="none";
   });
 }
 
+/* NO OVERLAP SEARCH */
 function findNearestFreeSpot(el, targetTX, targetTY){
-  const els = draggableEls().filter(x => x !== el);
-
+  const others = draggableEls().filter(x => x !== el);
   const curRect = el.getBoundingClientRect();
   const {tx: curTX, ty: curTY} = getTXTY(el);
-  const baseRect = rectShift(curRect, -curTX, -curTY); // "sem transform"
+  const baseRect = rectShift(curRect, -curTX, -curTY); // sem transform
 
   const candidateRectAt = (tx,ty) => rectShift(baseRect, tx, ty);
-
-  const occupied = () => els.map(o => o.getBoundingClientRect());
+  const occupied = () => others.map(o => o.getBoundingClientRect());
 
   const isFree = (tx,ty) => {
     const r = candidateRectAt(tx,ty);
     for(const or of occupied()){
-      if(intersects(r, or, 10)) return false;
+      if(intersects(r, or, 12)) return false;
     }
     return true;
   };
 
-  // tentativa direta
   if(isFree(targetTX, targetTY)) return {tx: targetTX, ty: targetTY};
 
-  // busca em espiral (magnetic)
-  const maxRings = 18; // suficiente p/ telas grandes sem travar
+  const maxRings = 18;
   for(let ring=1; ring<=maxRings; ring++){
     const step = GRID * ring;
     const tests = [
@@ -336,43 +321,35 @@ function findNearestFreeSpot(el, targetTX, targetTY){
       {tx: targetTX - step, ty: targetTY},
       {tx: targetTX, ty: targetTY + step},
       {tx: targetTX, ty: targetTY - step},
-
       {tx: targetTX + step, ty: targetTY + step},
       {tx: targetTX - step, ty: targetTY + step},
       {tx: targetTX + step, ty: targetTY - step},
       {tx: targetTX - step, ty: targetTY - step},
     ];
-
     for(const t of tests){
-      const stx = snap(t.tx);
-      const sty = snap(t.ty);
+      const stx = snap(t.tx - INSET); // snap() já adiciona INSET; aqui evitamos acumular
+      const sty = snap(t.ty - INSET);
       if(isFree(stx, sty)) return {tx: stx, ty: sty};
     }
   }
-
-  // fallback: fica no snap mesmo (mesmo que encoste)
   return {tx: targetTX, ty: targetTY};
 }
 
+/* DRAG */
+let dragged=null, startX=0, startY=0, baseTX=0, baseTY=0, pid=null;
+
 function attachDrag(el){
   el.addEventListener("pointerdown", e => {
-    // slider: fora do edit-mode, o pointerdown deve ser para mudar tema (não arrastar)
     if(el.id === "slider" && !document.body.classList.contains("edit-mode")) return;
-
     if(!document.body.classList.contains("edit-mode")) return;
 
     dragged = el;
     dragged.classList.add("dragging");
-
-    startX = e.clientX;
-    startY = e.clientY;
-
+    startX = e.clientX; startY = e.clientY;
     const pos = getTXTY(dragged);
-    baseTX = pos.tx;
-    baseTY = pos.ty;
-
-    pointerId = e.pointerId;
-    dragged.setPointerCapture(pointerId);
+    baseTX = pos.tx; baseTY = pos.ty;
+    pid = e.pointerId;
+    dragged.setPointerCapture(pid);
   });
 
   el.addEventListener("pointermove", e => {
@@ -384,42 +361,32 @@ function attachDrag(el){
 
   el.addEventListener("pointerup", e => {
     if(!dragged || dragged !== el) return;
-
-    // SNAP magnético + sem sobrepor
     const {tx,ty} = getTXTY(dragged);
-    const targetTX = snap(tx);
-    const targetTY = snap(ty);
+    const targetTX = snap(tx - INSET);
+    const targetTY = snap(ty - INSET);
     const best = findNearestFreeSpot(dragged, targetTX, targetTY);
     setTXTY(dragged, best.tx, best.ty);
 
     dragged.classList.remove("dragging");
-    try { dragged.releasePointerCapture(pointerId); } catch(_) {}
-    dragged = null;
-    pointerId = null;
-
+    try{ dragged.releasePointerCapture(pid); }catch(_){}
+    dragged=null; pid=null;
     saveLayout();
   });
 
   el.addEventListener("pointercancel", e => {
     if(!dragged || dragged !== el) return;
     dragged.classList.remove("dragging");
-    try { dragged.releasePointerCapture(pointerId); } catch(_) {}
-    dragged = null;
-    pointerId = null;
+    try{ dragged.releasePointerCapture(pid); }catch(_){}
+    dragged=null; pid=null;
     saveLayout();
   });
 }
-
-// anexa drag aos widgets e ao slider
 draggableEls().forEach(attachDrag);
-
-// carrega layout salvo
 loadLayout();
 
-/* ================= THEME SLIDER: CLICK + DRAG-TO-SELECT (sem mudar visual) ================= */
+/* THEME SLIDER: CLICK + DRAG-TO-SELECT */
 const slider = document.getElementById("slider");
 const thumb = document.getElementById("thumb");
-
 const modes = ["light","auto","dark"];
 let currentMode = "light";
 
@@ -431,112 +398,99 @@ function computeThumbLeft(mode){
   const center = seg * idx + seg/2;
   return Math.round(center - tw/2);
 }
-
 function setThumb(mode, animate=true){
   thumb.style.transition = animate ? "left 0.25s ease" : "none";
   thumb.style.left = computeThumbLeft(mode) + "px";
   currentMode = mode;
 }
-
 function applyTheme(mode){
   if(mode === "auto"){
-    const h = new Date().getHours();
-    document.body.dataset.theme = (h >= 6 && h < 18) ? "light" : "dark";
+    const h=new Date().getHours();
+    document.body.dataset.theme = (h>=6 && h<18) ? "light" : "dark";
   } else {
     document.body.dataset.theme = mode;
   }
   setThumb(mode, true);
-  saveLayout(); // salva o layout junto, para manter consistência
+  saveLayout();
 }
-
 function modeFromX(x){
   const W = slider.clientWidth;
-  const third = W / 3;
+  const third = W/3;
   if(x < third) return "light";
   if(x < third*2) return "auto";
   return "dark";
 }
 
-// clique direto nos labels (sem ciclo)
 slider.querySelectorAll("span").forEach(span => {
   span.addEventListener("click", e => {
-    // no modo edição, clique deve permitir “selecionar”/arrastar widget sem mudar tema
     if(document.body.classList.contains("edit-mode")) return;
     e.stopPropagation();
     applyTheme(span.dataset.mode);
   });
 });
 
-// arrastar para selecionar (fora do modo edição)
-let themeDrag = false;
-let themePointerId = null;
+let themeDrag=false, themePid=null;
 
 slider.addEventListener("pointerdown", e => {
-  if(document.body.classList.contains("edit-mode")) return; // aqui o slider é widget
-  themeDrag = true;
-  themePointerId = e.pointerId;
-  slider.setPointerCapture(themePointerId);
+  if(document.body.classList.contains("edit-mode")) return;
+  themeDrag=true;
+  themePid=e.pointerId;
+  slider.setPointerCapture(themePid);
 
-  const rect = slider.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const mode = modeFromX(x);
-  // enquanto arrasta, thumb segue sem "snap" visual brusco
-  setThumb(mode, false);
+  const r=slider.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  setThumb(modeFromX(x), false);
 });
 
 slider.addEventListener("pointermove", e => {
   if(!themeDrag) return;
-  const rect = slider.getBoundingClientRect();
-  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-  const mode = modeFromX(x);
-  setThumb(mode, false);
+  const r=slider.getBoundingClientRect();
+  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
+  setThumb(modeFromX(x), false);
 });
 
 slider.addEventListener("pointerup", e => {
   if(!themeDrag) return;
-  themeDrag = false;
-  try { slider.releasePointerCapture(themePointerId); } catch(_) {}
-  themePointerId = null;
+  themeDrag=false;
+  try{ slider.releasePointerCapture(themePid); }catch(_){}
+  themePid=null;
 
-  // snap final para o modo mais próximo e aplica tema
-  const rect = slider.getBoundingClientRect();
-  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-  const mode = modeFromX(x);
-  applyTheme(mode);
+  const r=slider.getBoundingClientRect();
+  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
+  applyTheme(modeFromX(x));
 });
 
 slider.addEventListener("pointercancel", e => {
   if(!themeDrag) return;
-  themeDrag = false;
-  try { slider.releasePointerCapture(themePointerId); } catch(_) {}
-  themePointerId = null;
+  themeDrag=false;
+  try{ slider.releasePointerCapture(themePid); }catch(_){}
+  themePid=null;
   applyTheme(currentMode);
 });
 
-// estado inicial
+// init
 applyTheme("light");
 
-/* ================= JARVIS HOOKS (sem UI, mas prontos) ================= */
+/* JARVIS HOOKS */
 window.jarvis = {
   removeWidget(id){
     const el = document.querySelector(`[data-widget-id="${id}"]`) || document.getElementById(id);
     if(!el) return false;
     el.style.display = "none";
-    // marca como hidden no storage
-    const raw = localStorage.getItem("terminal_layout_v1");
+    const raw = localStorage.getItem("terminal_layout_v2");
     const data = raw ? JSON.parse(raw) : {};
     data[id] = { ...(data[id]||{}), hidden: true, tx: (data[id]?.tx ?? 0), ty: (data[id]?.ty ?? 0) };
-    localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+    localStorage.setItem("terminal_layout_v2", JSON.stringify(data));
     return true;
   },
   showWidget(id){
     const el = document.querySelector(`[data-widget-id="${id}"]`) || document.getElementById(id);
     if(!el) return false;
     el.style.display = "";
-    const raw = localStorage.getItem("terminal_layout_v1");
+    const raw = localStorage.getItem("terminal_layout_v2");
     const data = raw ? JSON.parse(raw) : {};
     if(data[id]) data[id].hidden = false;
-    localStorage.setItem("terminal_layout_v1", JSON.stringify(data));
+    localStorage.setItem("terminal_layout_v2", JSON.stringify(data));
     return true;
   }
 };
