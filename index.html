@@ -52,9 +52,11 @@ body.edit-mode::before{
   z-index:0;
 }
 
+/* ✅ agora o grid ocupa toda a largura disponível (isso destrava as laterais) */
 .app{
-  max-width:1200px;
-  margin:auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
   position:relative;
   z-index:1;
 
@@ -662,7 +664,6 @@ let dragPid = null;
 let dragOffX = 0;
 let dragOffY = 0;
 
-/* snap suave */
 const SNAP_HYST = 0.18;
 let snapCol = null;
 let snapRow = null;
@@ -671,7 +672,7 @@ function gridOrigin(){
   return gridEl.getBoundingClientRect();
 }
 
-function hysteresisSnap(rawCell, lastCell){
+function hysteresisStep(rawCell, lastCell){
   if(lastCell == null) return Math.round(rawCell);
   if(rawCell > lastCell + 0.5 + SNAP_HYST) return lastCell + 1;
   if(rawCell < lastCell - 0.5 - SNAP_HYST) return lastCell - 1;
@@ -688,8 +689,8 @@ function cellFromCenter(centerX, centerY, w, h){
   const cols = computeCols();
   const maxCol = Math.max(1, cols - w + 1);
 
-  snapCol = hysteresisSnap(rawCol, snapCol);
-  snapRow = hysteresisSnap(rawRow, snapRow);
+  snapCol = hysteresisStep(rawCol, snapCol);
+  snapRow = hysteresisStep(rawRow, snapRow);
 
   const col = Math.max(1, Math.min(maxCol, snapCol));
   const row = Math.max(1, snapRow);
@@ -707,6 +708,33 @@ function makeDropPreview(fromEl){
   ph.style.setProperty("--row", String(row));
   ph.innerHTML = `<div class="widget-shadow" aria-hidden="true"></div><div class="widget"></div>`;
   return ph;
+}
+
+function animateSettle(el, targetRect){
+  const startLeft = parseFloat(el.style.left) || 0;
+  const startTop  = parseFloat(el.style.top)  || 0;
+  const startW    = parseFloat(el.style.width)  || el.getBoundingClientRect().width;
+  const startH    = parseFloat(el.style.height) || el.getBoundingClientRect().height;
+
+  el.style.transition = "left 260ms cubic-bezier(.2,.9,.2,1), top 260ms cubic-bezier(.2,.9,.2,1), width 260ms cubic-bezier(.2,.9,.2,1), height 260ms cubic-bezier(.2,.9,.2,1)";
+  el.style.left = targetRect.left + "px";
+  el.style.top  = targetRect.top + "px";
+  el.style.width  = targetRect.width + "px";
+  el.style.height = targetRect.height + "px";
+
+  const cleanup = () => {
+    el.removeEventListener("transitionend", cleanup);
+    el.style.transition = "";
+    el.style.left = "";
+    el.style.top = "";
+    el.style.width = "";
+    el.style.height = "";
+    el.classList.remove("fixed");
+    el.classList.remove("dragging");
+  };
+
+  el.addEventListener("transitionend", cleanup);
+  setTimeout(cleanup, 350);
 }
 
 function attachWidgetDrag(el){
@@ -760,18 +788,13 @@ function attachWidgetDrag(el){
     setGridPos(preview, best.col, best.row);
   });
 
-  function endDrag(){
+  function endDrag(animate=true){
     if(!dragged) return;
 
     const {col,row} = getGridPos(preview);
     setGridPos(dragged, col, row);
 
-    dragged.classList.remove("fixed");
-    dragged.classList.remove("dragging");
-    dragged.style.left = "";
-    dragged.style.top = "";
-    dragged.style.width = "";
-    dragged.style.height = "";
+    const targetRect = preview.getBoundingClientRect();
 
     if(preview){
       preview.remove();
@@ -779,7 +802,6 @@ function attachWidgetDrag(el){
     }
 
     try{ dragged.releasePointerCapture(dragPid); }catch(_){}
-    dragged = null;
     dragPid = null;
 
     snapCol = null;
@@ -787,16 +809,29 @@ function attachWidgetDrag(el){
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
+
+    if(animate){
+      animateSettle(dragged, targetRect);
+    } else {
+      dragged.classList.remove("fixed");
+      dragged.classList.remove("dragging");
+      dragged.style.left = "";
+      dragged.style.top = "";
+      dragged.style.width = "";
+      dragged.style.height = "";
+    }
+
+    dragged = null;
   }
 
   el.addEventListener("pointerup", e => {
     if(!dragged || dragged !== el) return;
-    endDrag();
+    endDrag(true);
   });
 
   el.addEventListener("pointercancel", e => {
     if(!dragged || dragged !== el) return;
-    endDrag();
+    endDrag(false);
   });
 
   el.addEventListener("contextmenu", e => {
@@ -931,14 +966,12 @@ sliderUI.addEventListener("pointerdown", e => {
   const x=e.clientX-r.left;
   setThumb(modeFromX(x), false);
 });
-
 sliderUI.addEventListener("pointermove", e => {
   if(!themeDrag) return;
   const r=sliderUI.getBoundingClientRect();
   const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
   setThumb(modeFromX(x), false);
 });
-
 sliderUI.addEventListener("pointerup", e => {
   if(!themeDrag) return;
   themeDrag=false;
@@ -949,7 +982,6 @@ sliderUI.addEventListener("pointerup", e => {
   const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
   applyTheme(modeFromX(x));
 });
-
 sliderUI.addEventListener("pointercancel", e => {
   if(!themeDrag) return;
   themeDrag=false;
