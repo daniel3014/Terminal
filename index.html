@@ -11,7 +11,7 @@
   --border: rgba(255,255,255,0.35);
   --blur: blur(22px);
   --shadow: 0 20px 40px rgba(0,0,0,0.12);
-  --grid-size: 80px; /* 🔹 grid menor */
+  --grid: 80px;
 }
 
 * {
@@ -26,17 +26,16 @@ body {
   padding: 30px 16px;
 }
 
-/* GRID VISUAL */
-body.edit-mode::before {
+/* GRID VISUAL (ALINHADO AO APP) */
+.app.edit-mode::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
+    linear-gradient(to right, rgba(0,0,0,.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px);
+  background-size: var(--grid) var(--grid);
   pointer-events: none;
-  z-index: 0;
 }
 
 /* APP */
@@ -44,6 +43,7 @@ body.edit-mode::before {
   position: relative;
   max-width: 1100px;
   margin: auto;
+  min-height: 800px;
 }
 
 /* WIDGET */
@@ -57,11 +57,12 @@ body.edit-mode::before {
   box-shadow: var(--shadow);
   padding: 22px;
   user-select: none;
+  transition: box-shadow .2s;
 }
 
 .edit-mode .widget {
   cursor: grab;
-  animation: wiggle 0.35s ease-in-out infinite alternate;
+  animation: wiggle .35s ease-in-out infinite alternate;
 }
 
 @keyframes wiggle {
@@ -75,18 +76,11 @@ body.edit-mode::before {
   text-align: center;
 }
 
-.clock-time {
-  font-size: 64px;
-}
-
-.clock-date {
-  opacity: 0.6;
-}
+.clock-time { font-size: 64px; }
+.clock-date { opacity: .6; }
 
 /* WEATHER */
-.weather strong {
-  font-size: 28px;
-}
+.weather strong { font-size: 28px; }
 
 /* FORECAST */
 .forecast {
@@ -94,7 +88,7 @@ body.edit-mode::before {
   justify-content: space-between;
 }
 
-/* THEME SLIDER — INTACTO */
+/* THEME SLIDER — EXATAMENTE COMO ANTES */
 .theme-slider {
   position: fixed;
   top: 20px;
@@ -131,7 +125,7 @@ body.edit-mode::before {
   justify-content: space-between;
   font-size: 14px;
   margin-top: 6px;
-  opacity: 0.7;
+  opacity: .7;
 }
 </style>
 </head>
@@ -162,13 +156,13 @@ body.edit-mode::before {
     <div class="clock-date" id="date"></div>
   </div>
 
-  <div class="widget forecast" style="left:0;top:160px">
+  <div class="widget forecast" style="left:0;top:200px">
     <span>☀️ 24°</span>
     <span>🌧️ 22°</span>
     <span>⛅ 23°</span>
   </div>
 
-  <div class="widget" style="left:320px;top:200px">
+  <div class="widget" style="left:320px;top:280px">
     Widget futuro do Jarvis
   </div>
 
@@ -185,33 +179,49 @@ updateClock();
 setInterval(updateClock,1000);
 
 /* EDIT MODE */
+const app = document.getElementById("app");
 let edit = false;
+let holdTimer;
+
+function enterEdit() {
+  edit = true;
+  app.classList.add("edit-mode");
+}
+
+function exitEdit() {
+  edit = false;
+  app.classList.remove("edit-mode");
+}
 
 document.addEventListener("dblclick", e => {
-  if (e.target.closest(".widget")) {
-    edit = true;
-    document.body.classList.add("edit-mode");
-  } else {
-    edit = false;
-    document.body.classList.remove("edit-mode");
-  }
+  if (e.target.closest(".widget")) enterEdit();
 });
 
-/* DRAG + SNAP (SUAVE) */
-const size = parseInt(getComputedStyle(document.documentElement)
-  .getPropertyValue("--grid-size"));
+document.addEventListener("mousedown", e => {
+  if (!e.target.closest(".widget")) exitEdit();
+});
 
-let active = null;
-let offsetX = 0;
-let offsetY = 0;
+/* PRESS & HOLD */
+document.addEventListener("mousedown", e => {
+  if (!e.target.closest(".widget")) return;
+  holdTimer = setTimeout(enterEdit, 500);
+});
+
+document.addEventListener("mouseup", () => clearTimeout(holdTimer));
+
+/* DRAG + SNAP */
+const grid = 80;
+let active = null, offsetX = 0, offsetY = 0;
 
 document.addEventListener("mousedown", e => {
   if (!edit) return;
-  const widget = e.target.closest(".widget");
-  if (!widget) return;
+  const w = e.target.closest(".widget");
+  if (!w) return;
 
-  active = widget;
-  const rect = widget.getBoundingClientRect();
+  active = w;
+  const rect = w.getBoundingClientRect();
+  const parent = app.getBoundingClientRect();
+
   offsetX = e.clientX - rect.left;
   offsetY = e.clientY - rect.top;
 
@@ -221,25 +231,28 @@ document.addEventListener("mousedown", e => {
 
 function move(e) {
   if (!active) return;
-  active.style.left = e.clientX - offsetX + "px";
-  active.style.top  = e.clientY - offsetY + "px";
+  const parent = app.getBoundingClientRect();
+  active.style.left = e.clientX - parent.left - offsetX + "px";
+  active.style.top  = e.clientY - parent.top  - offsetY + "px";
+}
+
+function collides(x,y,w,h,el){
+  return [...document.querySelectorAll(".widget")].some(o=>{
+    if(o===el) return false;
+    return !(x+w<o.offsetLeft || x>o.offsetLeft+o.offsetWidth ||
+             y+h<o.offsetTop  || y>o.offsetTop+o.offsetHeight);
+  });
 }
 
 function drop() {
   if (!active) return;
 
-  let x = Math.round(active.offsetLeft / size) * size;
-  let y = Math.round(active.offsetTop / size) * size;
+  let x = Math.round(active.offsetLeft / grid) * grid;
+  let y = Math.round(active.offsetTop  / grid) * grid;
 
-  // evita sobreposição simples
-  document.querySelectorAll(".widget").forEach(w => {
-    if (w !== active) {
-      if (Math.abs(w.offsetLeft - x) < size &&
-          Math.abs(w.offsetTop - y) < size) {
-        y += size;
-      }
-    }
-  });
+  while (collides(x,y,active.offsetWidth,active.offsetHeight,active)) {
+    y += grid;
+  }
 
   active.style.left = x + "px";
   active.style.top  = y + "px";
