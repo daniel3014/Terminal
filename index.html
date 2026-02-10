@@ -24,137 +24,182 @@
 }
 
 body[data-theme="light"]{
-  background: linear-gradient(135deg,#e6f1ff,#cfe4ff);
-  color:#0f172a;
+  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
+  color: #0f172a;
   --grid-line: rgba(0,0,0,0.08);
 }
-
 body[data-theme="dark"]{
-  background: linear-gradient(135deg,#020617,#0b1220);
-  color:#e5e7eb;
+  background: linear-gradient(135deg, #020617, #0b1220);
+  color: #e5e7eb;
   --grid-line: rgba(255,255,255,0.14);
 }
 
-*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
-body{margin:0;min-height:100vh;padding:24px 16px;}
+*{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+body{ margin:0; min-height:100vh; padding:24px 16px; }
 
 body.edit-mode::before{
   content:"";
   position:fixed;
   inset:0;
   background-image:
-    linear-gradient(to right,var(--grid-line) 1px,transparent 1px),
-    linear-gradient(to bottom,var(--grid-line) 1px,transparent 1px);
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   background-size:
-    calc(var(--cell-w) + var(--grid-gap))
-    calc(var(--grid-size) + var(--grid-gap));
+    calc(var(--cell-w) + var(--grid-gap)) calc(var(--grid-size) + var(--grid-gap));
   pointer-events:none;
   z-index:0;
 }
 
-/* GRID */
-
 .app{
-  width:100%;
-  display:grid;
-  grid-template-columns:repeat(var(--cols),1fr);
-  grid-auto-rows:var(--grid-size);
-  gap:var(--grid-gap);
-  align-content:start;
-}
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  position:relative;
+  z-index:1;
 
-/* WRAP */
+  display:grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-auto-rows: var(--grid-size);
+  gap: var(--grid-gap);
+  align-content:start;
+
+  overflow: visible;
+}
 
 .widget-wrap{
   position:relative;
 
-  --col:1;
-  --row:1;
-  --w:4;
-  --h:2;
+  --col: 1;
+  --row: 1;
+  --w: 4;
+  --h: 2;
 
-  --base-w:4;
-  --base-h:2;
+  /* Base “OS” (não muda com responsividade, a menos que o usuário redimensione) */
+  --base-w: 4;
+  --base-h: 2;
 
-  grid-column:var(--col)/span var(--w);
-  grid-row:var(--row)/span var(--h);
+  grid-column: var(--col) / span var(--w);
+  grid-row: var(--row) / span var(--h);
 
   touch-action:none;
   user-select:none;
 }
 
-/* SHADOW */
-
 .widget-shadow{
   position:absolute;
-  inset:var(--shadow-inset);
-  border-radius:calc(26px - var(--shadow-inset));
-  box-shadow:var(--shadow);
+  inset: var(--shadow-inset);
+  border-radius: calc(26px - var(--shadow-inset));
+  box-shadow: var(--shadow);
   pointer-events:none;
-  z-index:1;
+  z-index: 1;
 }
 
-/* WIDGET */
+.widget-wrap > .widget{
+  height: 100%;
+  width: 100%;
 
-.widget{
-  height:100%;
-  width:100%;
-  background:var(--glass-light);
-  backdrop-filter:var(--blur);
-  border:1px solid var(--border-light);
-  border-radius:26px;
-  padding:22px;
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
+  border-radius: 26px;
+  padding: 22px;
+
   position:relative;
   z-index:2;
+
+  box-shadow:none;
+  touch-action:none;
+  user-select:none;
 }
 
-body[data-theme="dark"] .widget{
-  background:var(--glass-dark);
-  border-color:var(--border-dark);
+body[data-theme="dark"] .widget-wrap > .widget{
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
 }
 
-.widget.clock{text-align:center;}
-.clock-time{font-size:64px;}
-.clock-date{opacity:.6;}
+.edit-mode .widget-wrap > .widget{ cursor:grab; }
+.edit-mode .widget-wrap > .widget,
+.edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
 
-.widget.forecast{display:flex;justify-content:space-between;}
+@keyframes wiggle{
+  from { transform: rotate(-0.4deg); }
+  to   { transform: rotate(0.4deg); }
+}
 
-/* SLIDER */
+.widget-wrap.dragging > .widget,
+.widget-wrap.dragging > .widget-shadow{
+  animation:none;
+}
+
+.widget-wrap.dragging{
+  z-index: 50;
+}
+
+.widget-wrap.dragging.fixed{
+  position: fixed !important;
+  margin: 0 !important;
+  pointer-events: none;
+}
+
+.widget.clock{ text-align:center; }
+.clock-time{ font-size:64px; }
+.clock-date{ opacity:0.6; }
+.widget.forecast{ display:flex; justify-content:space-between; }
 
 #slider{
-  position:fixed;
-  top:20px;
-  right:20px;
-  width:170px;
-  height:44px;
-  z-index:80;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 170px;
+  height: 44px;
+  z-index: 80;
 
-  --tx:0px;
-  --ty:0px;
-  transform:translate(var(--tx),var(--ty));
+  --tx: 0px;
+  --ty: 0px;
+  transform: translate(var(--tx), var(--ty));
+  transition: transform 0.06s linear;
+
+  touch-action:none;
+  user-select:none;
 }
 
 #slider .slider-shadow{
   position:absolute;
-  inset:var(--shadow-inset);
-  border-radius:999px;
-  box-shadow:var(--shadow);
+  inset: var(--shadow-inset);
+  border-radius: calc(999px - var(--shadow-inset));
+  box-shadow: var(--shadow);
+  pointer-events:none;
+  z-index: 0;
 }
 
 #slider .theme-slider-ui{
   position:absolute;
   inset:0;
   border-radius:999px;
-  background:var(--glass-light);
-  backdrop-filter:var(--blur);
-  border:1px solid var(--border-light);
+
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
+
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
+  cursor:pointer;
+
+  z-index: 2;
 }
 
 body[data-theme="dark"] #slider .theme-slider-ui{
-  background:var(--glass-dark);
-  border-color:var(--border-dark);
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
+}
+
+#slider span{
+  display:block;
+  height:44px;
+  line-height:44px;
+  text-align:center;
+  font-size:14px;
+  z-index:2;
 }
 
 .slider-thumb{
@@ -164,56 +209,67 @@ body[data-theme="dark"] #slider .theme-slider-ui{
   border-radius:999px;
   left:6px;
   top:4px;
-  background:rgba(255,255,255,0.65);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.4);
-  transition:left .25s ease;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.4);
+  transition: left 0.25s ease;
+  z-index:1;
 }
 
-/* EDIT TOGGLE */
+body[data-theme="dark"] .slider-thumb{
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.25);
+}
 
 .edit-toggle{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  height:44px;
-  padding:0 14px;
-  border-radius:999px;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
 
-  background:var(--glass-light);
-  backdrop-filter:var(--blur);
-  border:1px solid var(--border-light);
+  background: var(--glass-light);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-light);
 
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 
-  cursor:pointer;
-  z-index:90;
+  cursor: pointer;
+  user-select: none;
+
+  z-index: 90;
+  box-shadow: var(--shadow);
 }
 
 body[data-theme="dark"] .edit-toggle{
-  background:var(--glass-dark);
-  border-color:var(--border-dark);
+  background: var(--glass-dark);
+  border-color: var(--border-dark);
 }
 
 .edit-toggle .dot{
-  width:10px;
-  height:10px;
-  border-radius:999px;
-  background:rgba(15,23,42,.35);
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+body[data-theme="dark"] .edit-toggle .dot{
+  background: rgba(255,255,255,0.22);
 }
 
 body.edit-mode .edit-toggle .dot{
-  background:rgba(34,197,94,.7);
+  background: rgba(34, 197, 94, 0.7);
 }
 </style>
 </head>
 
 <body data-theme="light">
 
-<div id="slider">
-  <div class="slider-shadow"></div>
+<div id="slider" data-widget-id="slider">
+  <div class="slider-shadow" aria-hidden="true"></div>
   <div class="theme-slider-ui" id="sliderUI">
     <div class="slider-thumb" id="thumb"></div>
     <span data-mode="light">☀️</span>
@@ -222,379 +278,851 @@ body.edit-mode .edit-toggle .dot{
   </div>
 </div>
 
-<div class="edit-toggle" id="editToggle">
-  <div class="dot"></div>
+<div class="edit-toggle" id="editToggle" role="button" tabindex="0" aria-label="Alternar modo de edição">
+  <div class="dot" aria-hidden="true"></div>
   <div id="editToggleText">Editar</div>
 </div>
 
 <div class="app" id="grid">
 
-<div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
-<strong>23°C ☀️</strong><br>Sensação 25°
-</div>
+  <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
+    <strong>23°C ☀️</strong><br>
+    Sensação 25° · Chuva 10%
+  </div>
 
-<div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
-<div class="clock-time" id="time"></div>
-<div class="clock-date" id="date"></div>
-</div>
+  <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
+    <div class="clock-time" id="time"></div>
+    <div class="clock-date" id="date"></div>
+  </div>
 
-<div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
-<span>☀️ 24°</span>
-<span>🌧️ 22°</span>
-<span>⛅ 23°</span>
-</div>
+  <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
+    <span>☀️ 24°</span>
+    <span>🌧️ 22°</span>
+    <span>⛅ 23°</span>
+  </div>
 
-<div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
-<span id="assistantTitle"></span>
-</div>
+  <div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
+    <span id="assistantTitle"></span>
+  </div>
 
 </div>
 
 <script>
-
 /* CLOCK */
-
 function updateClock(){
-const now=new Date();
-time.textContent=now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-date.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+  const now = new Date();
+  time.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  date.textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
 }
 updateClock();
 setInterval(updateClock,1000);
 
-/* ASSISTANT */
-
+/* ASSISTANT NAME */
 function getAssistantName(){
-return localStorage.getItem("assistant_name")||"Jarvis";
+  const v = (localStorage.getItem("assistant_name") || "").trim();
+  return v || "Jarvis";
 }
-
+function setAssistantName(name){
+  const n = String(name ?? "").trim();
+  if(!n) return false;
+  localStorage.setItem("assistant_name", n);
+  renderAssistantName();
+  return true;
+}
 function renderAssistantName(){
-assistantTitle.textContent="Widget futuro do "+getAssistantName();
+  const el = document.getElementById("assistantTitle");
+  if(!el) return;
+  el.textContent = `Widget futuro do ${getAssistantName()}`;
 }
 renderAssistantName();
 
 /* GRID HELPERS */
-
-const gridEl=document.getElementById("grid");
-const GRID=60;
-const GAP=18;
+const gridEl = document.getElementById("grid");
+const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
+const GAP  = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-gap")) || 18;
 
 function computeCols(){
+  const w = gridEl.clientWidth;
+  const pitchMin = GRID + GAP;
+  const cols = Math.max(1, Math.floor((w + GAP) / pitchMin));
+  document.documentElement.style.setProperty("--cols", cols);
 
-const w=gridEl.clientWidth;
-const pitchMin=GRID+GAP;
-
-const cols=Math.max(1,Math.floor((w+GAP)/pitchMin));
-document.documentElement.style.setProperty("--cols",cols);
-
-const cellW=(w-(cols-1)*GAP)/cols;
-document.documentElement.style.setProperty("--cell-w",cellW+"px");
-
-return{cols,cellW};
+  const cellW = (w - (cols - 1) * GAP) / cols;
+  document.documentElement.style.setProperty("--cell-w", cellW + "px");
+  return { cols, cellW };
 }
 
-/* WRAP */
-
-function ensureWrappedWidgets(){
-
-document.querySelectorAll("#grid>.widget").forEach(w=>{
-
-if(w.parentElement.classList.contains("widget-wrap"))return;
-
-const wrap=document.createElement("div");
-wrap.className="widget-wrap";
-
-const dw=parseInt(w.dataset.w)||4;
-const dh=parseInt(w.dataset.h)||2;
-
-wrap.style.setProperty("--base-w",dw);
-wrap.style.setProperty("--base-h",dh);
-wrap.style.setProperty("--w",dw);
-wrap.style.setProperty("--h",dh);
-
-const id=w.dataset.widgetId;
-if(id){
-wrap.setAttribute("data-widget-id",id);
-w.removeAttribute("data-widget-id");
-}
-
-const shadow=document.createElement("div");
-shadow.className="widget-shadow";
-
-w.parentNode.insertBefore(wrap,w);
-wrap.appendChild(shadow);
-wrap.appendChild(w);
-
-});
-
-}
-
-ensureWrappedWidgets();
-/* GRID POSITION HELPERS */
+function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
 
 function allWidgetWraps(){
-return [...document.querySelectorAll(".widget-wrap")];
+  return Array.from(document.querySelectorAll(".widget-wrap"))
+    .filter(el => el.style.display !== "none");
 }
 
 function getGridPos(el){
-const cs=getComputedStyle(el);
-return{
-col:parseInt(cs.getPropertyValue("--col"))||1,
-row:parseInt(cs.getPropertyValue("--row"))||1,
-w:parseInt(cs.getPropertyValue("--w"))||4,
-h:parseInt(cs.getPropertyValue("--h"))||2
-};
+  const cs = getComputedStyle(el);
+  return {
+    col: parseInt(cs.getPropertyValue("--col")) || 1,
+    row: parseInt(cs.getPropertyValue("--row")) || 1,
+    w:   parseInt(cs.getPropertyValue("--w")) || 4,
+    h:   parseInt(cs.getPropertyValue("--h")) || 2,
+    baseW: parseInt(cs.getPropertyValue("--base-w")) || 4,
+    baseH: parseInt(cs.getPropertyValue("--base-h")) || 2
+  };
 }
 
-function setGridPos(el,col,row){
-el.style.setProperty("--col",col);
-el.style.setProperty("--row",row);
+function setGridPos(el, col, row){
+  el.style.setProperty("--col", String(col));
+  el.style.setProperty("--row", String(row));
 }
 
-function setGridSize(el,w,h){
-el.style.setProperty("--w",w);
-el.style.setProperty("--h",h);
+function setBaseSize(el, w, h){
+  el.style.setProperty("--base-w", String(w));
+  el.style.setProperty("--base-h", String(h));
 }
 
-/* RESPONSIVE OS ENGINE */
-
-function getDensity(cols,width){
-
-if(width<480)return"ultra";
-if(cols<=4)return"compact";
-if(cols<=9)return"normal";
-return"expanded";
-
+function setGridSize(el, w, h){
+  el.style.setProperty("--w", String(w));
+  el.style.setProperty("--h", String(h));
 }
 
-function densityScale(d){
+function buildOccupancy(exceptEl){
+  const { cols } = computeCols();
+  const occ = new Set();
 
-switch(d){
-case"ultra":return .45;
-case"compact":return .65;
-case"expanded":return 1.15;
-default:return 1;
+  const mark = (c,r) => occ.add(c + ":" + r);
+  const isMarked = (c,r) => occ.has(c + ":" + r);
+
+  for(const el of allWidgetWraps()){
+    if(el === exceptEl) continue;
+    const {col,row,w,h} = getGridPos(el);
+    for(let yy=0; yy<h; yy++){
+      for(let xx=0; xx<w; xx++){
+        const cc = col + xx;
+        const rr = row + yy;
+        if(cc >= 1 && cc <= cols && rr >= 1) mark(cc, rr);
+      }
+    }
+  }
+  return { cols, isMarked };
 }
 
+function fitsAt(occ, col, row, w, h){
+  if(col < 1 || row < 1) return false;
+  if(col + w - 1 > occ.cols) return false;
+  for(let yy=0; yy<h; yy++){
+    for(let xx=0; xx<w; xx++){
+      if(occ.isMarked(col + xx, row + yy)) return false;
+    }
+  }
+  return true;
 }
 
-function applyResponsiveLayout(){
+function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
+  const occ = buildOccupancy(exceptEl);
 
-const {cols}=computeCols();
-const density=getDensity(cols,window.innerWidth);
-const scale=densityScale(density);
+  const maxCol = Math.max(1, occ.cols - w + 1);
+  const clampCol = (c) => Math.max(1, Math.min(maxCol, c));
+  const clampRow = (r) => Math.max(1, r);
 
-for(const el of allWidgetWraps()){
+  let tc = clampCol(targetCol);
+  let tr = clampRow(targetRow);
 
-const cs=getComputedStyle(el);
+  if(fitsAt(occ, tc, tr, w, h)) return { col: tc, row: tr };
 
-const baseW=parseInt(cs.getPropertyValue("--base-w"))||4;
-const baseH=parseInt(cs.getPropertyValue("--base-h"))||2;
-
-const newW=Math.max(1,Math.round(baseW*scale));
-const newH=Math.max(1,Math.round(baseH*scale));
-
-setGridSize(el,newW,newH);
-
+  const maxRings = 24;
+  for(let ring=1; ring<=maxRings; ring++){
+    for(let dy=-ring; dy<=ring; dy++){
+      for(let dx=-ring; dx<=ring; dx++){
+        if(Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
+        const c = clampCol(tc + dx);
+        const r = clampRow(tr + dy);
+        if(fitsAt(occ, c, r, w, h)) return { col: c, row: r };
+      }
+    }
+  }
+  return { col: tc, row: tr };
 }
-
-}
-
-/* REORGANIZAÇÃO ANIMADA */
-
-function animateReflow(){
-
-const rects=new Map();
-
-for(const el of allWidgetWraps()){
-rects.set(el,el.getBoundingClientRect());
-}
-
-requestAnimationFrame(()=>{
-
-for(const el of allWidgetWraps()){
-
-const oldRect=rects.get(el);
-const newRect=el.getBoundingClientRect();
-
-const dx=oldRect.left-newRect.left;
-const dy=oldRect.top-newRect.top;
-
-if(dx||dy){
-
-el.style.transition="none";
-el.style.transform=`translate(${dx}px,${dy}px)`;
-
-requestAnimationFrame(()=>{
-el.style.transition="transform 260ms cubic-bezier(.2,.9,.2,1)";
-el.style.transform="";
-});
-
-}
-
-}
-
-});
-
-}
-
-/* DRAG SYSTEM */
-
-let dragged=null;
-let dragPid=null;
-let offX=0;
-let offY=0;
-let dragW=0;
-let dragH=0;
 
 function gridOrigin(){
-return gridEl.getBoundingClientRect();
+  return gridEl.getBoundingClientRect();
 }
 
 function pitchX(){
-const cellW=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w"))||GRID;
-return cellW+GAP;
+  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
+  return cellW + GAP;
 }
-
 function pitchY(){
-return GRID+GAP;
+  return GRID + GAP;
 }
 
-function anchorFromCenter(cx,cy,w,h){
+/* centro do widget -> canto superior esquerdo considerando w/h */
+function anchorFromCenter(centerX, centerY, w, h){
+  const r = gridOrigin();
+  const rawCenterCol = ((centerX - r.left) / pitchX()) + 1;
+  const rawCenterRow = ((centerY - r.top)  / pitchY()) + 1;
 
-const r=gridOrigin();
+  const targetCol = Math.round(rawCenterCol - (w - 1) / 2);
+  const targetRow = Math.round(rawCenterRow - (h - 1) / 2);
 
-const rawCol=((cx-r.left)/pitchX())+1;
-const rawRow=((cy-r.top)/pitchY())+1;
-
-return{
-col:Math.round(rawCol-(w-1)/2),
-row:Math.round(rawRow-(h-1)/2)
-};
-
+  return { col: targetCol, row: targetRow };
 }
 
-function findNearestFreeCell(exceptEl,targetCol,targetRow,w,h){
+/* WRAP WIDGETS */
+function ensureWrappedWidgets(){
+  const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
+  widgets.forEach(w => {
+    if(w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
 
-return{col:Math.max(1,targetCol),row:Math.max(1,targetRow)};
+    const wrap = document.createElement("div");
+    wrap.className = "widget-wrap";
 
+    const dw = parseInt(w.getAttribute("data-w")) || (w.classList.contains("clock") ? 8 : 4);
+    const dh = parseInt(w.getAttribute("data-h")) || (w.classList.contains("clock") ? 3 : 2);
+
+    setGridSize(wrap, dw, dh);
+    setBaseSize(wrap, dw, dh);
+
+    const id = w.getAttribute("data-widget-id");
+    if(id){
+      wrap.setAttribute("data-widget-id", id);
+      w.removeAttribute("data-widget-id");
+    }
+
+    const shadow = document.createElement("div");
+    shadow.className = "widget-shadow";
+    shadow.setAttribute("aria-hidden","true");
+
+    w.parentNode.insertBefore(wrap, w);
+    wrap.appendChild(shadow);
+    wrap.appendChild(w);
+  });
+}
+
+/* LAYOUT SAVE/LOAD */
+let activeProfile = (localStorage.getItem("layout_profile") || "default").trim() || "default";
+function layoutKey(){ return "terminal_layout_v3_" + activeProfile; }
+
+function saveLayout(){
+  const data = { _meta: { profile: activeProfile } };
+
+  for(const el of allWidgetWraps()){
+    const id = el.getAttribute("data-widget-id");
+    if(!id) continue;
+    const {col,row,w,h,baseW,baseH} = getGridPos(el);
+    data[id] = { col, row, w, h, baseW, baseH, hidden: false };
+  }
+
+  const slider = document.getElementById("slider");
+  if(slider){
+    const cs = getComputedStyle(slider);
+    data["slider"] = {
+      tx: pxToNum(cs.getPropertyValue("--tx")),
+      ty: pxToNum(cs.getPropertyValue("--ty")),
+      hidden: false
+    };
+  }
+
+  localStorage.setItem(layoutKey(), JSON.stringify(data));
+}
+
+function loadLayout(){
+  const raw = localStorage.getItem(layoutKey());
+  if(!raw) return false;
+  let data; try{ data = JSON.parse(raw); } catch { return false; }
+
+  for(const el of allWidgetWraps()){
+    const id = el.getAttribute("data-widget-id");
+    if(!id || !data[id]) continue;
+    const v = data[id];
+
+    if(typeof v.baseW === "number" && typeof v.baseH === "number") setBaseSize(el, v.baseW, v.baseH);
+    if(typeof v.w === "number" && typeof v.h === "number") setGridSize(el, v.w, v.h);
+    if(typeof v.col === "number" && typeof v.row === "number") setGridPos(el, v.col, v.row);
+    if(v.hidden) el.style.display = "none";
+  }
+
+  const slider = document.getElementById("slider");
+  if(slider && data["slider"]){
+    const v = data["slider"];
+    if(typeof v.tx === "number") slider.style.setProperty("--tx", v.tx + "px");
+    if(typeof v.ty === "number") slider.style.setProperty("--ty", v.ty + "px");
+    if(v.hidden) slider.style.display = "none";
+  }
+
+  return true;
+}
+
+function packInitial(){
+  const { cols } = computeCols();
+  const wraps = allWidgetWraps();
+
+  const occ = new Set();
+  const mark = (c,r) => occ.add(c + ":" + r);
+  const isMarked = (c,r) => occ.has(c + ":" + r);
+
+  function canPlace(col,row,w,h){
+    if(col + w - 1 > cols) return false;
+    for(let yy=0; yy<h; yy++){
+      for(let xx=0; xx<w; xx++){
+        if(isMarked(col + xx, row + yy)) return false;
+      }
+    }
+    return true;
+  }
+
+  function place(el, col, row, w, h){
+    setGridPos(el, col, row);
+    for(let yy=0; yy<h; yy++){
+      for(let xx=0; xx<w; xx++){
+        mark(col + xx, row + yy);
+      }
+    }
+  }
+
+  let curRow = 1;
+  for(const el of wraps){
+    const {w,h} = getGridPos(el);
+    let placed = false;
+
+    for(let r=curRow; r<200 && !placed; r++){
+      for(let c=1; c<=cols; c++){
+        if(canPlace(c, r, w, h)){
+          place(el, c, r, w, h);
+          placed = true;
+          curRow = r;
+          break;
+        }
+      }
+    }
+
+    if(!placed){
+      place(el, 1, curRow, Math.min(w, cols), h);
+    }
+  }
+}
+
+function reflowForCols(oldCols, newCols){
+  const wraps = allWidgetWraps();
+
+  const desired = wraps.map(el => {
+    const p = getGridPos(el);
+    const ratio = (oldCols <= 1) ? 0 : (p.col - 1) / (oldCols - 1);
+    const newCol = Math.floor(ratio * Math.max(0, newCols - 1)) + 1;
+    return { el, row: p.row, col: newCol, w: p.w, h: p.h };
+  });
+
+  desired.sort((a,b) => (a.row - b.row) || (a.col - b.col));
+
+  for(const it of desired){
+    setGridPos(it.el, it.col, it.row);
+  }
+
+  for(const it of desired){
+    const best = findNearestFreeCell(it.el, it.col, it.row, it.w, it.h);
+    setGridPos(it.el, best.col, best.row);
+  }
+
+  saveLayout();
+}
+
+/* RESPONSIVE OS ENGINE */
+let currentDensity = "normal";
+
+function getDensity(cols, width){
+  if(width < 520) return "ultra";
+  if(cols <= 4) return "compact";
+  if(cols <= 9) return "normal";
+  return "expanded";
+}
+
+function densityScale(d){
+  if(d === "ultra") return 0.55;
+  if(d === "compact") return 0.75;
+  if(d === "expanded") return 1.15;
+  return 1.0;
+}
+
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+function applyResponsiveSizes(cols){
+  const density = getDensity(cols, window.innerWidth);
+  const scale = densityScale(density);
+
+  for(const el of allWidgetWraps()){
+    const p = getGridPos(el);
+
+    // sempre baseado no base
+    let nw = Math.max(1, Math.round(p.baseW * scale));
+    let nh = Math.max(1, Math.round(p.baseH * scale));
+
+    // nunca pode exceder colunas
+    nw = Math.min(nw, cols);
+
+    // evita “pular” demais em densidades próximas
+    if(density !== currentDensity){
+      // ok mudar; senão mantém
+    }
+
+    setGridSize(el, nw, nh);
+
+    // reposiciona imediatamente pra ficar válido antes do reflow
+    const best = findNearestFreeCell(el, p.col, p.row, nw, nh);
+    setGridPos(el, best.col, best.row);
+  }
+
+  currentDensity = density;
+}
+
+function captureRects(){
+  const m = new Map();
+  for(const el of allWidgetWraps()){
+    m.set(el, el.getBoundingClientRect());
+  }
+  return m;
+}
+
+function animateFLIP(beforeMap){
+  for(const el of allWidgetWraps()){
+    const a = beforeMap.get(el);
+    if(!a) continue;
+    const b = el.getBoundingClientRect();
+    const dx = a.left - b.left;
+    const dy = a.top - b.top;
+    if(!dx && !dy) continue;
+
+    el.style.transition = "none";
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    void el.offsetWidth;
+    el.style.transition = "transform 260ms cubic-bezier(.2,.9,.2,1)";
+    el.style.transform = "";
+  }
+}
+
+/* EDIT MODE */
+let editTimer;
+let suppressBodyClickUntil = 0;
+
+function enableEdit(){
+  document.body.classList.add("edit-mode");
+  editToggleText.textContent = "Concluir";
+}
+function disableEdit(){
+  document.body.classList.remove("edit-mode");
+  editToggleText.textContent = "Editar";
+}
+
+function isWidgetArea(target){
+  return !!(target.closest(".widget-wrap") || target.closest(".widget") || target.closest("#slider") || target.closest("#editToggle"));
+}
+
+gridEl.addEventListener("dblclick", e => {
+  if(e.target.closest(".widget-wrap") || e.target.closest(".widget")) enableEdit();
+});
+
+gridEl.addEventListener("pointerdown", e => {
+  if(!e.target.closest(".widget-wrap") && !e.target.closest(".widget")) return;
+  editTimer = setTimeout(() => enableEdit(), 500);
+});
+
+gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
+gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
+
+document.body.addEventListener("click", e => {
+  if(Date.now() < suppressBodyClickUntil) return;
+  if(!isWidgetArea(e.target)) disableEdit();
+});
+
+const editToggle = document.getElementById("editToggle");
+const editToggleText = document.getElementById("editToggleText");
+
+editToggle.addEventListener("click", e => {
+  e.stopPropagation();
+  if(document.body.classList.contains("edit-mode")) disableEdit();
+  else enableEdit();
+});
+
+editToggle.addEventListener("keydown", e => {
+  if(e.key === "Enter" || e.key === " "){
+    e.preventDefault();
+    if(document.body.classList.contains("edit-mode")) disableEdit();
+    else enableEdit();
+  }
+});
+
+/* WIDGET DRAG (SIMPLE + FAST DROP + CENTER SNAP CORRETO) */
+let dragged = null;
+let dragPid = null;
+let dragOffX = 0;
+let dragOffY = 0;
+let dragW = 0;
+let dragH = 0;
+
+function clearFixedStyles(el){
+  el.style.left = "";
+  el.style.top = "";
+  el.style.width = "";
+  el.style.height = "";
+}
+
+function setFixedRect(el, r){
+  el.style.left = r.left + "px";
+  el.style.top = r.top + "px";
+  el.style.width = r.width + "px";
+  el.style.height = r.height + "px";
+}
+
+function animateSettle(el, startRect, destRect){
+  el.style.transition = "none";
+  setFixedRect(el, startRect);
+  void el.offsetWidth;
+
+  el.style.transition = "left 160ms cubic-bezier(.2,.9,.2,1), top 160ms cubic-bezier(.2,.9,.2,1)";
+  el.style.left = destRect.left + "px";
+  el.style.top  = destRect.top + "px";
+
+  const cleanup = () => {
+    el.removeEventListener("transitionend", cleanup);
+    el.style.transition = "";
+    el.classList.remove("fixed");
+    el.classList.remove("dragging");
+    clearFixedStyles(el);
+  };
+
+  el.addEventListener("transitionend", cleanup);
+  setTimeout(cleanup, 220);
 }
 
 function attachWidgetDrag(el){
+  el.addEventListener("pointerdown", e => {
+    if(!document.body.classList.contains("edit-mode")) return;
+    const wrap = e.target.closest(".widget-wrap");
+    if(!wrap || wrap !== el) return;
 
-el.addEventListener("pointerdown",e=>{
+    dragged = wrap;
+    dragged.classList.add("dragging");
 
-if(!document.body.classList.contains("edit-mode"))return;
+    const rect = dragged.getBoundingClientRect();
+    dragOffX = e.clientX - rect.left;
+    dragOffY = e.clientY - rect.top;
+    dragW = rect.width;
+    dragH = rect.height;
 
-dragged=el;
-dragged.classList.add("dragging");
+    dragged.classList.add("fixed");
+    setFixedRect(dragged, rect);
 
-const rect=el.getBoundingClientRect();
+    dragPid = e.pointerId;
+    dragged.setPointerCapture(dragPid);
+  });
 
-offX=e.clientX-rect.left;
-offY=e.clientY-rect.top;
+  el.addEventListener("pointermove", e => {
+    if(!dragged || dragged !== el) return;
 
-dragW=rect.width;
-dragH=rect.height;
+    const left = e.clientX - dragOffX;
+    const top  = e.clientY - dragOffY;
 
-el.classList.add("fixed");
-el.style.left=rect.left+"px";
-el.style.top=rect.top+"px";
-el.style.width=rect.width+"px";
-el.style.height=rect.height+"px";
+    dragged.style.left = left + "px";
+    dragged.style.top  = top + "px";
+  });
 
-dragPid=e.pointerId;
-el.setPointerCapture(dragPid);
+  function endDrag(e, animate=true){
+    if(!dragged) return;
 
-});
+    const startRect = dragged.getBoundingClientRect();
+    const {w,h} = getGridPos(dragged);
 
-el.addEventListener("pointermove",e=>{
+    const centerX = (e.clientX - dragOffX) + dragW / 2;
+    const centerY = (e.clientY - dragOffY) + dragH / 2;
 
-if(!dragged)return;
+    const target = anchorFromCenter(centerX, centerY, w, h);
+    const best = findNearestFreeCell(dragged, target.col, target.row, w, h);
+    setGridPos(dragged, best.col, best.row);
 
-const left=e.clientX-offX;
-const top=e.clientY-offY;
+    dragged.classList.remove("fixed");
+    clearFixedStyles(dragged);
+    const destRect = dragged.getBoundingClientRect();
 
-dragged.style.left=left+"px";
-dragged.style.top=top+"px";
+    dragged.classList.add("fixed");
+    setFixedRect(dragged, startRect);
+    void dragged.offsetWidth;
 
-});
+    try{ dragged.releasePointerCapture(dragPid); }catch(_){}
+    dragPid = null;
 
-el.addEventListener("pointerup",e=>{
+    suppressBodyClickUntil = Date.now() + 250;
+    saveLayout();
 
-if(!dragged)return;
+    if(animate){
+      animateSettle(dragged, startRect, destRect);
+    } else {
+      dragged.classList.remove("fixed");
+      dragged.classList.remove("dragging");
+      clearFixedStyles(dragged);
+    }
 
-const {w,h}=getGridPos(dragged);
+    dragged = null;
+  }
 
-const cx=(e.clientX-offX)+dragW/2;
-const cy=(e.clientY-offY)+dragH/2;
+  el.addEventListener("pointerup", e => {
+    if(!dragged || dragged !== el) return;
+    endDrag(e, true);
+  });
 
-const target=anchorFromCenter(cx,cy,w,h);
+  el.addEventListener("pointercancel", e => {
+    if(!dragged || dragged !== el) return;
+    endDrag(e, false);
+  });
 
-setGridPos(dragged,target.col,target.row);
+  el.addEventListener("contextmenu", e => {
+    if(!document.body.classList.contains("edit-mode")) return;
+    e.preventDefault();
 
-dragged.classList.remove("fixed");
-dragged.classList.remove("dragging");
+    const sizes = [
+      {w:3,h:2},
+      {w:4,h:2},
+      {w:6,h:2},
+      {w:8,h:3}
+    ];
 
-dragged.style.left="";
-dragged.style.top="";
-dragged.style.width="";
-dragged.style.height="";
+    const cur = getGridPos(el);
+    let idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
+    idx = (idx + 1) % sizes.length;
+    const next = sizes[idx];
 
-dragged.releasePointerCapture(dragPid);
-dragged=null;
+    // tamanho “do usuário” vira novo base (OS-style)
+    setBaseSize(el, next.w, next.h);
 
-});
+    // aplica responsivo imediatamente para o tamanho atual de densidade
+    const { cols } = computeCols();
+    applyResponsiveSizes(cols);
 
+    suppressBodyClickUntil = Date.now() + 250;
+    saveLayout();
+  });
 }
 
-/* THEME */
+/* SLIDER DRAG (FREE) */
+const slider = document.getElementById("slider");
+let sDragged=false, sPid=null, sStartX=0, sStartY=0, sBaseTX=0, sBaseTY=0;
 
-const sliderUI=document.getElementById("sliderUI");
-const thumb=document.getElementById("thumb");
+function getSliderTXTY(){
+  const cs = getComputedStyle(slider);
+  return { tx: pxToNum(cs.getPropertyValue("--tx")), ty: pxToNum(cs.getPropertyValue("--ty")) };
+}
+function setSliderTXTY(tx,ty){
+  slider.style.setProperty("--tx", tx + "px");
+  slider.style.setProperty("--ty", ty + "px");
+}
 
-const modes=["light","auto","dark"];
+slider.addEventListener("pointerdown", e => {
+  if(!document.body.classList.contains("edit-mode")) return;
+  sDragged=true;
+  sPid=e.pointerId;
+  slider.setPointerCapture(sPid);
+  sStartX=e.clientX; sStartY=e.clientY;
+  const p = getSliderTXTY();
+  sBaseTX=p.tx; sBaseTY=p.ty;
+});
+slider.addEventListener("pointermove", e => {
+  if(!sDragged) return;
+  const dx=e.clientX - sStartX;
+  const dy=e.clientY - sStartY;
+  setSliderTXTY(sBaseTX + dx, sBaseTY + dy);
+});
+slider.addEventListener("pointerup", e => {
+  if(!sDragged) return;
+  sDragged=false;
+  try{ slider.releasePointerCapture(sPid); }catch(_){}
+  sPid=null;
+  suppressBodyClickUntil = Date.now() + 250;
+  saveLayout();
+});
+slider.addEventListener("pointercancel", e => {
+  if(!sDragged) return;
+  sDragged=false;
+  try{ slider.releasePointerCapture(sPid); }catch(_){}
+  sPid=null;
+  suppressBodyClickUntil = Date.now() + 250;
+  saveLayout();
+});
+
+/* THEME SLIDER */
+const sliderUI = document.getElementById("sliderUI");
+const thumb = document.getElementById("thumb");
+const modes = ["light","auto","dark"];
+let currentMode = "auto";
+
+function computeThumbLeft(mode){
+  const idx = modes.indexOf(mode);
+  const W = sliderUI.clientWidth;
+  const seg = W / 3;
+  const tw = thumb.offsetWidth;
+  const center = seg * idx + seg/2;
+  return (center - tw/2);
+}
+function setThumb(mode, animate=true){
+  thumb.style.transition = animate ? "left 0.25s ease" : "none";
+  thumb.style.left = computeThumbLeft(mode) + "px";
+  currentMode = mode;
+}
 
 function applyTheme(mode){
+  localStorage.setItem("theme_mode", mode);
 
-localStorage.setItem("theme_mode",mode);
+  if(mode === "auto"){
+    const h=new Date().getHours();
+    document.body.dataset.theme = (h>=6 && h<18) ? "light" : "dark";
+  } else {
+    document.body.dataset.theme = mode;
+  }
 
-if(mode==="auto"){
-
-const h=new Date().getHours();
-document.body.dataset.theme=(h>=6&&h<18)?"light":"dark";
-
-}else{
-
-document.body.dataset.theme=mode;
-
+  setThumb(mode, true);
+  saveLayout();
 }
 
+function modeFromX(x){
+  const W = sliderUI.clientWidth;
+  const third = W/3;
+  if(x < third) return "light";
+  if(x < third*2) return "auto";
+  return "dark";
 }
 
-/* INIT FINAL */
-
-let lastCols=computeCols().cols;
-
-const ro=new ResizeObserver(()=>{
-
-const newCols=computeCols().cols;
-
-applyResponsiveLayout();
-animateReflow();
-
-lastCols=newCols;
-
+sliderUI.querySelectorAll("span").forEach(span => {
+  span.addEventListener("click", e => {
+    if(document.body.classList.contains("edit-mode")) return;
+    e.stopPropagation();
+    applyTheme(span.dataset.mode);
+  });
 });
 
-ro.observe(gridEl);
+let themeDrag=false, themePid=null;
 
-applyResponsiveLayout();
+sliderUI.addEventListener("pointerdown", e => {
+  if(document.body.classList.contains("edit-mode")) return;
+  themeDrag=true;
+  themePid=e.pointerId;
+  sliderUI.setPointerCapture(themePid);
 
-const savedMode=localStorage.getItem("theme_mode")||"auto";
-applyTheme(savedMode);
+  const r=sliderUI.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  setThumb(modeFromX(x), false);
+});
+sliderUI.addEventListener("pointermove", e => {
+  if(!themeDrag) return;
+  const r=sliderUI.getBoundingClientRect();
+  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
+  setThumb(modeFromX(x), false);
+});
+sliderUI.addEventListener("pointerup", e => {
+  if(!themeDrag) return;
+  themeDrag=false;
+  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
+  themePid=null;
+
+  const r=sliderUI.getBoundingClientRect();
+  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
+  applyTheme(modeFromX(x));
+});
+sliderUI.addEventListener("pointercancel", e => {
+  if(!themeDrag) return;
+  themeDrag=false;
+  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
+  themePid=null;
+  applyTheme(currentMode);
+});
+
+/* ASSISTANT HOST API */
+window.assistant = {
+  setName(name){ return setAssistantName(name); },
+  getName(){ return getAssistantName(); },
+
+  setProfile(name){
+    const n = String(name ?? "").trim();
+    if(!n) return false;
+    localStorage.setItem("layout_profile", n);
+    activeProfile = n;
+    const loaded = loadLayout();
+    if(!loaded) packInitial();
+    return true;
+  },
+  getProfile(){
+    return activeProfile;
+  },
+
+  removeWidget(id){
+    const el = document.querySelector(`[data-widget-id="${id}"]`);
+    if(!el) return false;
+    el.style.display = "none";
+    const raw = localStorage.getItem(layoutKey());
+    const data = raw ? JSON.parse(raw) : {};
+    data[id] = { ...(data[id]||{}), hidden: true };
+    localStorage.setItem(layoutKey(), JSON.stringify(data));
+    return true;
+  },
+  showWidget(id){
+    const el = document.querySelector(`[data-widget-id="${id}"]`);
+    if(!el) return false;
+    el.style.display = "";
+    const raw = localStorage.getItem(layoutKey());
+    const data = raw ? JSON.parse(raw) : {};
+    if(data[id]) data[id].hidden = false;
+    localStorage.setItem(layoutKey(), JSON.stringify(data));
+    return true;
+  }
+};
+
+/* INIT */
+ensureWrappedWidgets();
+let lastCols = computeCols().cols;
+
+const loaded = loadLayout();
+if(!loaded) packInitial();
+
+const savedMode = (localStorage.getItem("theme_mode") || "auto").trim();
+applyTheme(modes.includes(savedMode) ? savedMode : "auto");
+
+// aplica responsivo e reflow inicial com anima suave
+(function initialOSLayout(){
+  const before = captureRects();
+  const newCols = computeCols().cols;
+  applyResponsiveSizes(newCols);
+  reflowForCols(lastCols, newCols);
+  animateFLIP(before);
+  lastCols = newCols;
+})();
 
 for(const w of allWidgetWraps()){
-attachWidgetDrag(w);
+  attachWidgetDrag(w);
 }
 
+const ro = new ResizeObserver(() => {
+  // não mexe no layout enquanto está arrastando (evita “briga” com o mouse)
+  if(dragged || sDragged) return;
+
+  const before = captureRects();
+  const newCols = computeCols().cols;
+
+  applyResponsiveSizes(newCols);
+
+  if(newCols !== lastCols){
+    reflowForCols(lastCols, newCols);
+    lastCols = newCols;
+  } else {
+    // Mesmo com cols igual, densidade pode mudar (ex: width muda)
+    const wraps = allWidgetWraps();
+    for(const el of wraps){
+      const p = getGridPos(el);
+      const best = findNearestFreeCell(el, p.col, p.row, p.w, p.h);
+      setGridPos(el, best.col, best.row);
+    }
+    saveLayout();
+  }
+
+  animateFLIP(before);
+});
+ro.observe(gridEl);
+</script>
+
+</body>
+</html>
