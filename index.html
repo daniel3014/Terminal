@@ -348,6 +348,8 @@ function computeCols(){
   return { cols, cellW };
 }
 
+function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
+
 function allWidgetWraps(){
   return Array.from(document.querySelectorAll(".widget-wrap"))
     .filter(el => el.style.display !== "none");
@@ -391,7 +393,6 @@ function buildOccupancy(exceptEl){
       }
     }
   }
-
   return { cols, isMarked };
 }
 
@@ -429,7 +430,6 @@ function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
       }
     }
   }
-
   return { col: tc, row: tr };
 }
 
@@ -445,6 +445,7 @@ function pitchY(){
   return GRID + GAP;
 }
 
+/* usa ponto (normalmente centro do widget) */
 function cellFromPoint(x, y){
   const r = gridOrigin();
   const col = Math.floor((x - r.left) / pitchX()) + 1;
@@ -485,8 +486,6 @@ function ensureWrappedWidgets(){
 /* LAYOUT SAVE/LOAD */
 let activeProfile = (localStorage.getItem("layout_profile") || "default").trim() || "default";
 function layoutKey(){ return "terminal_layout_v3_" + activeProfile; }
-
-function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
 
 function saveLayout(){
   const data = { _meta: { profile: activeProfile } };
@@ -660,32 +659,47 @@ editToggle.addEventListener("keydown", e => {
   }
 });
 
-/* WIDGET DRAG (SIMPLE: no preview, snap on drop) */
+/* WIDGET DRAG (SIMPLE + FAST DROP) */
 let dragged = null;
 let dragPid = null;
 let dragOffX = 0;
 let dragOffY = 0;
+let dragW = 0;
+let dragH = 0;
 
-function animateSettle(el, targetRect){
-  el.style.transition = "left 240ms cubic-bezier(.2,.9,.2,1), top 240ms cubic-bezier(.2,.9,.2,1), width 240ms cubic-bezier(.2,.9,.2,1), height 240ms cubic-bezier(.2,.9,.2,1)";
-  el.style.left = targetRect.left + "px";
-  el.style.top  = targetRect.top + "px";
-  el.style.width  = targetRect.width + "px";
-  el.style.height = targetRect.height + "px";
+function clearFixedStyles(el){
+  el.style.left = "";
+  el.style.top = "";
+  el.style.width = "";
+  el.style.height = "";
+}
+
+function setFixedRect(el, r){
+  el.style.left = r.left + "px";
+  el.style.top = r.top + "px";
+  el.style.width = r.width + "px";
+  el.style.height = r.height + "px";
+}
+
+function animateSettle(el, startRect, destRect){
+  el.style.transition = "none";
+  setFixedRect(el, startRect);
+  void el.offsetWidth;
+
+  el.style.transition = "left 160ms cubic-bezier(.2,.9,.2,1), top 160ms cubic-bezier(.2,.9,.2,1)";
+  el.style.left = destRect.left + "px";
+  el.style.top  = destRect.top + "px";
 
   const cleanup = () => {
     el.removeEventListener("transitionend", cleanup);
     el.style.transition = "";
-    el.style.left = "";
-    el.style.top = "";
-    el.style.width = "";
-    el.style.height = "";
     el.classList.remove("fixed");
     el.classList.remove("dragging");
+    clearFixedStyles(el);
   };
 
   el.addEventListener("transitionend", cleanup);
-  setTimeout(cleanup, 320);
+  setTimeout(cleanup, 220);
 }
 
 function attachWidgetDrag(el){
@@ -700,12 +714,11 @@ function attachWidgetDrag(el){
     const rect = dragged.getBoundingClientRect();
     dragOffX = e.clientX - rect.left;
     dragOffY = e.clientY - rect.top;
+    dragW = rect.width;
+    dragH = rect.height;
 
     dragged.classList.add("fixed");
-    dragged.style.left = rect.left + "px";
-    dragged.style.top = rect.top + "px";
-    dragged.style.width = rect.width + "px";
-    dragged.style.height = rect.height + "px";
+    setFixedRect(dragged, rect);
 
     dragPid = e.pointerId;
     dragged.setPointerCapture(dragPid);
@@ -721,21 +734,26 @@ function attachWidgetDrag(el){
     dragged.style.top  = top + "px";
   });
 
-  function endDrag(animate=true){
+  function endDrag(e, animate=true){
     if(!dragged) return;
 
+    const startRect = dragged.getBoundingClientRect();
     const {w,h} = getGridPos(dragged);
 
-    const rect = dragged.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top  + rect.height / 2;
+    const centerX = (e.clientX - dragOffX) + dragW / 2;
+    const centerY = (e.clientY - dragOffY) + dragH / 2;
 
     const target = cellFromPoint(centerX, centerY);
-
     const best = findNearestFreeCell(dragged, target.col, target.row, w, h);
     setGridPos(dragged, best.col, best.row);
 
-    const targetRect = dragged.getBoundingClientRect();
+    dragged.classList.remove("fixed");
+    clearFixedStyles(dragged);
+    const destRect = dragged.getBoundingClientRect();
+
+    dragged.classList.add("fixed");
+    setFixedRect(dragged, startRect);
+    void dragged.offsetWidth;
 
     try{ dragged.releasePointerCapture(dragPid); }catch(_){}
     dragPid = null;
@@ -744,14 +762,11 @@ function attachWidgetDrag(el){
     saveLayout();
 
     if(animate){
-      animateSettle(dragged, targetRect);
+      animateSettle(dragged, startRect, destRect);
     } else {
       dragged.classList.remove("fixed");
       dragged.classList.remove("dragging");
-      dragged.style.left = "";
-      dragged.style.top = "";
-      dragged.style.width = "";
-      dragged.style.height = "";
+      clearFixedStyles(dragged);
     }
 
     dragged = null;
@@ -759,12 +774,12 @@ function attachWidgetDrag(el){
 
   el.addEventListener("pointerup", e => {
     if(!dragged || dragged !== el) return;
-    endDrag(true);
+    endDrag(e, true);
   });
 
   el.addEventListener("pointercancel", e => {
     if(!dragged || dragged !== el) return;
-    endDrag(false);
+    endDrag(e, false);
   });
 
   el.addEventListener("contextmenu", e => {
