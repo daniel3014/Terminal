@@ -74,7 +74,6 @@ body.edit-mode::before{
   --w: 4;
   --h: 2;
 
-  /* Base “OS” (não muda com responsividade, a menos que o usuário redimensione) */
   --base-w: 4;
   --base-h: 2;
 
@@ -338,11 +337,19 @@ renderAssistantName();
 
 /* GRID HELPERS */
 const gridEl = document.getElementById("grid");
-const GRID = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
-const GAP  = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--grid-gap")) || 18;
+
+function gridSize(){
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
+}
+function gridGap(){
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--grid-gap")) || 18;
+}
 
 function computeCols(){
   const w = gridEl.clientWidth;
+  const GRID = gridSize();
+  const GAP = gridGap();
+
   const pitchMin = GRID + GAP;
   const cols = Math.max(1, Math.floor((w + GAP) / pitchMin));
   document.documentElement.style.setProperty("--cols", cols);
@@ -449,10 +456,14 @@ function gridOrigin(){
 }
 
 function pitchX(){
+  const GRID = gridSize();
+  const GAP = gridGap();
   const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
   return cellW + GAP;
 }
 function pitchY(){
+  const GRID = gridSize();
+  const GAP = gridGap();
   return GRID + GAP;
 }
 
@@ -626,7 +637,7 @@ function reflowForCols(oldCols, newCols){
   saveLayout();
 }
 
-/* RESPONSIVE OS ENGINE */
+/* RESPONSIVE OS ENGINE (com grid metrics) */
 let currentDensity = "normal";
 
 function getDensity(cols, width){
@@ -643,30 +654,52 @@ function densityScale(d){
   return 1.0;
 }
 
-function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function setGridMetricsForDensity(d){
+  if(d === "ultra"){
+    document.documentElement.style.setProperty("--grid-size", "44px");
+    document.documentElement.style.setProperty("--grid-gap", "12px");
+    document.documentElement.style.setProperty("--shadow-inset", "10px");
+    return;
+  }
+  if(d === "compact"){
+    document.documentElement.style.setProperty("--grid-size", "54px");
+    document.documentElement.style.setProperty("--grid-gap", "16px");
+    document.documentElement.style.setProperty("--shadow-inset", "11px");
+    return;
+  }
+  if(d === "expanded"){
+    document.documentElement.style.setProperty("--grid-size", "66px");
+    document.documentElement.style.setProperty("--grid-gap", "20px");
+    document.documentElement.style.setProperty("--shadow-inset", "12px");
+    return;
+  }
+  document.documentElement.style.setProperty("--grid-size", "60px");
+  document.documentElement.style.setProperty("--grid-gap", "18px");
+  document.documentElement.style.setProperty("--shadow-inset", "12px");
+}
 
-function applyResponsiveSizes(cols){
-  const density = getDensity(cols, window.innerWidth);
+function applyResponsiveSizes(){
+  // 1) densidade preliminar pelo width (antes de calcular cols finais)
+  const preliminaryCols = computeCols().cols;
+  const density = getDensity(preliminaryCols, window.innerWidth);
+
+  // 2) OS-like: ajusta métricas do grid e recalcula cols
+  setGridMetricsForDensity(density);
+  const { cols } = computeCols();
+
+  // 3) escala widgets por base
   const scale = densityScale(density);
 
   for(const el of allWidgetWraps()){
     const p = getGridPos(el);
 
-    // sempre baseado no base
     let nw = Math.max(1, Math.round(p.baseW * scale));
     let nh = Math.max(1, Math.round(p.baseH * scale));
 
-    // nunca pode exceder colunas
     nw = Math.min(nw, cols);
-
-    // evita “pular” demais em densidades próximas
-    if(density !== currentDensity){
-      // ok mudar; senão mantém
-    }
 
     setGridSize(el, nw, nh);
 
-    // reposiciona imediatamente pra ficar válido antes do reflow
     const best = findNearestFreeCell(el, p.col, p.row, nw, nh);
     setGridPos(el, best.col, best.row);
   }
@@ -885,16 +918,18 @@ function attachWidgetDrag(el){
     ];
 
     const cur = getGridPos(el);
-    let idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
+    let idx = sizes.findIndex(s => s.w === cur.baseW && s.h === cur.baseH);
+    if(idx === -1){
+      idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
+    }
     idx = (idx + 1) % sizes.length;
     const next = sizes[idx];
 
-    // tamanho “do usuário” vira novo base (OS-style)
     setBaseSize(el, next.w, next.h);
 
-    // aplica responsivo imediatamente para o tamanho atual de densidade
-    const { cols } = computeCols();
-    applyResponsiveSizes(cols);
+    const before = captureRects();
+    applyResponsiveSizes();
+    animateFLIP(before);
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
@@ -1082,11 +1117,10 @@ if(!loaded) packInitial();
 const savedMode = (localStorage.getItem("theme_mode") || "auto").trim();
 applyTheme(modes.includes(savedMode) ? savedMode : "auto");
 
-// aplica responsivo e reflow inicial com anima suave
 (function initialOSLayout(){
   const before = captureRects();
+  applyResponsiveSizes();
   const newCols = computeCols().cols;
-  applyResponsiveSizes(newCols);
   reflowForCols(lastCols, newCols);
   animateFLIP(before);
   lastCols = newCols;
@@ -1097,21 +1131,18 @@ for(const w of allWidgetWraps()){
 }
 
 const ro = new ResizeObserver(() => {
-  // não mexe no layout enquanto está arrastando (evita “briga” com o mouse)
   if(dragged || sDragged) return;
 
   const before = captureRects();
+
+  applyResponsiveSizes();
+
   const newCols = computeCols().cols;
-
-  applyResponsiveSizes(newCols);
-
   if(newCols !== lastCols){
     reflowForCols(lastCols, newCols);
     lastCols = newCols;
   } else {
-    // Mesmo com cols igual, densidade pode mudar (ex: width muda)
-    const wraps = allWidgetWraps();
-    for(const el of wraps){
+    for(const el of allWidgetWraps()){
       const p = getGridPos(el);
       const best = findNearestFreeCell(el, p.col, p.row, p.w, p.h);
       setGridPos(el, best.col, best.row);
