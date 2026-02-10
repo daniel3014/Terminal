@@ -26,14 +26,33 @@
 body[data-theme="light"]{
   background: linear-gradient(135deg,#e6f1ff,#cfe4ff);
   color:#0f172a;
+  --grid-line: rgba(0,0,0,0.08);
 }
+
 body[data-theme="dark"]{
   background: linear-gradient(135deg,#020617,#0b1220);
   color:#e5e7eb;
+  --grid-line: rgba(255,255,255,0.14);
 }
 
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
 body{margin:0;min-height:100vh;padding:24px 16px;}
+
+body.edit-mode::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(to right,var(--grid-line) 1px,transparent 1px),
+    linear-gradient(to bottom,var(--grid-line) 1px,transparent 1px);
+  background-size:
+    calc(var(--cell-w) + var(--grid-gap))
+    calc(var(--grid-size) + var(--grid-gap));
+  pointer-events:none;
+  z-index:0;
+}
+
+/* GRID */
 
 .app{
   width:100%;
@@ -41,31 +60,45 @@ body{margin:0;min-height:100vh;padding:24px 16px;}
   grid-template-columns:repeat(var(--cols),1fr);
   grid-auto-rows:var(--grid-size);
   gap:var(--grid-gap);
+  align-content:start;
 }
+
+/* WRAP */
 
 .widget-wrap{
   position:relative;
+
   --col:1;
   --row:1;
   --w:4;
   --h:2;
+
   --base-w:4;
   --base-h:2;
 
   grid-column:var(--col)/span var(--w);
   grid-row:var(--row)/span var(--h);
+
+  touch-action:none;
+  user-select:none;
 }
+
+/* SHADOW */
 
 .widget-shadow{
   position:absolute;
-  inset:12px;
-  border-radius:20px;
+  inset:var(--shadow-inset);
+  border-radius:calc(26px - var(--shadow-inset));
   box-shadow:var(--shadow);
+  pointer-events:none;
+  z-index:1;
 }
 
+/* WIDGET */
+
 .widget{
-  width:100%;
   height:100%;
+  width:100%;
   background:var(--glass-light);
   backdrop-filter:var(--blur);
   border:1px solid var(--border-light);
@@ -79,180 +112,478 @@ body[data-theme="dark"] .widget{
   background:var(--glass-dark);
   border-color:var(--border-dark);
 }
+
+.widget.clock{text-align:center;}
+.clock-time{font-size:64px;}
+.clock-date{opacity:.6;}
+
+.widget.forecast{display:flex;justify-content:space-between;}
+
+/* SLIDER */
+
+#slider{
+  position:fixed;
+  top:20px;
+  right:20px;
+  width:170px;
+  height:44px;
+  z-index:80;
+
+  --tx:0px;
+  --ty:0px;
+  transform:translate(var(--tx),var(--ty));
+}
+
+#slider .slider-shadow{
+  position:absolute;
+  inset:var(--shadow-inset);
+  border-radius:999px;
+  box-shadow:var(--shadow);
+}
+
+#slider .theme-slider-ui{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background:var(--glass-light);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--border-light);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+}
+
+body[data-theme="dark"] #slider .theme-slider-ui{
+  background:var(--glass-dark);
+  border-color:var(--border-dark);
+}
+
+.slider-thumb{
+  position:absolute;
+  height:36px;
+  width:54px;
+  border-radius:999px;
+  left:6px;
+  top:4px;
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.4);
+  transition:left .25s ease;
+}
+
+/* EDIT TOGGLE */
+
+.edit-toggle{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  height:44px;
+  padding:0 14px;
+  border-radius:999px;
+
+  background:var(--glass-light);
+  backdrop-filter:var(--blur);
+  border:1px solid var(--border-light);
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  cursor:pointer;
+  z-index:90;
+}
+
+body[data-theme="dark"] .edit-toggle{
+  background:var(--glass-dark);
+  border-color:var(--border-dark);
+}
+
+.edit-toggle .dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:rgba(15,23,42,.35);
+}
+
+body.edit-mode .edit-toggle .dot{
+  background:rgba(34,197,94,.7);
+}
 </style>
 </head>
 
 <body data-theme="light">
 
+<div id="slider">
+  <div class="slider-shadow"></div>
+  <div class="theme-slider-ui" id="sliderUI">
+    <div class="slider-thumb" id="thumb"></div>
+    <span data-mode="light">☀️</span>
+    <span data-mode="auto">AUTO</span>
+    <span data-mode="dark">🌙</span>
+  </div>
+</div>
+
+<div class="edit-toggle" id="editToggle">
+  <div class="dot"></div>
+  <div id="editToggleText">Editar</div>
+</div>
+
 <div class="app" id="grid">
 
-<div class="widget" data-w="4" data-h="2">Clima</div>
-<div class="widget" data-w="8" data-h="3">Relógio</div>
-<div class="widget" data-w="4" data-h="2">Previsão</div>
+<div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
+<strong>23°C ☀️</strong><br>Sensação 25°
+</div>
+
+<div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
+<div class="clock-time" id="time"></div>
+<div class="clock-date" id="date"></div>
+</div>
+
+<div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
+<span>☀️ 24°</span>
+<span>🌧️ 22°</span>
+<span>⛅ 23°</span>
+</div>
+
+<div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
+<span id="assistantTitle"></span>
+</div>
 
 </div>
 
 <script>
 
-/* GRID */
+/* CLOCK */
+
+function updateClock(){
+const now=new Date();
+time.textContent=now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+date.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+}
+updateClock();
+setInterval(updateClock,1000);
+
+/* ASSISTANT */
+
+function getAssistantName(){
+return localStorage.getItem("assistant_name")||"Jarvis";
+}
+
+function renderAssistantName(){
+assistantTitle.textContent="Widget futuro do "+getAssistantName();
+}
+renderAssistantName();
+
+/* GRID HELPERS */
 
 const gridEl=document.getElementById("grid");
 const GRID=60;
 const GAP=18;
 
 function computeCols(){
-  const width=gridEl.clientWidth;
-  const cols=Math.max(1,Math.floor((width+GAP)/(GRID+GAP)));
-  document.documentElement.style.setProperty("--cols",cols);
 
-  const cellW=(width-(cols-1)*GAP)/cols;
-  document.documentElement.style.setProperty("--cell-w",cellW+"px");
+const w=gridEl.clientWidth;
+const pitchMin=GRID+GAP;
 
-  return {cols,cellW};
+const cols=Math.max(1,Math.floor((w+GAP)/pitchMin));
+document.documentElement.style.setProperty("--cols",cols);
+
+const cellW=(w-(cols-1)*GAP)/cols;
+document.documentElement.style.setProperty("--cell-w",cellW+"px");
+
+return{cols,cellW};
 }
 
 /* WRAP */
 
 function ensureWrappedWidgets(){
 
-  document.querySelectorAll("#grid>.widget").forEach(w=>{
+document.querySelectorAll("#grid>.widget").forEach(w=>{
 
-    if(w.parentElement.classList.contains("widget-wrap")) return;
+if(w.parentElement.classList.contains("widget-wrap"))return;
 
-    const wrap=document.createElement("div");
-    wrap.className="widget-wrap";
+const wrap=document.createElement("div");
+wrap.className="widget-wrap";
 
-    const dw=parseInt(w.dataset.w)||4;
-    const dh=parseInt(w.dataset.h)||2;
+const dw=parseInt(w.dataset.w)||4;
+const dh=parseInt(w.dataset.h)||2;
 
-    wrap.style.setProperty("--base-w",dw);
-    wrap.style.setProperty("--base-h",dh);
-    wrap.style.setProperty("--w",dw);
-    wrap.style.setProperty("--h",dh);
+wrap.style.setProperty("--base-w",dw);
+wrap.style.setProperty("--base-h",dh);
+wrap.style.setProperty("--w",dw);
+wrap.style.setProperty("--h",dh);
 
-    const shadow=document.createElement("div");
-    shadow.className="widget-shadow";
+const id=w.dataset.widgetId;
+if(id){
+wrap.setAttribute("data-widget-id",id);
+w.removeAttribute("data-widget-id");
+}
 
-    w.parentNode.insertBefore(wrap,w);
-    wrap.appendChild(shadow);
-    wrap.appendChild(w);
+const shadow=document.createElement("div");
+shadow.className="widget-shadow";
 
-  });
+w.parentNode.insertBefore(wrap,w);
+wrap.appendChild(shadow);
+wrap.appendChild(w);
+
+});
 
 }
 
-/* HELPERS */
+ensureWrappedWidgets();
+/* GRID POSITION HELPERS */
 
 function allWidgetWraps(){
-  return [...document.querySelectorAll(".widget-wrap")];
+return [...document.querySelectorAll(".widget-wrap")];
 }
 
 function getGridPos(el){
-  const cs=getComputedStyle(el);
-  return{
-    col:parseInt(cs.getPropertyValue("--col"))||1,
-    row:parseInt(cs.getPropertyValue("--row"))||1,
-    w:parseInt(cs.getPropertyValue("--w"))||4,
-    h:parseInt(cs.getPropertyValue("--h"))||2
-  };
+const cs=getComputedStyle(el);
+return{
+col:parseInt(cs.getPropertyValue("--col"))||1,
+row:parseInt(cs.getPropertyValue("--row"))||1,
+w:parseInt(cs.getPropertyValue("--w"))||4,
+h:parseInt(cs.getPropertyValue("--h"))||2
+};
+}
+
+function setGridPos(el,col,row){
+el.style.setProperty("--col",col);
+el.style.setProperty("--row",row);
 }
 
 function setGridSize(el,w,h){
-  el.style.setProperty("--w",w);
-  el.style.setProperty("--h",h);
+el.style.setProperty("--w",w);
+el.style.setProperty("--h",h);
 }
 
 /* RESPONSIVE OS ENGINE */
 
 function getDensity(cols,width){
-  if(width<480) return "ultra";
-  if(cols<=4) return "compact";
-  if(cols<=9) return "normal";
-  return "expanded";
+
+if(width<480)return"ultra";
+if(cols<=4)return"compact";
+if(cols<=9)return"normal";
+return"expanded";
+
 }
 
-function densityScale(density){
-  switch(density){
-    case"ultra":return .45;
-    case"compact":return .65;
-    case"normal":return 1;
-    case"expanded":return 1.15;
-  }
-  return 1;
+function densityScale(d){
+
+switch(d){
+case"ultra":return .45;
+case"compact":return .65;
+case"expanded":return 1.15;
+default:return 1;
+}
+
 }
 
 function applyResponsiveLayout(){
 
-  const {cols}=computeCols();
-  const density=getDensity(cols,window.innerWidth);
-  const scale=densityScale(density);
+const {cols}=computeCols();
+const density=getDensity(cols,window.innerWidth);
+const scale=densityScale(density);
 
-  for(const el of allWidgetWraps()){
+for(const el of allWidgetWraps()){
 
-    const cs=getComputedStyle(el);
-    const baseW=parseInt(cs.getPropertyValue("--base-w"))||4;
-    const baseH=parseInt(cs.getPropertyValue("--base-h"))||2;
+const cs=getComputedStyle(el);
 
-    const newW=Math.max(1,Math.round(baseW*scale));
-    const newH=Math.max(1,Math.round(baseH*scale));
+const baseW=parseInt(cs.getPropertyValue("--base-w"))||4;
+const baseH=parseInt(cs.getPropertyValue("--base-h"))||2;
 
-    setGridSize(el,newW,newH);
-  }
+const newW=Math.max(1,Math.round(baseW*scale));
+const newH=Math.max(1,Math.round(baseH*scale));
+
+setGridSize(el,newW,newH);
 
 }
 
-/* ANIMATION */
+}
+
+/* REORGANIZAÇÃO ANIMADA */
 
 function animateReflow(){
 
-  const rects=new Map();
+const rects=new Map();
 
-  for(const el of allWidgetWraps()){
-    rects.set(el,el.getBoundingClientRect());
-  }
+for(const el of allWidgetWraps()){
+rects.set(el,el.getBoundingClientRect());
+}
 
-  requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{
 
-    for(const el of allWidgetWraps()){
+for(const el of allWidgetWraps()){
 
-      const oldRect=rects.get(el);
-      const newRect=el.getBoundingClientRect();
+const oldRect=rects.get(el);
+const newRect=el.getBoundingClientRect();
 
-      const dx=oldRect.left-newRect.left;
-      const dy=oldRect.top-newRect.top;
+const dx=oldRect.left-newRect.left;
+const dy=oldRect.top-newRect.top;
 
-      if(dx||dy){
+if(dx||dy){
 
-        el.style.transition="none";
-        el.style.transform=`translate(${dx}px,${dy}px)`;
+el.style.transition="none";
+el.style.transform=`translate(${dx}px,${dy}px)`;
 
-        requestAnimationFrame(()=>{
-          el.style.transition="transform 260ms cubic-bezier(.2,.9,.2,1)";
-          el.style.transform="";
-        });
-
-      }
-
-    }
-
-  });
+requestAnimationFrame(()=>{
+el.style.transition="transform 260ms cubic-bezier(.2,.9,.2,1)";
+el.style.transform="";
+});
 
 }
 
-/* INIT */
+}
 
-ensureWrappedWidgets();
+});
+
+}
+
+/* DRAG SYSTEM */
+
+let dragged=null;
+let dragPid=null;
+let offX=0;
+let offY=0;
+let dragW=0;
+let dragH=0;
+
+function gridOrigin(){
+return gridEl.getBoundingClientRect();
+}
+
+function pitchX(){
+const cellW=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w"))||GRID;
+return cellW+GAP;
+}
+
+function pitchY(){
+return GRID+GAP;
+}
+
+function anchorFromCenter(cx,cy,w,h){
+
+const r=gridOrigin();
+
+const rawCol=((cx-r.left)/pitchX())+1;
+const rawRow=((cy-r.top)/pitchY())+1;
+
+return{
+col:Math.round(rawCol-(w-1)/2),
+row:Math.round(rawRow-(h-1)/2)
+};
+
+}
+
+function findNearestFreeCell(exceptEl,targetCol,targetRow,w,h){
+
+return{col:Math.max(1,targetCol),row:Math.max(1,targetRow)};
+
+}
+
+function attachWidgetDrag(el){
+
+el.addEventListener("pointerdown",e=>{
+
+if(!document.body.classList.contains("edit-mode"))return;
+
+dragged=el;
+dragged.classList.add("dragging");
+
+const rect=el.getBoundingClientRect();
+
+offX=e.clientX-rect.left;
+offY=e.clientY-rect.top;
+
+dragW=rect.width;
+dragH=rect.height;
+
+el.classList.add("fixed");
+el.style.left=rect.left+"px";
+el.style.top=rect.top+"px";
+el.style.width=rect.width+"px";
+el.style.height=rect.height+"px";
+
+dragPid=e.pointerId;
+el.setPointerCapture(dragPid);
+
+});
+
+el.addEventListener("pointermove",e=>{
+
+if(!dragged)return;
+
+const left=e.clientX-offX;
+const top=e.clientY-offY;
+
+dragged.style.left=left+"px";
+dragged.style.top=top+"px";
+
+});
+
+el.addEventListener("pointerup",e=>{
+
+if(!dragged)return;
+
+const {w,h}=getGridPos(dragged);
+
+const cx=(e.clientX-offX)+dragW/2;
+const cy=(e.clientY-offY)+dragH/2;
+
+const target=anchorFromCenter(cx,cy,w,h);
+
+setGridPos(dragged,target.col,target.row);
+
+dragged.classList.remove("fixed");
+dragged.classList.remove("dragging");
+
+dragged.style.left="";
+dragged.style.top="";
+dragged.style.width="";
+dragged.style.height="";
+
+dragged.releasePointerCapture(dragPid);
+dragged=null;
+
+});
+
+}
+
+/* THEME */
+
+const sliderUI=document.getElementById("sliderUI");
+const thumb=document.getElementById("thumb");
+
+const modes=["light","auto","dark"];
+
+function applyTheme(mode){
+
+localStorage.setItem("theme_mode",mode);
+
+if(mode==="auto"){
+
+const h=new Date().getHours();
+document.body.dataset.theme=(h>=6&&h<18)?"light":"dark";
+
+}else{
+
+document.body.dataset.theme=mode;
+
+}
+
+}
+
+/* INIT FINAL */
 
 let lastCols=computeCols().cols;
 
 const ro=new ResizeObserver(()=>{
 
-  const newCols=computeCols().cols;
+const newCols=computeCols().cols;
 
-  applyResponsiveLayout();
-  animateReflow();
+applyResponsiveLayout();
+animateReflow();
 
-  lastCols=newCols;
+lastCols=newCols;
 
 });
 
@@ -260,6 +591,10 @@ ro.observe(gridEl);
 
 applyResponsiveLayout();
 
-</script>
-</body>
-</html>
+const savedMode=localStorage.getItem("theme_mode")||"auto";
+applyTheme(savedMode);
+
+for(const w of allWidgetWraps()){
+attachWidgetDrag(w);
+}
+
