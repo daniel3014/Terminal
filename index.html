@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Terminal</title>
 
 <style>
@@ -15,12 +15,20 @@
   --blur: blur(22px);
   --shadow: 0 25px 50px rgba(0,0,0,0.25);
 
-  --grid-size: 60px;
-  --grid-gap: 18px;
+  /* ✅ Grid responsivo real (mobile ganha mais colunas automaticamente) */
+  --grid-size: clamp(40px, 6.2vw, 60px);
+  --grid-gap:  clamp(10px, 2.2vw, 18px);
   --shadow-inset: 12px;
 
   --cols: 12;
   --cell-w: 60px;
+
+  /* ✅ escala do painel (sem scroll) */
+  --ui-scale: 1;
+
+  /* padding do painel (também responsivo) */
+  --stage-pad-x: clamp(12px, 2.5vw, 16px);
+  --stage-pad-y: clamp(14px, 2.8vw, 24px);
 }
 
 body[data-theme="light"]{
@@ -35,8 +43,27 @@ body[data-theme="dark"]{
 }
 
 *{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-body{ margin:0; min-height:100vh; padding:24px 16px; }
 
+/* ✅ Sem scroll + tela inteira */
+html, body{
+  height: 100%;
+  overflow: hidden;
+}
+
+body{
+  margin:0;
+  padding: 0;
+}
+
+/* ✅ Stage ocupa a tela inteira */
+.stage{
+  position: fixed;
+  inset: 0;
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+  overflow: hidden;
+}
+
+/* GRID OVERLAY TELA INTEIRA (EDIT MODE) */
 body.edit-mode::before{
   content:"";
   position:fixed;
@@ -50,12 +77,10 @@ body.edit-mode::before{
   z-index:0;
 }
 
+/* ✅ GRID (painel) */
 .app{
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  position:relative;
-  z-index:1;
+  position: relative;
+  z-index: 1;
 
   display:grid;
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
@@ -63,9 +88,21 @@ body.edit-mode::before{
   gap: var(--grid-gap);
   align-content:start;
 
-  overflow: visible;
+  width: 100%;
+  height: 100%;
+
+  /* ✅ Fit-to-screen quando fora do edit-mode */
+  transform-origin: top left;
+  transform: scale(var(--ui-scale));
+  will-change: transform;
 }
 
+/* ✅ Em edit-mode não escala (drag fica perfeito) */
+body.edit-mode .app{
+  transform: none;
+}
+
+/* WRAP */
 .widget-wrap{
   position:relative;
 
@@ -84,6 +121,7 @@ body.edit-mode::before{
   user-select:none;
 }
 
+/* SHADOW */
 .widget-shadow{
   position:absolute;
   inset: var(--shadow-inset);
@@ -93,6 +131,7 @@ body.edit-mode::before{
   z-index: 1;
 }
 
+/* WIDGET */
 .widget-wrap > .widget{
   height: 100%;
   width: 100%;
@@ -116,6 +155,7 @@ body[data-theme="dark"] .widget-wrap > .widget{
   border-color: var(--border-dark);
 }
 
+/* EDIT MODE */
 .edit-mode .widget-wrap > .widget{ cursor:grab; }
 .edit-mode .widget-wrap > .widget,
 .edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
@@ -140,11 +180,13 @@ body[data-theme="dark"] .widget-wrap > .widget{
   pointer-events: none;
 }
 
+/* WIDGETS */
 .widget.clock{ text-align:center; }
 .clock-time{ font-size:64px; }
 .clock-date{ opacity:0.6; }
 .widget.forecast{ display:flex; justify-content:space-between; }
 
+/* SLIDER */
 #slider{
   position: fixed;
   top: 20px;
@@ -220,6 +262,7 @@ body[data-theme="dark"] .slider-thumb{
   border-color: rgba(255,255,255,0.25);
 }
 
+/* EDIT TOGGLE */
 .edit-toggle{
   position: fixed;
   right: 20px;
@@ -282,28 +325,30 @@ body.edit-mode .edit-toggle .dot{
   <div id="editToggleText">Editar</div>
 </div>
 
-<div class="app" id="grid">
+<div class="stage">
+  <div class="app" id="grid">
 
-  <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
-    <strong>23°C ☀️</strong><br>
-    Sensação 25° · Chuva 10%
+    <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
+      <strong>23°C ☀️</strong><br>
+      Sensação 25° · Chuva 10%
+    </div>
+
+    <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
+      <div class="clock-time" id="time"></div>
+      <div class="clock-date" id="date"></div>
+    </div>
+
+    <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
+      <span>☀️ 24°</span>
+      <span>🌧️ 22°</span>
+      <span>⛅ 23°</span>
+    </div>
+
+    <div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
+      <span id="assistantTitle"></span>
+    </div>
+
   </div>
-
-  <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
-    <div class="clock-time" id="time"></div>
-    <div class="clock-date" id="date"></div>
-  </div>
-
-  <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
-    <span>☀️ 24°</span>
-    <span>🌧️ 22°</span>
-    <span>⛅ 23°</span>
-  </div>
-
-  <div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
-    <span id="assistantTitle"></span>
-  </div>
-
 </div>
 
 <script>
@@ -467,14 +512,13 @@ function pitchY(){
   return GRID + GAP;
 }
 
-/* centro do widget -> canto superior esquerdo considerando w/h */
 function anchorFromCenter(centerX, centerY, w, h){
   const r = gridOrigin();
   const rawCenterCol = ((centerX - r.left) / pitchX()) + 1;
   const rawCenterRow = ((centerY - r.top)  / pitchY()) + 1;
 
-  const targetCol = Math.round(rawCenterCol - (w - 1) / 2);
-  const targetRow = Math.round(rawCenterRow - (h - 1) / 2);
+  const targetCol = Math.round( rawCenterCol - (w - 1) / 2 );
+  const targetRow = Math.round( rawCenterRow - (h - 1) / 2 );
 
   return { col: targetCol, row: targetRow };
 }
@@ -637,7 +681,7 @@ function reflowForCols(oldCols, newCols){
   saveLayout();
 }
 
-/* RESPONSIVE OS ENGINE (com grid metrics) */
+/* RESPONSIVE OS ENGINE */
 let currentDensity = "normal";
 
 function getDensity(cols, width){
@@ -654,40 +698,8 @@ function densityScale(d){
   return 1.0;
 }
 
-function setGridMetricsForDensity(d){
-  if(d === "ultra"){
-    document.documentElement.style.setProperty("--grid-size", "44px");
-    document.documentElement.style.setProperty("--grid-gap", "12px");
-    document.documentElement.style.setProperty("--shadow-inset", "10px");
-    return;
-  }
-  if(d === "compact"){
-    document.documentElement.style.setProperty("--grid-size", "54px");
-    document.documentElement.style.setProperty("--grid-gap", "16px");
-    document.documentElement.style.setProperty("--shadow-inset", "11px");
-    return;
-  }
-  if(d === "expanded"){
-    document.documentElement.style.setProperty("--grid-size", "66px");
-    document.documentElement.style.setProperty("--grid-gap", "20px");
-    document.documentElement.style.setProperty("--shadow-inset", "12px");
-    return;
-  }
-  document.documentElement.style.setProperty("--grid-size", "60px");
-  document.documentElement.style.setProperty("--grid-gap", "18px");
-  document.documentElement.style.setProperty("--shadow-inset", "12px");
-}
-
-function applyResponsiveSizes(){
-  // 1) densidade preliminar pelo width (antes de calcular cols finais)
-  const preliminaryCols = computeCols().cols;
-  const density = getDensity(preliminaryCols, window.innerWidth);
-
-  // 2) OS-like: ajusta métricas do grid e recalcula cols
-  setGridMetricsForDensity(density);
-  const { cols } = computeCols();
-
-  // 3) escala widgets por base
+function applyResponsiveSizes(cols){
+  const density = getDensity(cols, window.innerWidth);
   const scale = densityScale(density);
 
   for(const el of allWidgetWraps()){
@@ -732,6 +744,45 @@ function animateFLIP(beforeMap){
   }
 }
 
+/* ✅ FIT-TO-SCREEN (sem scroll, estilo painel) */
+function computeGridExtents(){
+  const wraps = allWidgetWraps();
+  let maxCol = 1;
+  let maxRow = 1;
+  for(const el of wraps){
+    const p = getGridPos(el);
+    maxCol = Math.max(maxCol, p.col + p.w - 1);
+    maxRow = Math.max(maxRow, p.row + p.h - 1);
+  }
+  return { maxCol, maxRow };
+}
+
+function applyFitToScreen(){
+  // em edit-mode não escala (drag perfeito)
+  if(document.body.classList.contains("edit-mode")){
+    document.documentElement.style.setProperty("--ui-scale", "1");
+    return;
+  }
+
+  const stage = document.querySelector(".stage");
+  const r = stage.getBoundingClientRect();
+
+  const GRID = gridSize();
+  const GAP = gridGap();
+  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
+
+  const { maxCol, maxRow } = computeGridExtents();
+
+  const contentW = (maxCol * cellW) + ((maxCol - 1) * GAP);
+  const contentH = (maxRow * GRID) + ((maxRow - 1) * GAP);
+
+  const availW = r.width;
+  const availH = r.height;
+
+  const s = Math.min(1, availW / Math.max(1, contentW), availH / Math.max(1, contentH));
+  document.documentElement.style.setProperty("--ui-scale", String(s));
+}
+
 /* EDIT MODE */
 let editTimer;
 let suppressBodyClickUntil = 0;
@@ -739,10 +790,12 @@ let suppressBodyClickUntil = 0;
 function enableEdit(){
   document.body.classList.add("edit-mode");
   editToggleText.textContent = "Concluir";
+  applyFitToScreen();
 }
 function disableEdit(){
   document.body.classList.remove("edit-mode");
   editToggleText.textContent = "Editar";
+  applyFitToScreen();
 }
 
 function isWidgetArea(target){
@@ -783,7 +836,7 @@ editToggle.addEventListener("keydown", e => {
   }
 });
 
-/* WIDGET DRAG (SIMPLE + FAST DROP + CENTER SNAP CORRETO) */
+/* WIDGET DRAG */
 let dragged = null;
 let dragPid = null;
 let dragOffX = 0;
@@ -894,6 +947,9 @@ function attachWidgetDrag(el){
     }
 
     dragged = null;
+
+    // volta fit-to-screen fora do edit-mode
+    applyFitToScreen();
   }
 
   el.addEventListener("pointerup", e => {
@@ -919,20 +975,20 @@ function attachWidgetDrag(el){
 
     const cur = getGridPos(el);
     let idx = sizes.findIndex(s => s.w === cur.baseW && s.h === cur.baseH);
-    if(idx === -1){
-      idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
-    }
+    if(idx === -1) idx = sizes.findIndex(s => s.w === cur.w && s.h === cur.h);
     idx = (idx + 1) % sizes.length;
     const next = sizes[idx];
 
     setBaseSize(el, next.w, next.h);
 
     const before = captureRects();
-    applyResponsiveSizes();
+    const newCols = computeCols().cols;
+    applyResponsiveSizes(newCols);
     animateFLIP(before);
 
     suppressBodyClickUntil = Date.now() + 250;
     saveLayout();
+    applyFitToScreen();
   });
 }
 
@@ -1079,6 +1135,7 @@ window.assistant = {
     activeProfile = n;
     const loaded = loadLayout();
     if(!loaded) packInitial();
+    applyFitToScreen();
     return true;
   },
   getProfile(){
@@ -1093,6 +1150,7 @@ window.assistant = {
     const data = raw ? JSON.parse(raw) : {};
     data[id] = { ...(data[id]||{}), hidden: true };
     localStorage.setItem(layoutKey(), JSON.stringify(data));
+    applyFitToScreen();
     return true;
   },
   showWidget(id){
@@ -1103,6 +1161,7 @@ window.assistant = {
     const data = raw ? JSON.parse(raw) : {};
     if(data[id]) data[id].hidden = false;
     localStorage.setItem(layoutKey(), JSON.stringify(data));
+    applyFitToScreen();
     return true;
   }
 };
@@ -1117,13 +1176,15 @@ if(!loaded) packInitial();
 const savedMode = (localStorage.getItem("theme_mode") || "auto").trim();
 applyTheme(modes.includes(savedMode) ? savedMode : "auto");
 
+// aplica responsivo inicial
 (function initialOSLayout(){
   const before = captureRects();
-  applyResponsiveSizes();
   const newCols = computeCols().cols;
+  applyResponsiveSizes(newCols);
   reflowForCols(lastCols, newCols);
   animateFLIP(before);
   lastCols = newCols;
+  applyFitToScreen();
 })();
 
 for(const w of allWidgetWraps()){
@@ -1134,10 +1195,10 @@ const ro = new ResizeObserver(() => {
   if(dragged || sDragged) return;
 
   const before = captureRects();
-
-  applyResponsiveSizes();
-
   const newCols = computeCols().cols;
+
+  applyResponsiveSizes(newCols);
+
   if(newCols !== lastCols){
     reflowForCols(lastCols, newCols);
     lastCols = newCols;
@@ -1151,6 +1212,7 @@ const ro = new ResizeObserver(() => {
   }
 
   animateFLIP(before);
+  applyFitToScreen();
 });
 ro.observe(gridEl);
 </script>
