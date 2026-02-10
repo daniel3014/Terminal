@@ -445,12 +445,16 @@ function pitchY(){
   return GRID + GAP;
 }
 
-/* usa ponto (normalmente centro do widget) */
-function cellFromPoint(x, y){
+/* ✅ centro do widget -> canto superior esquerdo considerando w/h */
+function anchorFromCenter(centerX, centerY, w, h){
   const r = gridOrigin();
-  const col = Math.floor((x - r.left) / pitchX()) + 1;
-  const row = Math.floor((y - r.top) / pitchY()) + 1;
-  return { col, row };
+  const rawCenterCol = ((centerX - r.left) / pitchX()) + 1;
+  const rawCenterRow = ((centerY - r.top)  / pitchY()) + 1;
+
+  const targetCol = Math.round(rawCenterCol - (w - 1) / 2);
+  const targetRow = Math.round(rawCenterRow - (h - 1) / 2);
+
+  return { col: targetCol, row: targetRow };
 }
 
 /* WRAP WIDGETS */
@@ -659,7 +663,7 @@ editToggle.addEventListener("keydown", e => {
   }
 });
 
-/* WIDGET DRAG (SIMPLE + FAST DROP) */
+/* WIDGET DRAG (SIMPLE + FAST DROP + CENTER SNAP CORRETO) */
 let dragged = null;
 let dragPid = null;
 let dragOffX = 0;
@@ -743,7 +747,7 @@ function attachWidgetDrag(el){
     const centerX = (e.clientX - dragOffX) + dragW / 2;
     const centerY = (e.clientY - dragOffY) + dragH / 2;
 
-    const target = cellFromPoint(centerX, centerY);
+    const target = anchorFromCenter(centerX, centerY, w, h);
     const best = findNearestFreeCell(dragged, target.col, target.row, w, h);
     setGridPos(dragged, best.col, best.row);
 
