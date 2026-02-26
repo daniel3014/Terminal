@@ -1,40 +1,38 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-  <title>Jarvis Terminal</title>
+  <title>Terminal</title>
 
   <style>
-    /* =========================================================
-       JARVIS TERMINAL — Premium Liquid Glass UI
-       (Edit Mode + Grid (only on edit) + Drag/Drop + Snap + Anti-overlap
-        Theme slider smooth drag + Chat as widget)
-       ========================================================= */
-
     :root{
       --bg0: #06080f;
       --bg1: #0a1020;
+
       --glass: rgba(255,255,255,0.10);
       --glass2: rgba(255,255,255,0.14);
       --stroke: rgba(255,255,255,0.18);
       --stroke2: rgba(255,255,255,0.26);
+
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.62);
 
-      --accent: 105, 199, 255;     /* RGB only */
+      --accent: 105, 199, 255;
 
       --radius: 22px;
       --radius2: 28px;
 
-      /* Grid */
+      /* Grid system */
       --cell: 120px;
       --gap: 14px;
       --pad: 16px;
+      --step: 134px; /* synced by JS = cell+gap */
 
-      /* computed via JS too */
-      --gridLine: rgba(255,255,255,0.10);
-      --gridDot: rgba(255,255,255,0.09);
+      /* Border thickness compensation */
+      --b: 1px; /* widget border thickness (must match .widget border) */
+
+      --gridDot: rgba(255,255,255,0.10);
 
       --ease: cubic-bezier(.2,.9,.2,1);
     }
@@ -42,14 +40,16 @@
     html[data-theme="light"]{
       --bg0: #f5f7ff;
       --bg1: #dfe7ff;
+
       --glass: rgba(255,255,255,0.62);
       --glass2: rgba(255,255,255,0.52);
       --stroke: rgba(10,20,40,0.10);
       --stroke2: rgba(10,20,40,0.16);
+
       --text: rgba(10,18,34,0.90);
       --muted: rgba(10,18,34,0.56);
-      --gridLine: rgba(10,20,40,0.10);
-      --gridDot: rgba(10,20,40,0.09);
+
+      --gridDot: rgba(10,20,40,0.10);
     }
 
     @media (max-width: 640px){
@@ -92,9 +92,6 @@
       filter: blur(0.2px);
     }
 
-    /* =========================
-       Stage
-       ========================= */
     .stage{
       position:relative;
       width:100%;
@@ -103,7 +100,7 @@
       isolation:isolate;
     }
 
-    /* Grid overlay — only visible in edit mode */
+    /* Grid overlay — dots only, only in edit mode */
     .grid-overlay{
       position:absolute;
       inset: var(--pad);
@@ -111,34 +108,14 @@
       pointer-events:none;
       z-index: 0;
 
-      /* IMPORTANT: step must match snap step (cell+gap) */
-      background:
-        repeating-linear-gradient(0deg,
-          transparent 0,
-          transparent calc(var(--step) - 1px),
-          var(--gridLine) calc(var(--step) - 1px),
-          var(--gridLine) var(--step)
-        ),
-        repeating-linear-gradient(90deg,
-          transparent 0,
-          transparent calc(var(--step) - 1px),
-          var(--gridLine) calc(var(--step) - 1px),
-          var(--gridLine) var(--step)
-        ),
-        radial-gradient(var(--gridDot) 1px, transparent 1px);
-      background-size:
-        var(--step) var(--step),
-        var(--step) var(--step),
-        18px 18px;
+      background: radial-gradient(var(--gridDot) 1px, transparent 1px);
+      background-size: 18px 18px;
 
       opacity: 0;
       transition: opacity 220ms var(--ease);
       mask-image: radial-gradient(120% 120% at 50% 40%, #000 55%, transparent 100%);
     }
-
-    .stage.edit-mode .grid-overlay{
-      opacity: 0.38;
-    }
+    .stage.edit-mode .grid-overlay{ opacity: 0.42; }
 
     .widget-area{
       position:absolute;
@@ -147,14 +124,11 @@
       z-index: 1;
     }
 
-    /* =========================
-       Widgets
-       ========================= */
     .widget{
       position:absolute;
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border: 1px solid var(--stroke);
+      border: var(--b) solid var(--stroke);
       backdrop-filter: blur(16px) saturate(140%);
       -webkit-backdrop-filter: blur(16px) saturate(140%);
       overflow: visible;
@@ -165,7 +139,7 @@
       z-index: 2;
     }
 
-    /* Shadow layer always below its widget (no shadow over other widgets) */
+    /* Shadow lower layer */
     .widget::before{
       content:"";
       position:absolute;
@@ -186,47 +160,12 @@
       opacity: 0.85;
     }
 
-    /* Dragging only in edit mode */
     .widget.dragging{
       cursor: grabbing;
       z-index: 50;
     }
 
-    /* Content helpers */
-    .pad{
-      padding: 14px;
-    }
-
-    .big-time{
-      font-size: 34px;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      line-height: 1.05;
-    }
-
-    .date-line{
-      margin-top: 6px;
-      font-size: 13px;
-      color: var(--muted);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-    }
-
-    .subline{
-      margin-top: 10px;
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.25rem;
-    }
-
-    .dot{
-      width:10px;height:10px;border-radius:999px;
-      background: rgba(var(--accent),0.95);
-      box-shadow: 0 0 0 6px rgba(var(--accent),0.12);
-      flex:0 0 auto;
-    }
+    .pad{ padding: 14px; }
 
     /* Ghost preview */
     .snap-ghost{
@@ -242,33 +181,43 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    /* =========================
-       Theme slider widget (no title)
-       ========================= */
-    .theme-widget{
-      width: calc(var(--cell) * 2 + var(--gap));
-      height: calc(var(--cell) * 1);
+    /* Clock — compensate border (2px total) so gaps stay perfect */
+    .clock-widget{
+      width: calc(var(--cell) * 2 + var(--gap) - (var(--b) * 2));
+      height: calc(var(--cell) * 1 - (var(--b) * 2));
     }
-
-    .theme-top{
+    .big-time{
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      line-height: 1.05;
+    }
+    .date-line{
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 10px;
-      margin-bottom: 10px;
+    }
+    .subline{
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.25rem;
     }
 
-    .theme-label{
-      font-size: 12px;
-      color: var(--muted);
+    /* Theme slider — compensate border */
+    .theme-widget{
+      width: calc(var(--cell) * 2 + var(--gap) - (var(--b) * 2));
+      height: calc(var(--cell) * 1 - (var(--b) * 2));
       display:flex;
       align-items:center;
-      gap: 8px;
-      min-width:0;
+      justify-content:center;
     }
-
     .theme-pill{
-      position:relative;
+      width: 100%;
       height: 44px;
       border-radius: 999px;
       border: 1px solid var(--stroke2);
@@ -291,17 +240,16 @@
       align-items:center;
       z-index: 2;
     }
-
     .theme-opt{
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 8px;
       font-size: 13px;
       color: var(--muted);
       user-select:none;
       cursor:pointer;
     }
+    .theme-opt.active{ color: var(--text); }
 
     .ico{
       width: 18px;
@@ -331,7 +279,6 @@
       z-index: 1;
       will-change: transform;
     }
-
     html[data-theme="light"] .theme-thumb{
       background: linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.35));
       border: 1px solid rgba(10,20,40,0.12);
@@ -340,48 +287,19 @@
         0 10px 20px rgba(10,20,40,0.12);
     }
 
-    .theme-opt.active{
-      color: var(--text);
-    }
-
-    /* =========================
-       Clock widget (no title)
-       ========================= */
-    .clock-widget{
-      width: calc(var(--cell) * 2 + var(--gap));
-      height: calc(var(--cell) * 1);
-    }
-
-    /* =========================
-       Chat widget (Jarvis)
-       ========================= */
+    /* Chat — compensate border */
     .chat-widget{
-      width: calc(var(--cell) * 3 + var(--gap) * 2);
-      height: calc(var(--cell) * 1);
+      width: calc(var(--cell) * 3 + (var(--gap) * 2) - (var(--b) * 2));
+      height: calc(var(--cell) * 1 - (var(--b) * 2));
+      display:flex;
+      align-items:center;
     }
-
     .chat-row{
+      width:100%;
       display:flex;
       align-items:center;
       gap: 10px;
-      height: 100%;
     }
-
-    .jarvis-badge{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex: 0 0 auto;
-      padding-left: 2px;
-    }
-
-    .jarvis-text{
-      font-weight: 820;
-      letter-spacing: 0.6px;
-      font-size: 13px;
-      color: rgba(var(--accent),0.95);
-    }
-
     .cmd{
       flex:1 1 auto;
       height: 44px;
@@ -394,18 +312,15 @@
       font-size: 14px;
     }
     html[data-theme="light"] .cmd{ background: rgba(255,255,255,0.40); }
-
     .cmd:focus{
       box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
       border-color: rgba(var(--accent),0.45);
     }
-
     .hint{
       flex:0 0 auto;
       font-size: 12px;
       color: var(--muted);
       white-space:nowrap;
-      padding-right: 2px;
     }
   </style>
 </head>
@@ -417,33 +332,7 @@
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- Theme Slider Widget (no title/header) -->
-      <div class="widget theme-widget" data-id="theme" data-kind="theme">
-        <div class="pad">
-          <div class="theme-top">
-            <div class="theme-label"><span class="dot"></span><span>Theme</span></div>
-            <div class="theme-label" id="themeStatus">Dark</div>
-          </div>
-
-          <div class="theme-pill" id="themePill">
-            <div class="theme-thumb" id="themeThumb"></div>
-
-            <div class="theme-options" id="themeOptions">
-              <div class="theme-opt" data-theme="light" title="Light">
-                <span class="ico">☀️</span>
-              </div>
-              <div class="theme-opt" data-theme="dark" title="Dark">
-                <span class="ico">🌙</span>
-              </div>
-              <div class="theme-opt" data-theme="auto" title="Auto">
-                <span class="ico">✨</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Clock Widget (no title/header) -->
+      <!-- Clock -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock">
         <div class="pad">
           <div class="big-time" id="clock">--:--</div>
@@ -455,27 +344,39 @@
         </div>
       </div>
 
-      <!-- Chat Widget (Jarvis) -->
+      <!-- Chat -->
       <div class="widget chat-widget" data-id="chat" data-kind="chat">
-        <div class="pad" style="height:100%;">
+        <div class="pad" style="width:100%;">
           <div class="chat-row">
-            <div class="jarvis-badge">
-              <span class="dot"></span>
-              <div class="jarvis-text">JARVIS</div>
-            </div>
-            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false"
-              placeholder='Digite um comando… (ex: "jarvis remove theme")'/>
+            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando…'/>
             <div class="hint">Enter ↵</div>
           </div>
         </div>
       </div>
+
+      <!-- Theme slider -->
+      <div class="widget theme-widget" data-id="theme" data-kind="theme">
+        <div class="pad" style="width:100%;">
+          <div class="theme-pill" id="themePill">
+            <div class="theme-thumb" id="themeThumb"></div>
+
+            <div class="theme-options" id="themeOptions">
+              <div class="theme-opt" data-theme="light" title="Light"><span class="ico">☀️</span></div>
+              <div class="theme-opt" data-theme="dark"  title="Dark"><span class="ico">🌙</span></div>
+              <div class="theme-opt" data-theme="auto"  title="Auto"><span class="ico">✨</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script>
     // =========================================================
-    // Core: Edit Mode + Grid only on edit + Drag/Drop + Snap + Anti-overlap
-    // Theme slider: smooth continuous drag (rAF)
+    // Grid-aware Layout (col/row + span)
+    // + Centered placement (gap/2 inset) => equal gap on all sides
+    // + Tap empty exits edit mode
     // =========================================================
 
     const stage = document.getElementById('stage');
@@ -483,144 +384,162 @@
     const ghost = document.getElementById('ghost');
     const cmd   = document.getElementById('cmd');
 
-    const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    // ---------- Helpers ----------
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     function getVars(){
       const cs = getComputedStyle(document.documentElement);
       const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
       const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
-      const pad  = parseFloat(cs.getPropertyValue('--pad'))  || 16;
-      return { cell, gap, pad, step: cell + gap };
+      const step = cell + gap;
+      return { cell, gap, step };
     }
 
-    function areaRect(){
-      return area.getBoundingClientRect();
-    }
-
-    // Keep CSS --step synced with JS step (so grid aligns perfectly)
     function syncStepVar(){
       const { step } = getVars();
       document.documentElement.style.setProperty('--step', step + 'px');
     }
 
-    function snapPoint(absX, absY, w, h){
-      const { step } = getVars();
+    function areaRect(){ return area.getBoundingClientRect(); }
+
+    // Center widgets inside the grid spacing by offsetting placement with gap/2
+    function colRowToPx(col, row){
+      const { step, gap } = getVars();
+      const inset = gap / 2;
+      return { left: col * step + inset, top: row * step + inset };
+    }
+
+    function pxToColRow(absX, absY){
+      const { step, gap } = getVars();
       const r = areaRect();
-
-      let rx = absX - r.left;
-      let ry = absY - r.top;
-
-      let sx = Math.round(rx / step) * step;
-      let sy = Math.round(ry / step) * step;
-
-      const minX = 0;
-      const minY = 0;
-      const maxX = r.width  - w;
-      const maxY = r.height - h;
-
-      sx = clamp(sx, minX, maxX);
-      sy = clamp(sy, minY, maxY);
-
-      return { left: sx, top: sy };
+      const inset = gap / 2;
+      const rx = (absX - r.left) - inset;
+      const ry = (absY - r.top)  - inset;
+      return { col: Math.round(rx / step), row: Math.round(ry / step) };
     }
 
-    function setGhost(el, left, top){
-      ghost.style.width  = el.offsetWidth + 'px';
-      ghost.style.height = el.offsetHeight + 'px';
-      ghost.style.left   = left + 'px';
-      ghost.style.top    = top + 'px';
-      ghost.classList.add('visible');
+    // Widget spans in grid steps (using step, but spacing is ensured by inset)
+    function getSpan(w){
+      const { step } = getVars();
+      const spanX = Math.max(1, Math.ceil(w.offsetWidth  / step));
+      const spanY = Math.max(1, Math.ceil(w.offsetHeight / step));
+      return { spanX, spanY };
     }
 
-    function hideGhost(){
-      ghost.classList.remove('visible');
-    }
+    // With inset on both sides, effective usable size is (area - gap)
+    function maxColsRowsFor(w){
+      const { step, gap } = getVars();
+      const r = areaRect();
+      const usableW = Math.max(1, r.width  - gap);
+      const usableH = Math.max(1, r.height - gap);
 
-    function rectsOverlap(a, b){
-      return !(
-        a.right <= b.left ||
-        a.left >= b.right ||
-        a.bottom <= b.top ||
-        a.top >= b.bottom
-      );
-    }
+      const cols = Math.max(1, Math.floor(usableW / step));
+      const rows = Math.max(1, Math.floor(usableH / step));
 
-    function widgetRectInArea(w, left, top){
+      const { spanX, spanY } = getSpan(w);
       return {
-        left,
-        top,
-        right: left + w.offsetWidth,
-        bottom: top + w.offsetHeight
+        cols,
+        rows,
+        maxCol: Math.max(0, cols - spanX),
+        maxRow: Math.max(0, rows - spanY)
       };
     }
 
-    function intersectsAny(w, testLeft, testTop){
-      const test = widgetRectInArea(w, testLeft, testTop);
-      for(const other of document.querySelectorAll('.widget')){
-        if(other === w) continue;
-        if(other.style.display === 'none') continue;
-        const ol = parseFloat(other.style.left || 0);
-        const ot = parseFloat(other.style.top  || 0);
-        const orect = widgetRectInArea(other, ol, ot);
-        if(rectsOverlap(test, orect)) return true;
-      }
-      return false;
+    function buildOccupancy(exceptId=null){
+      const occ = new Set();
+      document.querySelectorAll('.widget').forEach(w=>{
+        if(w.style.display === 'none') return;
+        const id = w.dataset.id;
+        if(exceptId && id === exceptId) return;
+
+        const col = parseInt(w.dataset.col || '0', 10);
+        const row = parseInt(w.dataset.row || '0', 10);
+        const { spanX, spanY } = getSpan(w);
+
+        for(let y=0; y<spanY; y++){
+          for(let x=0; x<spanX; x++){
+            occ.add(`${col+x},${row+y}`);
+          }
+        }
+      });
+      return occ;
     }
 
-    // Find nearest free grid cell (anti-overlap)
-    function findNearestFree(w, desiredLeft, desiredTop){
-      const { step } = getVars();
-      const r = areaRect();
-      const maxCols = Math.max(1, Math.floor((r.width  - w.offsetWidth)  / step) + 1);
-      const maxRows = Math.max(1, Math.floor((r.height - w.offsetHeight) / step) + 1);
+    function canPlace(w, col, row, occ){
+      const { maxCol, maxRow } = maxColsRowsFor(w);
+      col = clamp(col, 0, maxCol);
+      row = clamp(row, 0, maxRow);
 
-      const startCol = clamp(Math.round(desiredLeft / step), 0, maxCols - 1);
-      const startRow = clamp(Math.round(desiredTop  / step), 0, maxRows - 1);
+      const { spanX, spanY } = getSpan(w);
+      for(let y=0; y<spanY; y++){
+        for(let x=0; x<spanX; x++){
+          if(occ.has(`${col+x},${row+y}`)) return false;
+        }
+      }
+      return true;
+    }
 
-      // Spiral search around desired cell
-      const maxRadius = Math.max(maxCols, maxRows);
-      for(let rad = 0; rad <= maxRadius; rad++){
-        for(let dr = -rad; dr <= rad; dr++){
-          for(let dc = -rad; dc <= rad; dc++){
-            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue; // only perimeter
-            const col = startCol + dc;
-            const row = startRow + dr;
-            if(col < 0 || row < 0 || col >= maxCols || row >= maxRows) continue;
+    function findNearestFreeCell(w, desiredCol, desiredRow){
+      const { maxCol, maxRow } = maxColsRowsFor(w);
+      desiredCol = clamp(desiredCol, 0, maxCol);
+      desiredRow = clamp(desiredRow, 0, maxRow);
 
-            const left = col * step;
-            const top  = row * step;
+      const occ = buildOccupancy(w.dataset.id);
+      const maxRadius = Math.max(maxCol, maxRow) + 6;
 
-            if(!intersectsAny(w, left, top)){
-              return { left, top };
-            }
+      for(let rad=0; rad<=maxRadius; rad++){
+        for(let dr=-rad; dr<=rad; dr++){
+          for(let dc=-rad; dc<=rad; dc++){
+            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue;
+            const col = desiredCol + dc;
+            const row = desiredRow + dr;
+            if(col < 0 || row < 0 || col > maxCol || row > maxRow) continue;
+            if(canPlace(w, col, row, occ)) return { col, row };
           }
         }
       }
-      // fallback
-      return { left: desiredLeft, top: desiredTop };
+      return { col: desiredCol, row: desiredRow };
     }
 
-    // ---------- Layout persistence ----------
-    const STORAGE_KEY = 'jarvis.layout.v2'; // bumped due to structure changes
-    const EDIT_KEY    = 'jarvis.editmode.v1';
+    function setGhost(w, col, row){
+      const { left, top } = colRowToPx(col, row);
+      ghost.style.width  = w.offsetWidth + 'px';
+      ghost.style.height = w.offsetHeight + 'px';
+      ghost.style.left   = left + 'px';
+      ghost.style.top    = top  + 'px';
+      ghost.classList.add('visible');
+    }
+    function hideGhost(){ ghost.classList.remove('visible'); }
+
+    // ---------- Persistence (col/row) ----------
+    const STORAGE_KEY = 'terminal.layout.v4';
+    const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return {};
-        return JSON.parse(raw) || {};
-      }catch(e){
-        return {};
-      }
+        return raw ? (JSON.parse(raw) || {}) : {};
+      }catch(e){ return {}; }
+    }
+    function saveLayout(layout){
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(layout)); }catch(e){}
     }
 
-    function saveLayout(layout){
-      try{
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
-      }catch(e){}
+    function commitWidgetCell(w, col, row){
+      w.dataset.col = String(col);
+      w.dataset.row = String(row);
+
+      const { left, top } = colRowToPx(col, row);
+      w.style.left = left + 'px';
+      w.style.top  = top  + 'px';
+
+      const layout = loadLayout();
+      const id = w.dataset.id;
+      layout[id] = layout[id] || {};
+      layout[id].col = col;
+      layout[id].row = row;
+      layout[id].hidden = false;
+      saveLayout(layout);
     }
 
     function applyLayout(){
@@ -635,23 +554,13 @@
           w.style.display = '';
         }
 
-        if(layout[id] && typeof layout[id].left === 'number' && typeof layout[id].top === 'number'){
-          w.style.left = layout[id].left + 'px';
-          w.style.top  = layout[id].top  + 'px';
+        const col = (layout[id] && typeof layout[id].col === 'number') ? layout[id].col : null;
+        const row = (layout[id] && typeof layout[id].row === 'number') ? layout[id].row : null;
+
+        if(col !== null && row !== null){
+          commitWidgetCell(w, col, row);
         }
       });
-    }
-
-    function commitWidgetPos(w, left, top){
-      w.style.left = left + 'px';
-      w.style.top  = top  + 'px';
-
-      const layout = loadLayout();
-      layout[w.dataset.id] = layout[w.dataset.id] || {};
-      layout[w.dataset.id].left = left;
-      layout[w.dataset.id].top  = top;
-      layout[w.dataset.id].hidden = false;
-      saveLayout(layout);
     }
 
     function hideWidget(id){
@@ -665,32 +574,24 @@
       return true;
     }
 
-    // ---------- Default placement ----------
     function defaultLayoutIfNeeded(){
       const layout = loadLayout();
       if(Object.keys(layout).length) return;
 
-      const widgets = {
-        theme: document.querySelector('.widget[data-id="theme"]'),
-        clock: document.querySelector('.widget[data-id="clock"]'),
-        chat:  document.querySelector('.widget[data-id="chat"]'),
-      };
+      const clock = document.querySelector('.widget[data-id="clock"]');
+      const chat  = document.querySelector('.widget[data-id="chat"]');
+      const theme = document.querySelector('.widget[data-id="theme"]');
 
-      const { step } = getVars();
-      const r = areaRect();
+      const desired = [
+        { w: clock, col: 0, row: 0 },
+        { w: chat,  col: 2, row: 0 },
+        { w: theme, col: 5, row: 0 },
+      ];
 
-      const positions = {
-        theme: { left: 0,       top: 0 },
-        clock: { left: step*2,  top: 0 },
-        chat:  { left: 0,       top: step*1 }
-      };
-
-      Object.entries(positions).forEach(([id,pos])=>{
-        const w = widgets[id];
+      desired.forEach(({w,col,row})=>{
         if(!w) return;
-        const snapped = snapPoint(r.left + pos.left, r.top + pos.top, w.offsetWidth, w.offsetHeight);
-        const free = findNearestFree(w, snapped.left, snapped.top);
-        commitWidgetPos(w, free.left, free.top);
+        const free = findNearestFreeCell(w, col, row);
+        commitWidgetCell(w, free.col, free.row);
       });
     }
 
@@ -701,6 +602,8 @@
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
       try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
+      // hide ghost when leaving
+      if(!isEditMode) hideGhost();
     }
 
     function loadEditMode(){
@@ -708,39 +611,44 @@
       setEditMode(v === '1');
     }
 
-    // Enter/exit edit mode via hold
+    // Hold to toggle edit mode
     const HOLD_MS = 450;
     let hold = null;
 
-    function startHold(e, w){
+    function startHold(e){
       clearHold();
       hold = {
-        pointerId: e.pointerId,
         startX: e.clientX,
         startY: e.clientY,
-        w,
         timer: setTimeout(()=>{
-          // toggle edit mode
           setEditMode(!isEditMode);
           clearHold(true);
         }, HOLD_MS)
       };
     }
 
-    function clearHold(keepPointer){
+    function clearHold(){
       if(!hold) return;
       clearTimeout(hold.timer);
-      if(!keepPointer){
-        // nothing
-      }
       hold = null;
     }
 
-    // ---------- Drag & Drop (only in edit mode) ----------
+    // Tap empty to exit edit mode ✅
+    function onStagePointerDown(e){
+      // If in edit mode and user taps empty space (not a widget), exit edit mode
+      if(!isEditMode) return;
+      const tappedWidget = e.target.closest('.widget');
+      // Allow interaction with widgets in edit mode (drag/slider/input)
+      if(tappedWidget) return;
+      setEditMode(false);
+    }
+
+    stage.addEventListener('pointerdown', onStagePointerDown, true);
+
+    // ---------- Drag/drop (edit mode only) ----------
     let drag = null;
 
     function canStartDragFromTarget(target){
-      // Don't drag the widget if user is interacting with inputs/slider
       if(target.closest('#themePill')) return false;
       if(target.closest('input, textarea, button, select')) return false;
       return true;
@@ -750,28 +658,22 @@
       const w = e.target.closest('.widget');
       if(!w) return;
 
-      // Hold toggles edit mode
-      startHold(e, w);
+      // Hold toggles edit mode (always)
+      startHold(e);
 
-      // Only allow drag if currently in edit mode
       if(!isEditMode) return;
-
       if(!canStartDragFromTarget(e.target)) return;
 
       e.preventDefault();
-
-      const r = areaRect();
-      const wr = w.getBoundingClientRect();
 
       drag = {
         w,
         startX: e.clientX,
         startY: e.clientY,
-        originLeft: parseFloat(w.style.left || (wr.left - r.left)),
-        originTop:  parseFloat(w.style.top  || (wr.top  - r.top)),
+        originCol: parseInt(w.dataset.col || '0', 10),
+        originRow: parseInt(w.dataset.row || '0', 10),
         dx: 0,
-        dy: 0,
-        moved: false
+        dy: 0
       };
 
       w.classList.add('dragging');
@@ -784,65 +686,57 @@
         const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
         if(md > 6) clearHold();
       }
-
       if(!drag) return;
 
       const w = drag.w;
       drag.dx = e.clientX - drag.startX;
       drag.dy = e.clientY - drag.startY;
 
-      if(Math.abs(drag.dx) + Math.abs(drag.dy) > 2) drag.moved = true;
-
       w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
 
+      const { left: originLeft, top: originTop } = colRowToPx(drag.originCol, drag.originRow);
       const r = areaRect();
-      const wr = w.getBoundingClientRect();
-      const width = wr.width;
-      const height = wr.height;
+      const absX = (r.left + originLeft) + drag.dx;
+      const absY = (r.top  + originTop ) + drag.dy;
 
-      const targetAbsX = (r.left + drag.originLeft) + drag.dx;
-      const targetAbsY = (r.top  + drag.originTop ) + drag.dy;
+      const { col, row } = pxToColRow(absX, absY);
+      const free = findNearestFreeCell(w, col, row);
 
-      const snapped = snapPoint(targetAbsX, targetAbsY, width, height);
-      setGhost(w, snapped.left, snapped.top);
+      setGhost(w, free.col, free.row);
     }
 
     function onPointerUp(e){
       clearHold();
-
       if(!drag) return;
 
       const w = drag.w;
+
+      const { left: originLeft, top: originTop } = colRowToPx(drag.originCol, drag.originRow);
       const r = areaRect();
-      const wr = w.getBoundingClientRect();
-      const width = wr.width;
-      const height = wr.height;
+      const absX = (r.left + originLeft) + drag.dx;
+      const absY = (r.top  + originTop ) + drag.dy;
 
-      const targetAbsX = (r.left + drag.originLeft) + drag.dx;
-      const targetAbsY = (r.top  + drag.originTop ) + drag.dy;
-
-      const snapped = snapPoint(targetAbsX, targetAbsY, width, height);
-
-      // Anti-overlap: find nearest free cell if occupied
-      const finalPos = intersectsAny(w, snapped.left, snapped.top)
-        ? findNearestFree(w, snapped.left, snapped.top)
-        : snapped;
+      const { col, row } = pxToColRow(absX, absY);
+      const free = findNearestFreeCell(w, col, row);
 
       w.style.transform = 'translate3d(0,0,0)';
-      commitWidgetPos(w, finalPos.left, finalPos.top);
+      commitWidgetCell(w, free.col, free.row);
 
       w.classList.remove('dragging');
       hideGhost();
       drag = null;
     }
 
-    // ---------- Theme slider ----------
+    area.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
+    // ---------- Theme ----------
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
-    const themeStatus  = document.getElementById('themeStatus');
     const themePill    = document.getElementById('themePill');
 
-    const THEME_KEY = 'jarvis.theme.mode.v1';
+    const THEME_KEY = 'terminal.theme.mode.v1';
 
     function setTheme(mode){
       localStorage.setItem(THEME_KEY, mode);
@@ -860,62 +754,52 @@
       const index = mode === 'light' ? 0 : (mode === 'dark' ? 1 : 2);
       themeThumb.style.transition = 'transform 240ms var(--ease)';
       themeThumb.style.transform = `translateX(${index * 100}%)`;
-      themeStatus.textContent = mode[0].toUpperCase() + mode.slice(1);
     }
 
     function loadTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || 'dark';
+      const saved = localStorage.getItem(THEME_KEY) || 'light';
       setTheme(saved);
     }
 
-    // Click still works (kept)
+    // Tap to change
     themeOptions.addEventListener('click', (e)=>{
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
     });
 
-    // Smooth drag (continuous, rAF)
+    // Smooth drag
     let pillDrag = null;
     let rafId = 0;
 
-    function pillThumbFromX(x, rect){
+    function thumbPctFromClientX(clientX, rect){
       const innerLeft = 6;
       const innerRight = rect.width - 6;
-      const t = clamp((x - innerLeft) / (innerRight - innerLeft), 0, 1);
-      // thumb ranges over 0..2 slots, but continuous
-      const px = t * 200; // 0%..200% (since 3 slots)
-      return px;
+      const local = clamp(clientX - rect.left, innerLeft, innerRight);
+      const t = (local - innerLeft) / (innerRight - innerLeft);
+      return t * 200; // 0..200%
     }
 
-    function renderThumb(px){
+    function renderThumb(pct){
       themeThumb.style.transition = 'none';
-      themeThumb.style.transform = `translateX(${px}%)`;
+      themeThumb.style.transform = `translateX(${pct}%)`;
     }
 
     themePill.addEventListener('pointerdown', (e)=>{
-      // prevent page gestures
       e.preventDefault();
       const rect = themePill.getBoundingClientRect();
       pillDrag = { rect, lastX: e.clientX };
-
       themePill.setPointerCapture(e.pointerId);
-
-      const px = pillThumbFromX(e.clientX - rect.left, rect);
-      renderThumb(px);
+      renderThumb(thumbPctFromClientX(e.clientX, rect));
     });
 
     themePill.addEventListener('pointermove', (e)=>{
       if(!pillDrag) return;
       pillDrag.lastX = e.clientX;
-
       if(rafId) return;
       rafId = requestAnimationFrame(()=>{
         rafId = 0;
-        const rect = pillDrag.rect;
-        const localX = pillDrag.lastX - rect.left;
-        const px = pillThumbFromX(localX, rect);
-        renderThumb(px);
+        renderThumb(thumbPctFromClientX(pillDrag.lastX, pillDrag.rect));
       });
     });
 
@@ -923,22 +807,20 @@
       if(!pillDrag) return;
 
       const rect = pillDrag.rect;
-      const localX = e.clientX - rect.left;
-
-      // decide slot at release
       const innerLeft = 6;
       const innerRight = rect.width - 6;
-      const t = clamp((localX - innerLeft) / (innerRight - innerLeft), 0, 1);
+      const local = clamp(e.clientX - rect.left, innerLeft, innerRight);
+      const t = (local - innerLeft) / (innerRight - innerLeft);
       const idx = clamp(Math.round(t * 2), 0, 2);
 
-      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
       pillDrag = null;
 
+      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
       setTheme(mode);
     });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
-      const saved = localStorage.getItem(THEME_KEY) || 'dark';
+      const saved = localStorage.getItem(THEME_KEY) || 'light';
       if(saved === 'auto') setTheme('auto');
     });
 
@@ -956,32 +838,23 @@
       clockEl.textContent = `${hh}:${mm}`;
       secondsLabel.textContent = ss;
 
-      // "quinta, 26/02" style
       const weekday = new Intl.DateTimeFormat('pt-PT', { weekday:'long' }).format(now);
       const dd = String(now.getDate()).padStart(2,'0');
       const mo = String(now.getMonth()+1).padStart(2,'0');
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    // ---------- Commands ----------
+    // ---------- Commands (generic) ----------
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
       if(!input) return;
 
-      // removals
-      if(input.includes('remove theme') || input.includes('remover tema')){
-        hideWidget('theme');
-        return;
-      }
-      if(input.includes('remove chat') || input.includes('remover chat') || input.includes('remove jarvis')){
-        hideWidget('chat');
-        return;
-      }
+      if(input.includes('remove theme') || input.includes('remover tema')) return hideWidget('theme');
+      if(input.includes('remove chat')  || input.includes('remover chat')) return hideWidget('chat');
 
-      // theme
       if(input.includes('theme ') || input.includes('tema ')){
         if(input.includes('dark') || input.includes('escuro')) return setTheme('dark');
-        if(input.includes('light') || input.includes('claro')) return setTheme('light');
+        if(input.includes('light')|| input.includes('claro'))  return setTheme('light');
         if(input.includes('auto')) return setTheme('auto');
       }
     }
@@ -993,50 +866,43 @@
       }
     });
 
-    // ---------- Boot ----------
-    function resnapAllIntoGrid(){
-      // Ensures alignment with the grid + resolves overlaps if any
-      document.querySelectorAll('.widget').forEach(w=>{
-        if(w.style.display === 'none') return;
+    // ---------- Normalize layout ----------
+    function normalizeAll(){
+      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
 
-        const left = parseFloat(w.style.left || 0);
-        const top  = parseFloat(w.style.top  || 0);
-        const r = areaRect();
-
-        const snapped = snapPoint(r.left + left, r.top + top, w.offsetWidth, w.offsetHeight);
-        const finalPos = intersectsAny(w, snapped.left, snapped.top)
-          ? findNearestFree(w, snapped.left, snapped.top)
-          : snapped;
-
-        commitWidgetPos(w, finalPos.left, finalPos.top);
+      // Ensure datasets exist
+      widgets.forEach(w=>{
+        if(w.dataset.col == null) w.dataset.col = '0';
+        if(w.dataset.row == null) w.dataset.row = '0';
       });
+
+      // Re-place sequentially to guarantee no conflicts
+      for(const w of widgets){
+        const col = parseInt(w.dataset.col || '0', 10);
+        const row = parseInt(w.dataset.row || '0', 10);
+        const free = findNearestFreeCell(w, col, row);
+        commitWidgetCell(w, free.col, free.row);
+      }
     }
 
     function boot(){
       syncStepVar();
       loadTheme();
-      loadEditMode();
 
-      // Drag handlers
-      area.addEventListener('pointerdown', onPointerDown);
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
+      // Edit mode persistence
+      const v = localStorage.getItem(EDIT_KEY);
+      setEditMode(v === '1');
 
-      // Layout
       defaultLayoutIfNeeded();
       applyLayout();
+      normalizeAll();
 
-      // Fix old layouts + alignment + overlap
-      resnapAllIntoGrid();
-
-      // Clock
       tick();
       setInterval(tick, 1000);
 
-      // Re-sync grid step & re-snap on resize
       window.addEventListener('resize', ()=>{
         syncStepVar();
-        resnapAllIntoGrid();
+        normalizeAll();
       });
     }
 
