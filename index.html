@@ -8,7 +8,8 @@
   <style>
     /* =========================================================
        JARVIS TERMINAL — Premium Liquid Glass UI
-       (Grid + Drag/Drop + Snap + Shadows layer fix + Theme Widget)
+       (Edit Mode + Grid (only on edit) + Drag/Drop + Snap + Anti-overlap
+        Theme slider smooth drag + Chat as widget)
        ========================================================= */
 
     :root{
@@ -22,19 +23,19 @@
       --muted: rgba(255,255,255,0.62);
 
       --accent: 105, 199, 255;     /* RGB only */
-      --danger: 255, 110, 110;
 
       --radius: 22px;
       --radius2: 28px;
 
       /* Grid */
       --cell: 120px;
-      --gap: 14px;                 /* espaço entre widgets */
-      --pad: 16px;                 /* padding do desktop */
+      --gap: 14px;
+      --pad: 16px;
+
+      /* computed via JS too */
       --gridLine: rgba(255,255,255,0.10);
       --gridDot: rgba(255,255,255,0.09);
 
-      /* Motion */
       --ease: cubic-bezier(.2,.9,.2,1);
     }
 
@@ -51,7 +52,6 @@
       --gridDot: rgba(10,20,40,0.09);
     }
 
-    /* Mobile tuning */
     @media (max-width: 640px){
       :root{
         --cell: 104px;
@@ -68,7 +68,7 @@
       height:100%;
       margin:0;
       padding:0;
-      overflow:hidden; /* terminal full screen */
+      overflow:hidden;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color: var(--text);
       background:
@@ -77,7 +77,6 @@
         linear-gradient(160deg, var(--bg0), var(--bg1));
     }
 
-    /* Subtle “liquid glass” noise (CSS only) */
     body::before{
       content:"";
       position:fixed;
@@ -101,53 +100,55 @@
       width:100%;
       height:100%;
       padding: var(--pad);
-      padding-bottom: calc(var(--pad) + 78px); /* espaço do command bar */
-      isolation:isolate; /* stacking context geral */
+      isolation:isolate;
     }
 
-    /* Grid overlay — visível em ambos os temas */
+    /* Grid overlay — only visible in edit mode */
     .grid-overlay{
       position:absolute;
       inset: var(--pad);
-      bottom: calc(var(--pad) + 78px);
       border-radius: var(--radius2);
       pointer-events:none;
       z-index: 0;
 
-      /* Linhas + pontos (não exagerado) */
+      /* IMPORTANT: step must match snap step (cell+gap) */
       background:
         repeating-linear-gradient(0deg,
           transparent 0,
-          transparent calc(var(--cell) - 1px),
-          var(--gridLine) calc(var(--cell) - 1px),
-          var(--gridLine) var(--cell)
+          transparent calc(var(--step) - 1px),
+          var(--gridLine) calc(var(--step) - 1px),
+          var(--gridLine) var(--step)
         ),
         repeating-linear-gradient(90deg,
           transparent 0,
-          transparent calc(var(--cell) - 1px),
-          var(--gridLine) calc(var(--cell) - 1px),
-          var(--gridLine) var(--cell)
+          transparent calc(var(--step) - 1px),
+          var(--gridLine) calc(var(--step) - 1px),
+          var(--gridLine) var(--step)
         ),
         radial-gradient(var(--gridDot) 1px, transparent 1px);
       background-size:
-        var(--cell) var(--cell),
-        var(--cell) var(--cell),
+        var(--step) var(--step),
+        var(--step) var(--step),
         18px 18px;
-      opacity: 0.38;
+
+      opacity: 0;
+      transition: opacity 220ms var(--ease);
       mask-image: radial-gradient(120% 120% at 50% 40%, #000 55%, transparent 100%);
     }
 
-    /* Area onde widgets vivem */
+    .stage.edit-mode .grid-overlay{
+      opacity: 0.38;
+    }
+
     .widget-area{
       position:absolute;
       inset: var(--pad);
-      bottom: calc(var(--pad) + 78px);
       border-radius: var(--radius2);
       z-index: 1;
     }
 
     /* =========================
-       Widgets — base
+       Widgets
        ========================= */
     .widget{
       position:absolute;
@@ -156,15 +157,15 @@
       border: 1px solid var(--stroke);
       backdrop-filter: blur(16px) saturate(140%);
       -webkit-backdrop-filter: blur(16px) saturate(140%);
-      overflow: visible; /* importante p/ shadow layer */
+      overflow: visible;
       user-select:none;
-      touch-action:none; /* pointer events smooth */
+      touch-action:none;
       transform: translate3d(0,0,0);
       will-change: transform, left, top;
       z-index: 2;
     }
 
-    /* Sombra em layer abaixo — NÃO sobrepõe outros widgets ✅ */
+    /* Shadow layer always below its widget (no shadow over other widgets) */
     .widget::before{
       content:"";
       position:absolute;
@@ -172,14 +173,12 @@
       border-radius: calc(var(--radius) + 10px);
       z-index:-1;
       pointer-events:none;
-      /* sombra mais “premium” */
       box-shadow:
         0 14px 40px rgba(0,0,0,0.28),
         0 4px 16px rgba(0,0,0,0.20);
       opacity: 0.95;
       filter: blur(0.2px);
     }
-
     html[data-theme="light"] .widget::before{
       box-shadow:
         0 14px 38px rgba(10,20,40,0.18),
@@ -187,25 +186,39 @@
       opacity: 0.85;
     }
 
-    /* Drag states */
+    /* Dragging only in edit mode */
     .widget.dragging{
       cursor: grabbing;
-      z-index: 50; /* sobe o widget, sombra ainda fica “atrás” por ser ::before com z-index -1 */
+      z-index: 50;
     }
 
-    .widget .header{
+    /* Content helpers */
+    .pad{
+      padding: 14px;
+    }
+
+    .big-time{
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      line-height: 1.05;
+    }
+
+    .date-line{
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 12px 14px 10px 14px;
       gap: 10px;
     }
 
-    .title{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width:0;
+    .subline{
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.25rem;
     }
 
     .dot{
@@ -215,24 +228,7 @@
       flex:0 0 auto;
     }
 
-    .name{
-      font-weight: 650;
-      letter-spacing: 0.2px;
-      font-size: 13.5px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      color: var(--text);
-    }
-
-    .sub{
-      font-size: 12px;
-      color: var(--muted);
-      padding: 0 14px 14px 14px;
-      line-height: 1.25rem;
-    }
-
-    /* “Ghost” de snap (preview do drop) */
+    /* Ghost preview */
     .snap-ghost{
       position:absolute;
       border-radius: var(--radius);
@@ -247,79 +243,28 @@
     .snap-ghost.visible{ opacity: 1; }
 
     /* =========================
-       Command Bar
-       ========================= */
-    .command-bar{
-      position:absolute;
-      left: var(--pad);
-      right: var(--pad);
-      bottom: var(--pad);
-      height: 62px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border: 1px solid var(--stroke);
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      padding: 10px 14px;
-      z-index: 100;
-    }
-    .prompt{
-      font-weight: 750;
-      letter-spacing: 0.4px;
-      color: rgba(var(--accent),0.95);
-      padding-left: 4px;
-      flex:0 0 auto;
-      font-size: 13px;
-    }
-    .cmd{
-      flex:1 1 auto;
-      height: 42px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.12);
-      color: var(--text);
-      padding: 0 14px;
-      outline: none;
-      font-size: 14px;
-    }
-    html[data-theme="light"] .cmd{ background: rgba(255,255,255,0.40); }
-    .hint{
-      flex:0 0 auto;
-      font-size: 12px;
-      color: var(--muted);
-      padding-right: 6px;
-      white-space:nowrap;
-    }
-
-    /* =========================
-       Theme Slider Widget (draggable)
+       Theme slider widget (no title)
        ========================= */
     .theme-widget{
       width: calc(var(--cell) * 2 + var(--gap));
       height: calc(var(--cell) * 1);
-      padding-bottom: 8px;
     }
 
-    .theme-body{
-      padding: 0 14px 14px 14px;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
-
-    .theme-row{
+    .theme-top{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 10px;
+      margin-bottom: 10px;
     }
 
     .theme-label{
       font-size: 12px;
       color: var(--muted);
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width:0;
     }
 
     .theme-pill{
@@ -331,7 +276,7 @@
       overflow:hidden;
       display:flex;
       align-items:center;
-      justify-content:center; /* mantém tudo central */
+      justify-content:center;
       padding: 6px;
       touch-action:none;
     }
@@ -367,7 +312,6 @@
       opacity: 0.92;
     }
 
-    /* “Thumb” (pill interno) centralizado e suave */
     .theme-thumb{
       position:absolute;
       top: 6px;
@@ -385,6 +329,7 @@
       transform: translateX(0);
       transition: transform 240ms var(--ease);
       z-index: 1;
+      will-change: transform;
     }
 
     html[data-theme="light"] .theme-thumb{
@@ -399,27 +344,68 @@
       color: var(--text);
     }
 
-    /* Small widgets */
+    /* =========================
+       Clock widget (no title)
+       ========================= */
     .clock-widget{
       width: calc(var(--cell) * 2 + var(--gap));
       height: calc(var(--cell) * 1);
     }
-    .info-widget{
-      width: calc(var(--cell) * 1);
+
+    /* =========================
+       Chat widget (Jarvis)
+       ========================= */
+    .chat-widget{
+      width: calc(var(--cell) * 3 + var(--gap) * 2);
       height: calc(var(--cell) * 1);
     }
 
-    .big{
-      font-size: 30px;
-      font-weight: 780;
-      letter-spacing: 0.2px;
-      padding: 0 14px 14px 14px;
+    .chat-row{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      height: 100%;
     }
 
-    /* Accessibility focus */
+    .jarvis-badge{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex: 0 0 auto;
+      padding-left: 2px;
+    }
+
+    .jarvis-text{
+      font-weight: 820;
+      letter-spacing: 0.6px;
+      font-size: 13px;
+      color: rgba(var(--accent),0.95);
+    }
+
+    .cmd{
+      flex:1 1 auto;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.12);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+      font-size: 14px;
+    }
+    html[data-theme="light"] .cmd{ background: rgba(255,255,255,0.40); }
+
     .cmd:focus{
       box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
       border-color: rgba(var(--accent),0.45);
+    }
+
+    .hint{
+      flex:0 0 auto;
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      padding-right: 2px;
     }
   </style>
 </head>
@@ -429,22 +415,13 @@
     <div class="grid-overlay" id="grid"></div>
 
     <div class="widget-area" id="area">
-      <!-- Ghost preview -->
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- Theme Slider Widget (draggable) -->
+      <!-- Theme Slider Widget (no title/header) -->
       <div class="widget theme-widget" data-id="theme" data-kind="theme">
-        <div class="header">
-          <div class="title">
-            <span class="dot"></span>
-            <div class="name">Tema</div>
-          </div>
-          <div class="name" style="font-weight:700; font-size:12px; color:var(--muted);">Widget</div>
-        </div>
-
-        <div class="theme-body">
-          <div class="theme-row">
-            <div class="theme-label">Light · Dark · Auto</div>
+        <div class="pad">
+          <div class="theme-top">
+            <div class="theme-label"><span class="dot"></span><span>Theme</span></div>
             <div class="theme-label" id="themeStatus">Dark</div>
           </div>
 
@@ -466,51 +443,39 @@
         </div>
       </div>
 
-      <!-- Clock -->
+      <!-- Clock Widget (no title/header) -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock">
-        <div class="header">
-          <div class="title">
-            <span class="dot"></span>
-            <div class="name">Relógio</div>
+        <div class="pad">
+          <div class="big-time" id="clock">--:--</div>
+          <div class="date-line">
+            <div id="dateLabel">—</div>
+            <div style="color:var(--muted); font-size:12px;" id="secondsLabel"></div>
           </div>
-          <div class="name" style="font-weight:700; font-size:12px; color:var(--muted);" id="dateLabel">—</div>
+          <div class="subline">Lisboa</div>
         </div>
-        <div class="big" id="clock">--:--</div>
-        <div class="sub">Lisboa · Terminal full screen · snap no grid ✨</div>
       </div>
 
-      <!-- Small info widgets -->
-      <div class="widget info-widget" data-id="sys" data-kind="info">
-        <div class="header">
-          <div class="title">
-            <span class="dot"></span>
-            <div class="name">Status</div>
+      <!-- Chat Widget (Jarvis) -->
+      <div class="widget chat-widget" data-id="chat" data-kind="chat">
+        <div class="pad" style="height:100%;">
+          <div class="chat-row">
+            <div class="jarvis-badge">
+              <span class="dot"></span>
+              <div class="jarvis-text">JARVIS</div>
+            </div>
+            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false"
+              placeholder='Digite um comando… (ex: "jarvis remove theme")'/>
+            <div class="hint">Enter ↵</div>
           </div>
         </div>
-        <div class="sub" id="sysText">Grid ✓<br/>Drag ✓<br/>Snap ✓</div>
       </div>
-
-      <div class="widget info-widget" data-id="tips" data-kind="info">
-        <div class="header">
-          <div class="title">
-            <span class="dot"></span>
-            <div class="name">Dica</div>
-          </div>
-        </div>
-        <div class="sub">Arraste widgets 👆<br/>Solte para snap.<br/>Comando: <b>jarvis remove theme</b></div>
-      </div>
-    </div>
-
-    <div class="command-bar">
-      <div class="prompt">JARVIS</div>
-      <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando… (ex: "jarvis remove theme")'/>
-      <div class="hint">Enter ↵</div>
     </div>
   </div>
 
   <script>
     // =========================================================
-    // Core: Grid + Drag/Drop + Snap + Shadow layering + Theme slider
+    // Core: Edit Mode + Grid only on edit + Drag/Drop + Snap + Anti-overlap
+    // Theme slider: smooth continuous drag (rAF)
     // =========================================================
 
     const stage = document.getElementById('stage');
@@ -525,33 +490,32 @@
 
     function getVars(){
       const cs = getComputedStyle(document.documentElement);
-      return {
-        cell: parseFloat(cs.getPropertyValue('--cell')) || 120,
-        gap:  parseFloat(cs.getPropertyValue('--gap'))  || 14,
-        pad:  parseFloat(cs.getPropertyValue('--pad'))  || 16
-      };
+      const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
+      const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
+      const pad  = parseFloat(cs.getPropertyValue('--pad'))  || 16;
+      return { cell, gap, pad, step: cell + gap };
     }
 
     function areaRect(){
       return area.getBoundingClientRect();
     }
 
-    function snapPoint(x, y, w, h){
-      const { cell, gap } = getVars();
+    // Keep CSS --step synced with JS step (so grid aligns perfectly)
+    function syncStepVar(){
+      const { step } = getVars();
+      document.documentElement.style.setProperty('--step', step + 'px');
+    }
+
+    function snapPoint(absX, absY, w, h){
+      const { step } = getVars();
       const r = areaRect();
 
-      // Conversão: coords relativas à área
-      let rx = x - r.left;
-      let ry = y - r.top;
+      let rx = absX - r.left;
+      let ry = absY - r.top;
 
-      // Snap com “passo” = cell + gap
-      const step = cell + gap;
-
-      // Posiciona para o “canto” do grid
       let sx = Math.round(rx / step) * step;
       let sy = Math.round(ry / step) * step;
 
-      // Mantém gutter (gap mínimo) sem grudar nas bordas
       const minX = 0;
       const minY = 0;
       const maxX = r.width  - w;
@@ -560,7 +524,6 @@
       sx = clamp(sx, minX, maxX);
       sy = clamp(sy, minY, maxY);
 
-      // Volta para coords absolutas
       return { left: sx, top: sy };
     }
 
@@ -576,8 +539,73 @@
       ghost.classList.remove('visible');
     }
 
+    function rectsOverlap(a, b){
+      return !(
+        a.right <= b.left ||
+        a.left >= b.right ||
+        a.bottom <= b.top ||
+        a.top >= b.bottom
+      );
+    }
+
+    function widgetRectInArea(w, left, top){
+      return {
+        left,
+        top,
+        right: left + w.offsetWidth,
+        bottom: top + w.offsetHeight
+      };
+    }
+
+    function intersectsAny(w, testLeft, testTop){
+      const test = widgetRectInArea(w, testLeft, testTop);
+      for(const other of document.querySelectorAll('.widget')){
+        if(other === w) continue;
+        if(other.style.display === 'none') continue;
+        const ol = parseFloat(other.style.left || 0);
+        const ot = parseFloat(other.style.top  || 0);
+        const orect = widgetRectInArea(other, ol, ot);
+        if(rectsOverlap(test, orect)) return true;
+      }
+      return false;
+    }
+
+    // Find nearest free grid cell (anti-overlap)
+    function findNearestFree(w, desiredLeft, desiredTop){
+      const { step } = getVars();
+      const r = areaRect();
+      const maxCols = Math.max(1, Math.floor((r.width  - w.offsetWidth)  / step) + 1);
+      const maxRows = Math.max(1, Math.floor((r.height - w.offsetHeight) / step) + 1);
+
+      const startCol = clamp(Math.round(desiredLeft / step), 0, maxCols - 1);
+      const startRow = clamp(Math.round(desiredTop  / step), 0, maxRows - 1);
+
+      // Spiral search around desired cell
+      const maxRadius = Math.max(maxCols, maxRows);
+      for(let rad = 0; rad <= maxRadius; rad++){
+        for(let dr = -rad; dr <= rad; dr++){
+          for(let dc = -rad; dc <= rad; dc++){
+            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue; // only perimeter
+            const col = startCol + dc;
+            const row = startRow + dr;
+            if(col < 0 || row < 0 || col >= maxCols || row >= maxRows) continue;
+
+            const left = col * step;
+            const top  = row * step;
+
+            if(!intersectsAny(w, left, top)){
+              return { left, top };
+            }
+          }
+        }
+      }
+      // fallback
+      return { left: desiredLeft, top: desiredTop };
+    }
+
     // ---------- Layout persistence ----------
-    const STORAGE_KEY = 'jarvis.layout.v1';
+    const STORAGE_KEY = 'jarvis.layout.v2'; // bumped due to structure changes
+    const EDIT_KEY    = 'jarvis.editmode.v1';
 
     function loadLayout(){
       try{
@@ -597,13 +625,16 @@
 
     function applyLayout(){
       const layout = loadLayout();
-
       document.querySelectorAll('.widget').forEach(w=>{
         const id = w.dataset.id;
+
         if(layout[id] && layout[id].hidden){
           w.style.display = 'none';
           return;
+        } else {
+          w.style.display = '';
         }
+
         if(layout[id] && typeof layout[id].left === 'number' && typeof layout[id].top === 'number'){
           w.style.left = layout[id].left + 'px';
           w.style.top  = layout[id].top  + 'px';
@@ -634,50 +665,98 @@
       return true;
     }
 
-    // ---------- Initial placement (only if no saved layout) ----------
+    // ---------- Default placement ----------
     function defaultLayoutIfNeeded(){
       const layout = loadLayout();
-      const hasAny = Object.keys(layout).length > 0;
-      if(hasAny) return;
+      if(Object.keys(layout).length) return;
 
       const widgets = {
         theme: document.querySelector('.widget[data-id="theme"]'),
         clock: document.querySelector('.widget[data-id="clock"]'),
-        sys:   document.querySelector('.widget[data-id="sys"]'),
-        tips:  document.querySelector('.widget[data-id="tips"]'),
+        chat:  document.querySelector('.widget[data-id="chat"]'),
       };
 
-      // Place neatly on grid
-      // (0,0) theme, (2,0) clock, (0,1) sys, (1,1) tips
+      const { step } = getVars();
       const r = areaRect();
-      const { cell, gap } = getVars();
-      const step = cell + gap;
 
       const positions = {
-        theme: { left: 0, top: 0 },
-        clock: { left: step * 2, top: 0 },
-        sys:   { left: 0, top: step * 1 },
-        tips:  { left: step * 1, top: step * 1 },
+        theme: { left: 0,       top: 0 },
+        clock: { left: step*2,  top: 0 },
+        chat:  { left: 0,       top: step*1 }
       };
 
       Object.entries(positions).forEach(([id,pos])=>{
         const w = widgets[id];
         if(!w) return;
-        const p = snapPoint(r.left + pos.left, r.top + pos.top, w.offsetWidth, w.offsetHeight);
-        commitWidgetPos(w, p.left, p.top);
+        const snapped = snapPoint(r.left + pos.left, r.top + pos.top, w.offsetWidth, w.offsetHeight);
+        const free = findNearestFree(w, snapped.left, snapped.top);
+        commitWidgetPos(w, free.left, free.top);
       });
     }
 
-    // ---------- Drag & Drop ----------
+    // ---------- Edit mode ----------
+    let isEditMode = false;
+
+    function setEditMode(on){
+      isEditMode = !!on;
+      stage.classList.toggle('edit-mode', isEditMode);
+      try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
+    }
+
+    function loadEditMode(){
+      const v = localStorage.getItem(EDIT_KEY);
+      setEditMode(v === '1');
+    }
+
+    // Enter/exit edit mode via hold
+    const HOLD_MS = 450;
+    let hold = null;
+
+    function startHold(e, w){
+      clearHold();
+      hold = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        w,
+        timer: setTimeout(()=>{
+          // toggle edit mode
+          setEditMode(!isEditMode);
+          clearHold(true);
+        }, HOLD_MS)
+      };
+    }
+
+    function clearHold(keepPointer){
+      if(!hold) return;
+      clearTimeout(hold.timer);
+      if(!keepPointer){
+        // nothing
+      }
+      hold = null;
+    }
+
+    // ---------- Drag & Drop (only in edit mode) ----------
     let drag = null;
+
+    function canStartDragFromTarget(target){
+      // Don't drag the widget if user is interacting with inputs/slider
+      if(target.closest('#themePill')) return false;
+      if(target.closest('input, textarea, button, select')) return false;
+      return true;
+    }
 
     function onPointerDown(e){
       const w = e.target.closest('.widget');
       if(!w) return;
 
-      // Se o pointer down foi dentro do theme pill, não iniciar drag do widget (para permitir slider)
-      const isThemePill = e.target.closest('#themePill');
-      if(isThemePill) return;
+      // Hold toggles edit mode
+      startHold(e, w);
+
+      // Only allow drag if currently in edit mode
+      if(!isEditMode) return;
+
+      if(!canStartDragFromTarget(e.target)) return;
 
       e.preventDefault();
 
@@ -700,6 +779,12 @@
     }
 
     function onPointerMove(e){
+      // cancel hold if moved
+      if(hold){
+        const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
+        if(md > 6) clearHold();
+      }
+
       if(!drag) return;
 
       const w = drag.w;
@@ -708,16 +793,13 @@
 
       if(Math.abs(drag.dx) + Math.abs(drag.dy) > 2) drag.moved = true;
 
-      // Move via transform para performance, sem commit
       w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
 
-      // Ghost snap preview
       const r = areaRect();
       const wr = w.getBoundingClientRect();
       const width = wr.width;
       const height = wr.height;
 
-      // Posição alvo considerando origem + delta
       const targetAbsX = (r.left + drag.originLeft) + drag.dx;
       const targetAbsY = (r.top  + drag.originTop ) + drag.dy;
 
@@ -726,11 +808,11 @@
     }
 
     function onPointerUp(e){
+      clearHold();
+
       if(!drag) return;
 
       const w = drag.w;
-
-      // Finaliza
       const r = areaRect();
       const wr = w.getBoundingClientRect();
       const width = wr.width;
@@ -741,9 +823,13 @@
 
       const snapped = snapPoint(targetAbsX, targetAbsY, width, height);
 
-      // Commit do drop (resolve “voltar pra onde estava”)
+      // Anti-overlap: find nearest free cell if occupied
+      const finalPos = intersectsAny(w, snapped.left, snapped.top)
+        ? findNearestFree(w, snapped.left, snapped.top)
+        : snapped;
+
       w.style.transform = 'translate3d(0,0,0)';
-      commitWidgetPos(w, snapped.left, snapped.top);
+      commitWidgetPos(w, finalPos.left, finalPos.top);
 
       w.classList.remove('dragging');
       hideGhost();
@@ -759,7 +845,6 @@
     const THEME_KEY = 'jarvis.theme.mode.v1';
 
     function setTheme(mode){
-      // mode: light | dark | auto
       localStorage.setItem(THEME_KEY, mode);
 
       let applied = mode;
@@ -768,12 +853,12 @@
       }
       document.documentElement.setAttribute('data-theme', applied);
 
-      // UI
-      [...themeOptions.querySelectorAll('.theme-opt')].forEach((opt, idx)=>{
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
         opt.classList.toggle('active', opt.dataset.theme === mode);
       });
 
       const index = mode === 'light' ? 0 : (mode === 'dark' ? 1 : 2);
+      themeThumb.style.transition = 'transform 240ms var(--ease)';
       themeThumb.style.transform = `translateX(${index * 100}%)`;
       themeStatus.textContent = mode[0].toUpperCase() + mode.slice(1);
     }
@@ -783,47 +868,75 @@
       setTheme(saved);
     }
 
-    // Click to set theme
+    // Click still works (kept)
     themeOptions.addEventListener('click', (e)=>{
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
     });
 
-    // Drag inside pill to set theme (smooth)
+    // Smooth drag (continuous, rAF)
     let pillDrag = null;
+    let rafId = 0;
+
+    function pillThumbFromX(x, rect){
+      const innerLeft = 6;
+      const innerRight = rect.width - 6;
+      const t = clamp((x - innerLeft) / (innerRight - innerLeft), 0, 1);
+      // thumb ranges over 0..2 slots, but continuous
+      const px = t * 200; // 0%..200% (since 3 slots)
+      return px;
+    }
+
+    function renderThumb(px){
+      themeThumb.style.transition = 'none';
+      themeThumb.style.transform = `translateX(${px}%)`;
+    }
+
     themePill.addEventListener('pointerdown', (e)=>{
-      // impedir iniciar drag do widget (já tratado acima), aqui é slider drag
+      // prevent page gestures
       e.preventDefault();
       const rect = themePill.getBoundingClientRect();
-      pillDrag = { startX: e.clientX, rect };
+      pillDrag = { rect, lastX: e.clientX };
+
       themePill.setPointerCapture(e.pointerId);
+
+      const px = pillThumbFromX(e.clientX - rect.left, rect);
+      renderThumb(px);
     });
 
     themePill.addEventListener('pointermove', (e)=>{
       if(!pillDrag) return;
-      const rect = pillDrag.rect;
-      const x = clamp(e.clientX - rect.left, 0, rect.width);
-      const t = x / rect.width; // 0..1
-      // 3 slots
-      const idx = clamp(Math.round(t * 2), 0, 2);
-      themeThumb.style.transition = 'none';
-      themeThumb.style.transform = `translateX(${idx * 100}%)`;
+      pillDrag.lastX = e.clientX;
+
+      if(rafId) return;
+      rafId = requestAnimationFrame(()=>{
+        rafId = 0;
+        const rect = pillDrag.rect;
+        const localX = pillDrag.lastX - rect.left;
+        const px = pillThumbFromX(localX, rect);
+        renderThumb(px);
+      });
     });
 
     themePill.addEventListener('pointerup', (e)=>{
       if(!pillDrag) return;
+
       const rect = pillDrag.rect;
-      const x = clamp(e.clientX - rect.left, 0, rect.width);
-      const t = x / rect.width;
+      const localX = e.clientX - rect.left;
+
+      // decide slot at release
+      const innerLeft = 6;
+      const innerRight = rect.width - 6;
+      const t = clamp((localX - innerLeft) / (innerRight - innerLeft), 0, 1);
       const idx = clamp(Math.round(t * 2), 0, 2);
+
       const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
-      themeThumb.style.transition = ''; // volta transição
-      setTheme(mode);
       pillDrag = null;
+
+      setTheme(mode);
     });
 
-    // Se o sistema mudar e estiver em auto, re-aplica
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
       const saved = localStorage.getItem(THEME_KEY) || 'dark';
       if(saved === 'auto') setTheme('auto');
@@ -832,54 +945,45 @@
     // ---------- Clock ----------
     const clockEl = document.getElementById('clock');
     const dateLabel = document.getElementById('dateLabel');
+    const secondsLabel = document.getElementById('secondsLabel');
 
     function tick(){
       const now = new Date();
       const hh = String(now.getHours()).padStart(2,'0');
       const mm = String(now.getMinutes()).padStart(2,'0');
-      clockEl.textContent = `${hh}:${mm}`;
+      const ss = String(now.getSeconds()).padStart(2,'0');
 
-      const fmt = new Intl.DateTimeFormat('pt-PT', { weekday:'short', day:'2-digit', month:'short' });
-      dateLabel.textContent = fmt.format(now).replace('.', '');
+      clockEl.textContent = `${hh}:${mm}`;
+      secondsLabel.textContent = ss;
+
+      // "quinta, 26/02" style
+      const weekday = new Intl.DateTimeFormat('pt-PT', { weekday:'long' }).format(now);
+      const dd = String(now.getDate()).padStart(2,'0');
+      const mo = String(now.getMonth()+1).padStart(2,'0');
+      dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
     // ---------- Commands ----------
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
-
-      // exemplos aceitos
-      // jarvis remove theme
-      // remove theme
-      // jarvis theme dark
       if(!input) return;
 
-      const say = (msg)=>{
-        const sys = document.getElementById('sysText');
-        sys.innerHTML = msg;
-      };
-
-      if(input.includes('remove theme') || input === 'remove tema' || input.includes('remover tema')){
-        const ok = hideWidget('theme');
-        say(ok ? '✅ Theme widget removido.<br/>Dica: recarregue para ver persistência.' : '⚠️ Não achei o widget theme.');
+      // removals
+      if(input.includes('remove theme') || input.includes('remover tema')){
+        hideWidget('theme');
+        return;
+      }
+      if(input.includes('remove chat') || input.includes('remover chat') || input.includes('remove jarvis')){
+        hideWidget('chat');
         return;
       }
 
+      // theme
       if(input.includes('theme ') || input.includes('tema ')){
-        if(input.includes('dark') || input.includes('escuro')){
-          setTheme('dark'); say('🌙 Tema: Dark');
-          return;
-        }
-        if(input.includes('light') || input.includes('claro')){
-          setTheme('light'); say('☀️ Tema: Light');
-          return;
-        }
-        if(input.includes('auto')){
-          setTheme('auto'); say('✨ Tema: Auto');
-          return;
-        }
+        if(input.includes('dark') || input.includes('escuro')) return setTheme('dark');
+        if(input.includes('light') || input.includes('claro')) return setTheme('light');
+        if(input.includes('auto')) return setTheme('auto');
       }
-
-      say('🤖 Comando não reconhecido.<br/>Tente: <b>jarvis remove theme</b> · <b>jarvis theme dark</b>');
     }
 
     cmd.addEventListener('keydown', (e)=>{
@@ -890,8 +994,28 @@
     });
 
     // ---------- Boot ----------
+    function resnapAllIntoGrid(){
+      // Ensures alignment with the grid + resolves overlaps if any
+      document.querySelectorAll('.widget').forEach(w=>{
+        if(w.style.display === 'none') return;
+
+        const left = parseFloat(w.style.left || 0);
+        const top  = parseFloat(w.style.top  || 0);
+        const r = areaRect();
+
+        const snapped = snapPoint(r.left + left, r.top + top, w.offsetWidth, w.offsetHeight);
+        const finalPos = intersectsAny(w, snapped.left, snapped.top)
+          ? findNearestFree(w, snapped.left, snapped.top)
+          : snapped;
+
+        commitWidgetPos(w, finalPos.left, finalPos.top);
+      });
+    }
+
     function boot(){
+      syncStepVar();
       loadTheme();
+      loadEditMode();
 
       // Drag handlers
       area.addEventListener('pointerdown', onPointerDown);
@@ -902,20 +1026,17 @@
       defaultLayoutIfNeeded();
       applyLayout();
 
+      // Fix old layouts + alignment + overlap
+      resnapAllIntoGrid();
+
       // Clock
       tick();
       setInterval(tick, 1000);
 
-      // Re-snap on resize (mantém dentro do container)
+      // Re-sync grid step & re-snap on resize
       window.addEventListener('resize', ()=>{
-        document.querySelectorAll('.widget').forEach(w=>{
-          if(w.style.display === 'none') return;
-          const left = parseFloat(w.style.left || 0);
-          const top  = parseFloat(w.style.top  || 0);
-          const r = areaRect();
-          const snapped = snapPoint(r.left + left, r.top + top, w.offsetWidth, w.offsetHeight);
-          commitWidgetPos(w, snapped.left, snapped.top);
-        });
+        syncStepVar();
+        resnapAllIntoGrid();
       });
     }
 
