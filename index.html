@@ -32,8 +32,10 @@
       /* Border thickness compensation */
       --b: 1px;
 
-      --gridDot: rgba(255,255,255,0.11);
-      --gridMajorDot: rgba(255,255,255,0.18);
+      /* Grid dots */
+      --gridDot: rgba(255,255,255,0.14);      /* micro dots a bit stronger (still subtle) */
+      --gridMajorDot: rgba(255,255,255,0.22); /* major dots */
+      --microStep: 33.5px; /* synced by JS = step/4 */
 
       --ease: cubic-bezier(.2,.9,.2,1);
     }
@@ -50,8 +52,8 @@
       --text: rgba(10,18,34,0.90);
       --muted: rgba(10,18,34,0.56);
 
-      --gridDot: rgba(10,20,40,0.11);
-      --gridMajorDot: rgba(10,20,40,0.18);
+      --gridDot: rgba(10,20,40,0.14);
+      --gridMajorDot: rgba(10,20,40,0.22);
     }
 
     @media (max-width: 640px){
@@ -102,7 +104,7 @@
       isolation:isolate;
     }
 
-    /* Grid overlay — dots + major dots (only in edit mode) */
+    /* Grid overlay — aligned micro + major dots (only in edit mode) */
     .grid-overlay{
       position:absolute;
       inset: var(--pad);
@@ -110,13 +112,13 @@
       pointer-events:none;
       z-index: 0;
 
-      /* micro dots */
       background:
+        /* micro dots aligned to --microStep */
         radial-gradient(var(--gridDot) 1px, transparent 1px),
-        /* major dots on grid intersections */
-        radial-gradient(var(--gridMajorDot) 1.6px, transparent 1.6px);
+        /* major dots aligned to --step (subset of micro lattice) */
+        radial-gradient(var(--gridMajorDot) 1.7px, transparent 1.7px);
       background-size:
-        18px 18px,
+        var(--microStep) var(--microStep),
         var(--step) var(--step);
       background-position:
         0 0,
@@ -126,9 +128,7 @@
       transition: opacity 220ms var(--ease);
       mask-image: radial-gradient(120% 120% at 50% 40%, #000 58%, transparent 100%);
     }
-
-    /* more visible (still tasteful) */
-    .stage.edit-mode .grid-overlay{ opacity: 0.72; }
+    .stage.edit-mode .grid-overlay{ opacity: 0.70; }
 
     .widget-area{
       position:absolute;
@@ -150,6 +150,7 @@
       transform: translate3d(0,0,0);
       will-change: transform, left, top;
       z-index: 2;
+      transition: transform 220ms var(--ease), filter 220ms var(--ease);
     }
 
     /* Shadow lower layer */
@@ -165,6 +166,7 @@
         0 4px 16px rgba(0,0,0,0.20);
       opacity: 0.95;
       filter: blur(0.2px);
+      transition: box-shadow 240ms var(--ease), opacity 240ms var(--ease);
     }
     html[data-theme="light"] .widget::before{
       box-shadow:
@@ -176,6 +178,28 @@
     .widget.dragging{
       cursor: grabbing;
       z-index: 50;
+    }
+
+    /* iOS-like edit mode floating (subtle) */
+    @keyframes floaty {
+      0%, 100% { transform: translate3d(0,0,0); }
+      50%      { transform: translate3d(0,-4px,0); }
+    }
+    .stage.edit-mode .widget:not(.dragging){
+      animation: floaty 2.8s ease-in-out infinite;
+      filter: saturate(1.02);
+    }
+    .stage.edit-mode .widget:not(.dragging)::before{
+      box-shadow:
+        0 18px 46px rgba(0,0,0,0.34),
+        0 6px 18px rgba(0,0,0,0.22);
+      opacity: 0.98;
+    }
+    html[data-theme="light"] .stage.edit-mode .widget:not(.dragging)::before{
+      box-shadow:
+        0 18px 40px rgba(10,20,40,0.22),
+        0 6px 16px rgba(10,20,40,0.14);
+      opacity: 0.92;
     }
 
     .pad{ padding: 14px; }
@@ -194,36 +218,68 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    /* ===== Widget sizing: gap guaranteed by size (no inset) =====
+    /* ===== Widget sizing: gap guaranteed by size =====
        Size formula: span*step - gap - 2*border
-       This ensures constant spacing between adjacent cells and avoids clamp-shift overlaps.
     */
 
     /* Clock spans 2 columns x 1 row */
     .clock-widget{
       width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2));
       height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
     }
+
+    .clock-inner{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+    }
+
+    .time-row{
+      display:flex;
+      align-items:baseline;
+      justify-content:center;
+      gap: 6px; /* seconds closer to minutes */
+      width:100%;
+    }
+
     .big-time{
       font-size: 34px;
       font-weight: 800;
       letter-spacing: 0.2px;
-      line-height: 1.05;
+      line-height: 1.0;
     }
+
+    .seconds{
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+      transform: translateY(-2px); /* sit near the top-right of minutes */
+      min-width: 18px;
+      text-align:left;
+    }
+
     .date-line{
-      margin-top: 6px;
       font-size: 13px;
       color: var(--muted);
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap: 10px;
+      justify-content:center;
+      gap: 8px;
+      width:100%;
     }
+
     .subline{
-      margin-top: 10px;
       font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.25rem;
+      line-height: 1.2rem;
     }
 
     /* Chat spans 3 columns x 1 row */
@@ -271,7 +327,6 @@
       justify-content:center;
     }
 
-    /* theme widget padding slightly reduced so slider looks bigger */
     .theme-widget .pad{
       padding: 12px;
       width: 100%;
@@ -280,7 +335,7 @@
     .theme-pill{
       position:relative;
       width: 100%;
-      height: 52px; /* bigger */
+      height: 52px;
       border-radius: 999px;
       border: 1px solid var(--stroke2);
       background: rgba(0,0,0,0.10);
@@ -360,13 +415,17 @@
 
       <!-- Clock -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock">
-        <div class="pad">
-          <div class="big-time" id="clock">--:--</div>
-          <div class="date-line">
-            <div id="dateLabel">—</div>
-            <div style="color:var(--muted); font-size:12px;" id="secondsLabel"></div>
+        <div class="pad" style="width:100%;">
+          <div class="clock-inner">
+            <div class="time-row">
+              <div class="big-time" id="clock">--:--</div>
+              <div class="seconds" id="secondsLabel">--</div>
+            </div>
+            <div class="date-line">
+              <div id="dateLabel">—</div>
+            </div>
+            <div class="subline">Lisboa</div>
           </div>
-          <div class="subline">Lisboa</div>
         </div>
       </div>
 
@@ -415,14 +474,15 @@
       return { cell, gap, step };
     }
 
-    function syncStepVar(){
+    function syncGridVars(){
       const { step } = getVars();
       document.documentElement.style.setProperty('--step', step + 'px');
+      // microStep must divide step to keep major dots aligned
+      document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
     }
 
     function areaRect(){ return area.getBoundingClientRect(); }
 
-    // No inset: grid origin at 0,0 => can touch edges; gap guaranteed by widget size formula.
     function colRowToPx(col, row){
       const { step } = getVars();
       return { left: col * step, top: row * step };
@@ -448,7 +508,6 @@
       const r = areaRect();
       const maxCol = Math.max(0, Math.floor((r.width  - w.offsetWidth)  / step));
       const maxRow = Math.max(0, Math.floor((r.height - w.offsetHeight) / step));
-      // (cols/rows not strictly needed now, but kept for limits)
       return { maxCol, maxRow };
     }
 
@@ -518,8 +577,8 @@
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    // ---------- Persistence (col/row) ----------
-    const STORAGE_KEY = 'terminal.layout.v6';
+    // ---------- Persistence ----------
+    const STORAGE_KEY = 'terminal.layout.v7';
     const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
@@ -541,8 +600,8 @@
       w.dataset.row = String(row);
 
       const p = colRowToPx(col, row);
-      w.style.left = p.left + 'px';
-      w.style.top  = p.top  + 'px';
+      w.style.left = Math.round(p.left) + 'px';  // avoid subpixel seams (helps light theme)
+      w.style.top  = Math.round(p.top)  + 'px';
 
       const layout = loadLayout();
       const id = w.dataset.id;
@@ -643,7 +702,7 @@
       setEditMode(false);
     }, true);
 
-    // ---------- Drag/drop (edit mode only) ----------
+    // ---------- Drag/drop ----------
     let drag = null;
 
     function canStartDragFromTarget(target){
@@ -674,6 +733,8 @@
       };
 
       w.classList.add('dragging');
+      // stop floating animation while dragging
+      w.style.animation = 'none';
       w.setPointerCapture(e.pointerId);
     }
 
@@ -716,9 +777,11 @@
       const free = findNearestFreeCell(w, col, row);
 
       w.style.transform = 'translate3d(0,0,0)';
+      w.classList.remove('dragging');
+      w.style.animation = ''; // return to edit-mode floating if applicable
+
       commitWidgetCell(w, free.col, free.row);
 
-      w.classList.remove('dragging');
       hideGhost();
       drag = null;
     }
@@ -732,7 +795,7 @@
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
 
-    const THEME_KEY = 'terminal.theme.mode.v3';
+    const THEME_KEY = 'terminal.theme.mode.v4';
 
     function applyTheme(mode){
       let applied = mode;
@@ -768,14 +831,12 @@
       setTheme(saved);
     }
 
-    // Tap to change
     themeOptions.addEventListener('click', (e)=>{
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
     });
 
-    // Smooth drag (px based)
     let pillDrag = null;
     let rafId = 0;
 
@@ -893,8 +954,9 @@
       }
     }
 
+    // ---------- Boot ----------
     function boot(){
-      syncStepVar();
+      syncGridVars();
       loadTheme();
 
       const em = localStorage.getItem('terminal.editmode.v1');
@@ -908,7 +970,7 @@
       setInterval(tick, 1000);
 
       window.addEventListener('resize', ()=>{
-        syncStepVar();
+        syncGridVars();
         normalizeAll();
 
         const saved = localStorage.getItem(THEME_KEY) || 'auto';
