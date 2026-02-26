@@ -30,7 +30,7 @@
       --step: 134px; /* synced by JS = cell+gap */
 
       /* Border thickness compensation */
-      --b: 1px; /* widget border thickness (must match .widget border) */
+      --b: 1px;
 
       --gridDot: rgba(255,255,255,0.10);
 
@@ -115,7 +115,8 @@
       transition: opacity 220ms var(--ease);
       mask-image: radial-gradient(120% 120% at 50% 40%, #000 55%, transparent 100%);
     }
-    .stage.edit-mode .grid-overlay{ opacity: 0.42; }
+    /* slightly more visible */
+    .stage.edit-mode .grid-overlay{ opacity: 0.55; }
 
     .widget-area{
       position:absolute;
@@ -181,7 +182,7 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    /* Clock — compensate border (2px total) so gaps stay perfect */
+    /* Clock */
     .clock-widget{
       width: calc(var(--cell) * 2 + var(--gap) - (var(--b) * 2));
       height: calc(var(--cell) * 1 - (var(--b) * 2));
@@ -208,7 +209,7 @@
       line-height: 1.25rem;
     }
 
-    /* Theme slider — compensate border */
+    /* Theme slider */
     .theme-widget{
       width: calc(var(--cell) * 2 + var(--gap) - (var(--b) * 2));
       height: calc(var(--cell) * 1 - (var(--b) * 2));
@@ -217,6 +218,7 @@
       justify-content:center;
     }
     .theme-pill{
+      position:relative;
       width: 100%;
       height: 44px;
       border-radius: 999px;
@@ -274,7 +276,7 @@
         0 10px 24px rgba(0,0,0,0.18);
       backdrop-filter: blur(14px) saturate(140%);
       -webkit-backdrop-filter: blur(14px) saturate(140%);
-      transform: translateX(0);
+      transform: translate3d(0,0,0);
       transition: transform 240ms var(--ease);
       z-index: 1;
       will-change: transform;
@@ -287,7 +289,7 @@
         0 10px 20px rgba(10,20,40,0.12);
     }
 
-    /* Chat — compensate border */
+    /* Chat */
     .chat-widget{
       width: calc(var(--cell) * 3 + (var(--gap) * 2) - (var(--b) * 2));
       height: calc(var(--cell) * 1 - (var(--b) * 2));
@@ -373,12 +375,6 @@
   </div>
 
   <script>
-    // =========================================================
-    // Grid-aware Layout (col/row + span)
-    // + Centered placement (gap/2 inset) => equal gap on all sides
-    // + Tap empty exits edit mode
-    // =========================================================
-
     const stage = document.getElementById('stage');
     const area  = document.getElementById('area');
     const ghost = document.getElementById('ghost');
@@ -402,11 +398,11 @@
 
     function areaRect(){ return area.getBoundingClientRect(); }
 
-    // Center widgets inside the grid spacing by offsetting placement with gap/2
+    // Center widgets inside grid spacing (gap/2 inset) but allow touching outer edges by clamping
     function colRowToPx(col, row){
       const { step, gap } = getVars();
       const inset = gap / 2;
-      return { left: col * step + inset, top: row * step + inset };
+      return { leftRaw: col * step + inset, topRaw: row * step + inset };
     }
 
     function pxToColRow(absX, absY){
@@ -418,7 +414,6 @@
       return { col: Math.round(rx / step), row: Math.round(ry / step) };
     }
 
-    // Widget spans in grid steps (using step, but spacing is ensured by inset)
     function getSpan(w){
       const { step } = getVars();
       const spanX = Math.max(1, Math.ceil(w.offsetWidth  / step));
@@ -426,7 +421,6 @@
       return { spanX, spanY };
     }
 
-    // With inset on both sides, effective usable size is (area - gap)
     function maxColsRowsFor(w){
       const { step, gap } = getVars();
       const r = areaRect();
@@ -501,18 +495,29 @@
       return { col: desiredCol, row: desiredRow };
     }
 
+    function placePxForWidget(w, col, row){
+      const r = areaRect();
+      const { leftRaw, topRaw } = colRowToPx(col, row);
+      const maxLeft = Math.max(0, r.width  - w.offsetWidth);
+      const maxTop  = Math.max(0, r.height - w.offsetHeight);
+      return {
+        left: clamp(leftRaw, 0, maxLeft),
+        top:  clamp(topRaw,  0, maxTop)
+      };
+    }
+
     function setGhost(w, col, row){
-      const { left, top } = colRowToPx(col, row);
+      const p = placePxForWidget(w, col, row);
       ghost.style.width  = w.offsetWidth + 'px';
       ghost.style.height = w.offsetHeight + 'px';
-      ghost.style.left   = left + 'px';
-      ghost.style.top    = top  + 'px';
+      ghost.style.left   = p.left + 'px';
+      ghost.style.top    = p.top  + 'px';
       ghost.classList.add('visible');
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
     // ---------- Persistence (col/row) ----------
-    const STORAGE_KEY = 'terminal.layout.v4';
+    const STORAGE_KEY = 'terminal.layout.v5';
     const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
@@ -529,9 +534,9 @@
       w.dataset.col = String(col);
       w.dataset.row = String(row);
 
-      const { left, top } = colRowToPx(col, row);
-      w.style.left = left + 'px';
-      w.style.top  = top  + 'px';
+      const p = placePxForWidget(w, col, row);
+      w.style.left = p.left + 'px';
+      w.style.top  = p.top  + 'px';
 
       const layout = loadLayout();
       const id = w.dataset.id;
@@ -602,16 +607,10 @@
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
       try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
-      // hide ghost when leaving
       if(!isEditMode) hideGhost();
     }
 
-    function loadEditMode(){
-      const v = localStorage.getItem(EDIT_KEY);
-      setEditMode(v === '1');
-    }
-
-    // Hold to toggle edit mode
+    // Hold toggles edit mode
     const HOLD_MS = 450;
     let hold = null;
 
@@ -622,28 +621,22 @@
         startY: e.clientY,
         timer: setTimeout(()=>{
           setEditMode(!isEditMode);
-          clearHold(true);
+          clearHold();
         }, HOLD_MS)
       };
     }
-
     function clearHold(){
       if(!hold) return;
       clearTimeout(hold.timer);
       hold = null;
     }
 
-    // Tap empty to exit edit mode ✅
-    function onStagePointerDown(e){
-      // If in edit mode and user taps empty space (not a widget), exit edit mode
+    // Tap empty exits edit mode
+    stage.addEventListener('pointerdown', (e)=>{
       if(!isEditMode) return;
-      const tappedWidget = e.target.closest('.widget');
-      // Allow interaction with widgets in edit mode (drag/slider/input)
-      if(tappedWidget) return;
+      if(e.target.closest('.widget')) return;
       setEditMode(false);
-    }
-
-    stage.addEventListener('pointerdown', onStagePointerDown, true);
+    }, true);
 
     // ---------- Drag/drop (edit mode only) ----------
     let drag = null;
@@ -658,7 +651,6 @@
       const w = e.target.closest('.widget');
       if(!w) return;
 
-      // Hold toggles edit mode (always)
       startHold(e);
 
       if(!isEditMode) return;
@@ -681,7 +673,6 @@
     }
 
     function onPointerMove(e){
-      // cancel hold if moved
       if(hold){
         const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
         if(md > 6) clearHold();
@@ -694,10 +685,11 @@
 
       w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
 
-      const { left: originLeft, top: originTop } = colRowToPx(drag.originCol, drag.originRow);
+      // Get current pixel origin from stored cell
+      const originPx = placePxForWidget(w, drag.originCol, drag.originRow);
       const r = areaRect();
-      const absX = (r.left + originLeft) + drag.dx;
-      const absY = (r.top  + originTop ) + drag.dy;
+      const absX = (r.left + originPx.left) + drag.dx;
+      const absY = (r.top  + originPx.top ) + drag.dy;
 
       const { col, row } = pxToColRow(absX, absY);
       const free = findNearestFreeCell(w, col, row);
@@ -711,10 +703,10 @@
 
       const w = drag.w;
 
-      const { left: originLeft, top: originTop } = colRowToPx(drag.originCol, drag.originRow);
+      const originPx = placePxForWidget(w, drag.originCol, drag.originRow);
       const r = areaRect();
-      const absX = (r.left + originLeft) + drag.dx;
-      const absY = (r.top  + originTop ) + drag.dy;
+      const absX = (r.left + originPx.left) + drag.dx;
+      const absY = (r.top  + originPx.top ) + drag.dy;
 
       const { col, row } = pxToColRow(absX, absY);
       const free = findNearestFreeCell(w, col, row);
@@ -731,97 +723,120 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
-    // ---------- Theme ----------
+    // ---------- Theme (default AUTO) ----------
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
 
-    const THEME_KEY = 'terminal.theme.mode.v1';
+    const THEME_KEY = 'terminal.theme.mode.v2';
 
-    function setTheme(mode){
-      localStorage.setItem(THEME_KEY, mode);
-
+    function applyTheme(mode){
       let applied = mode;
       if(mode === 'auto'){
         applied = prefersDark() ? 'dark' : 'light';
       }
       document.documentElement.setAttribute('data-theme', applied);
+    }
+
+    function setTheme(mode){
+      localStorage.setItem(THEME_KEY, mode);
+
+      applyTheme(mode);
 
       [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
         opt.classList.toggle('active', opt.dataset.theme === mode);
       });
 
-      const index = mode === 'light' ? 0 : (mode === 'dark' ? 1 : 2);
+      // Slot snap (px-based)
       themeThumb.style.transition = 'transform 240ms var(--ease)';
-      themeThumb.style.transform = `translateX(${index * 100}%)`;
+      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
     }
 
     function loadTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || 'light';
+      const saved = localStorage.getItem(THEME_KEY) || 'auto'; // ✅ default auto
       setTheme(saved);
     }
 
-    // Tap to change
+    function slotXForMode(mode){
+      const rect = themePill.getBoundingClientRect();
+      const thumbW = themeThumb.getBoundingClientRect().width || 0;
+      const inner = rect.width - 12; // 6px + 6px
+      const range = Math.max(0, inner - thumbW);
+      const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
+      return range * (idx / 2);
+    }
+
+    // Tap to change (kept)
     themeOptions.addEventListener('click', (e)=>{
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
     });
 
-    // Smooth drag
+    // Smooth drag — PX based (fixes broken thumb) ✅
     let pillDrag = null;
     let rafId = 0;
 
-    function thumbPctFromClientX(clientX, rect){
+    function thumbXFromClientX(clientX, rect, thumbW){
       const innerLeft = 6;
       const innerRight = rect.width - 6;
-      const local = clamp(clientX - rect.left, innerLeft, innerRight);
-      const t = (local - innerLeft) / (innerRight - innerLeft);
-      return t * 200; // 0..200%
+      const innerW = innerRight - innerLeft;
+      const range = Math.max(0, innerW - thumbW);
+
+      // map clientX to center the thumb
+      const local = clamp(clientX - rect.left - innerLeft, 0, innerW);
+      const centered = clamp(local - thumbW/2, 0, range);
+      return centered;
     }
 
-    function renderThumb(pct){
+    function renderThumbX(px){
       themeThumb.style.transition = 'none';
-      themeThumb.style.transform = `translateX(${pct}%)`;
+      themeThumb.style.transform = `translate3d(${px}px,0,0)`;
     }
 
     themePill.addEventListener('pointerdown', (e)=>{
       e.preventDefault();
       const rect = themePill.getBoundingClientRect();
-      pillDrag = { rect, lastX: e.clientX };
+      const thumbW = themeThumb.getBoundingClientRect().width || 0;
+      pillDrag = { rect, thumbW, lastX: e.clientX };
       themePill.setPointerCapture(e.pointerId);
-      renderThumb(thumbPctFromClientX(e.clientX, rect));
+
+      renderThumbX(thumbXFromClientX(e.clientX, rect, thumbW));
     });
 
     themePill.addEventListener('pointermove', (e)=>{
       if(!pillDrag) return;
       pillDrag.lastX = e.clientX;
+
       if(rafId) return;
       rafId = requestAnimationFrame(()=>{
         rafId = 0;
-        renderThumb(thumbPctFromClientX(pillDrag.lastX, pillDrag.rect));
+        renderThumbX(thumbXFromClientX(pillDrag.lastX, pillDrag.rect, pillDrag.thumbW));
       });
     });
 
     themePill.addEventListener('pointerup', (e)=>{
       if(!pillDrag) return;
 
-      const rect = pillDrag.rect;
-      const innerLeft = 6;
-      const innerRight = rect.width - 6;
-      const local = clamp(e.clientX - rect.left, innerLeft, innerRight);
-      const t = (local - innerLeft) / (innerRight - innerLeft);
-      const idx = clamp(Math.round(t * 2), 0, 2);
-
+      const { rect, thumbW } = pillDrag;
       pillDrag = null;
+
+      const innerW = rect.width - 12;
+      const range = Math.max(0, innerW - thumbW);
+
+      const x = thumbXFromClientX(e.clientX, rect, thumbW);
+      const t = range === 0 ? 0 : (x / range); // 0..1
+      const idx = clamp(Math.round(t * 2), 0, 2);
 
       const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
       setTheme(mode);
     });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
-      const saved = localStorage.getItem(THEME_KEY) || 'light';
-      if(saved === 'auto') setTheme('auto');
+      const saved = localStorage.getItem(THEME_KEY) || 'auto';
+      if(saved === 'auto'){
+        applyTheme('auto');
+      }
     });
 
     // ---------- Clock ----------
@@ -844,7 +859,7 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    // ---------- Commands (generic) ----------
+    // ---------- Commands ----------
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
       if(!input) return;
@@ -869,14 +884,11 @@
     // ---------- Normalize layout ----------
     function normalizeAll(){
       const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
-
-      // Ensure datasets exist
       widgets.forEach(w=>{
         if(w.dataset.col == null) w.dataset.col = '0';
         if(w.dataset.row == null) w.dataset.row = '0';
       });
 
-      // Re-place sequentially to guarantee no conflicts
       for(const w of widgets){
         const col = parseInt(w.dataset.col || '0', 10);
         const row = parseInt(w.dataset.row || '0', 10);
@@ -885,13 +897,14 @@
       }
     }
 
+    // ---------- Boot ----------
     function boot(){
       syncStepVar();
       loadTheme();
 
-      // Edit mode persistence
-      const v = localStorage.getItem(EDIT_KEY);
-      setEditMode(v === '1');
+      // edit mode persisted
+      const em = localStorage.getItem('terminal.editmode.v1');
+      setEditMode(em === '1');
 
       defaultLayoutIfNeeded();
       applyLayout();
@@ -903,6 +916,10 @@
       window.addEventListener('resize', ()=>{
         syncStepVar();
         normalizeAll();
+        // keep slider correct after resize
+        const saved = localStorage.getItem(THEME_KEY) || 'auto';
+        themeThumb.style.transition = '';
+        themeThumb.style.transform = `translate3d(${slotXForMode(saved)}px,0,0)`;
       });
     }
 
