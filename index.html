@@ -1,1126 +1,925 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Terminal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <title>Jarvis Terminal</title>
 
-<style>
-:root{
-  --glass-light: rgba(255,255,255,0.55);
-  --glass-dark: rgba(20,28,45,0.55);
-  --border-light: rgba(255,255,255,0.35);
-  --border-dark: rgba(255,255,255,0.15);
+  <style>
+    /* =========================================================
+       JARVIS TERMINAL — Premium Liquid Glass UI
+       (Grid + Drag/Drop + Snap + Shadows layer fix + Theme Widget)
+       ========================================================= */
 
-  --blur: blur(22px);
-  --shadow: 0 25px 50px rgba(0,0,0,0.25);
+    :root{
+      --bg0: #06080f;
+      --bg1: #0a1020;
+      --glass: rgba(255,255,255,0.10);
+      --glass2: rgba(255,255,255,0.14);
+      --stroke: rgba(255,255,255,0.18);
+      --stroke2: rgba(255,255,255,0.26);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
 
-  /* Grid responsivo */
-  --grid-size: clamp(36px, 6vw, 60px);
-  --grid-gap:  clamp(8px, 2vw, 18px);
-  --shadow-inset: 12px;
+      --accent: 105, 199, 255;     /* RGB only */
+      --danger: 255, 110, 110;
 
-  --cols: 12;
-  --cell-w: 60px;
+      --radius: 22px;
+      --radius2: 28px;
 
-  /* escala do painel (sem scroll) */
-  --ui-scale: 1;
+      /* Grid */
+      --cell: 120px;
+      --gap: 14px;                 /* espaço entre widgets */
+      --pad: 16px;                 /* padding do desktop */
+      --gridLine: rgba(255,255,255,0.10);
+      --gridDot: rgba(255,255,255,0.09);
 
-  /* padding do painel */
-  --stage-pad-x: clamp(12px, 2.5vw, 16px);
-  --stage-pad-y: clamp(14px, 2.8vw, 24px);
-}
+      /* Motion */
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
 
-body[data-theme="light"]{
-  background: linear-gradient(135deg, #e6f1ff, #cfe4ff);
-  color: #0f172a;
-  --grid-line: rgba(0,0,0,0.08);
-}
-body[data-theme="dark"]{
-  background: linear-gradient(135deg, #020617, #0b1220);
-  color: #e5e7eb;
-  --grid-line: rgba(255,255,255,0.14);
-}
+    html[data-theme="light"]{
+      --bg0: #f5f7ff;
+      --bg1: #dfe7ff;
+      --glass: rgba(255,255,255,0.62);
+      --glass2: rgba(255,255,255,0.52);
+      --stroke: rgba(10,20,40,0.10);
+      --stroke2: rgba(10,20,40,0.16);
+      --text: rgba(10,18,34,0.90);
+      --muted: rgba(10,18,34,0.56);
+      --gridLine: rgba(10,20,40,0.10);
+      --gridDot: rgba(10,20,40,0.09);
+    }
 
-*{ box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    /* Mobile tuning */
+    @media (max-width: 640px){
+      :root{
+        --cell: 104px;
+        --gap: 12px;
+        --pad: 12px;
+        --radius: 20px;
+        --radius2: 26px;
+      }
+    }
 
-html, body{
-  height: 100%;
-  overflow: hidden;
-}
+    *{ box-sizing:border-box; }
+    html, body{
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+      overflow:hidden; /* terminal full screen */
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 900px at 20% 10%, rgba(var(--accent),0.18), transparent 55%),
+        radial-gradient(900px 900px at 80% 40%, rgba(140,120,255,0.16), transparent 55%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+    }
 
-body{
-  margin:0;
-  padding: 0;
-}
+    /* Subtle “liquid glass” noise (CSS only) */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.05), transparent 50%),
+        radial-gradient(1px 1px at 70px 90px, rgba(255,255,255,0.04), transparent 50%),
+        radial-gradient(1px 1px at 140px 60px, rgba(255,255,255,0.04), transparent 50%);
+      background-size: 220px 220px;
+      mix-blend-mode: overlay;
+      opacity: 0.55;
+      filter: blur(0.2px);
+    }
 
-.stage{
-  position: fixed;
-  inset: 0;
-  padding: var(--stage-pad-y) var(--stage-pad-x);
-  overflow: hidden;
-}
+    /* =========================
+       Stage
+       ========================= */
+    .stage{
+      position:relative;
+      width:100%;
+      height:100%;
+      padding: var(--pad);
+      padding-bottom: calc(var(--pad) + 78px); /* espaço do command bar */
+      isolation:isolate; /* stacking context geral */
+    }
 
-body.edit-mode::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size:
-    calc(var(--cell-w) + var(--grid-gap)) calc(var(--grid-size) + var(--grid-gap));
-  pointer-events:none;
-  z-index:0;
-}
+    /* Grid overlay — visível em ambos os temas */
+    .grid-overlay{
+      position:absolute;
+      inset: var(--pad);
+      bottom: calc(var(--pad) + 78px);
+      border-radius: var(--radius2);
+      pointer-events:none;
+      z-index: 0;
 
-.app{
-  position: relative;
-  z-index: 1;
+      /* Linhas + pontos (não exagerado) */
+      background:
+        repeating-linear-gradient(0deg,
+          transparent 0,
+          transparent calc(var(--cell) - 1px),
+          var(--gridLine) calc(var(--cell) - 1px),
+          var(--gridLine) var(--cell)
+        ),
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          transparent calc(var(--cell) - 1px),
+          var(--gridLine) calc(var(--cell) - 1px),
+          var(--gridLine) var(--cell)
+        ),
+        radial-gradient(var(--gridDot) 1px, transparent 1px);
+      background-size:
+        var(--cell) var(--cell),
+        var(--cell) var(--cell),
+        18px 18px;
+      opacity: 0.38;
+      mask-image: radial-gradient(120% 120% at 50% 40%, #000 55%, transparent 100%);
+    }
 
-  display:grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  grid-auto-rows: var(--grid-size);
-  gap: var(--grid-gap);
-  align-content:start;
+    /* Area onde widgets vivem */
+    .widget-area{
+      position:absolute;
+      inset: var(--pad);
+      bottom: calc(var(--pad) + 78px);
+      border-radius: var(--radius2);
+      z-index: 1;
+    }
 
-  width: 100%;
-  height: 100%;
+    /* =========================
+       Widgets — base
+       ========================= */
+    .widget{
+      position:absolute;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      overflow: visible; /* importante p/ shadow layer */
+      user-select:none;
+      touch-action:none; /* pointer events smooth */
+      transform: translate3d(0,0,0);
+      will-change: transform, left, top;
+      z-index: 2;
+    }
 
-  transform-origin: top left;
-  transform: scale(var(--ui-scale));
-  will-change: transform;
-}
+    /* Sombra em layer abaixo — NÃO sobrepõe outros widgets ✅ */
+    .widget::before{
+      content:"";
+      position:absolute;
+      inset:-10px;
+      border-radius: calc(var(--radius) + 10px);
+      z-index:-1;
+      pointer-events:none;
+      /* sombra mais “premium” */
+      box-shadow:
+        0 14px 40px rgba(0,0,0,0.28),
+        0 4px 16px rgba(0,0,0,0.20);
+      opacity: 0.95;
+      filter: blur(0.2px);
+    }
 
-body.edit-mode .app{
-  transform: none;
-}
+    html[data-theme="light"] .widget::before{
+      box-shadow:
+        0 14px 38px rgba(10,20,40,0.18),
+        0 4px 14px rgba(10,20,40,0.12);
+      opacity: 0.85;
+    }
 
-.widget-wrap{
-  position:relative;
+    /* Drag states */
+    .widget.dragging{
+      cursor: grabbing;
+      z-index: 50; /* sobe o widget, sombra ainda fica “atrás” por ser ::before com z-index -1 */
+    }
 
-  --col: 1;
-  --row: 1;
-  --w: 4;
-  --h: 2;
+    .widget .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 12px 14px 10px 14px;
+      gap: 10px;
+    }
 
-  --base-w: 4;
-  --base-h: 2;
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
 
-  grid-column: var(--col) / span var(--w);
-  grid-row: var(--row) / span var(--h);
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: rgba(var(--accent),0.95);
+      box-shadow: 0 0 0 6px rgba(var(--accent),0.12);
+      flex:0 0 auto;
+    }
 
-  touch-action:none;
-  user-select:none;
-}
+    .name{
+      font-weight: 650;
+      letter-spacing: 0.2px;
+      font-size: 13.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color: var(--text);
+    }
 
-.widget-shadow{
-  position:absolute;
-  inset: var(--shadow-inset);
-  border-radius: calc(26px - var(--shadow-inset));
-  box-shadow: var(--shadow);
-  pointer-events:none;
-  z-index: 1;
-}
+    .sub{
+      font-size: 12px;
+      color: var(--muted);
+      padding: 0 14px 14px 14px;
+      line-height: 1.25rem;
+    }
 
-.widget-wrap > .widget{
-  height: 100%;
-  width: 100%;
+    /* “Ghost” de snap (preview do drop) */
+    .snap-ghost{
+      position:absolute;
+      border-radius: var(--radius);
+      border: 1px dashed rgba(var(--accent),0.55);
+      background: rgba(var(--accent),0.10);
+      box-shadow: 0 0 0 8px rgba(var(--accent),0.06);
+      pointer-events:none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 180ms var(--ease);
+    }
+    .snap-ghost.visible{ opacity: 1; }
 
-  background: var(--glass-light);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
-  border-radius: 26px;
-  padding: 22px;
+    /* =========================
+       Command Bar
+       ========================= */
+    .command-bar{
+      position:absolute;
+      left: var(--pad);
+      right: var(--pad);
+      bottom: var(--pad);
+      height: 62px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 14px;
+      z-index: 100;
+    }
+    .prompt{
+      font-weight: 750;
+      letter-spacing: 0.4px;
+      color: rgba(var(--accent),0.95);
+      padding-left: 4px;
+      flex:0 0 auto;
+      font-size: 13px;
+    }
+    .cmd{
+      flex:1 1 auto;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.12);
+      color: var(--text);
+      padding: 0 14px;
+      outline: none;
+      font-size: 14px;
+    }
+    html[data-theme="light"] .cmd{ background: rgba(255,255,255,0.40); }
+    .hint{
+      flex:0 0 auto;
+      font-size: 12px;
+      color: var(--muted);
+      padding-right: 6px;
+      white-space:nowrap;
+    }
 
-  position:relative;
-  z-index:2;
+    /* =========================
+       Theme Slider Widget (draggable)
+       ========================= */
+    .theme-widget{
+      width: calc(var(--cell) * 2 + var(--gap));
+      height: calc(var(--cell) * 1);
+      padding-bottom: 8px;
+    }
 
-  box-shadow:none;
-  touch-action:none;
-  user-select:none;
-}
+    .theme-body{
+      padding: 0 14px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
 
-body[data-theme="dark"] .widget-wrap > .widget{
-  background: var(--glass-dark);
-  border-color: var(--border-dark);
-}
+    .theme-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
 
-.edit-mode .widget-wrap > .widget{ cursor:grab; }
-.edit-mode .widget-wrap > .widget,
-.edit-mode .widget-shadow{ animation: wiggle 0.35s ease-in-out infinite alternate; }
+    .theme-label{
+      font-size: 12px;
+      color: var(--muted);
+    }
 
-@keyframes wiggle{
-  from { transform: rotate(-0.4deg); }
-  to   { transform: rotate(0.4deg); }
-}
+    .theme-pill{
+      position:relative;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center; /* mantém tudo central */
+      padding: 6px;
+      touch-action:none;
+    }
+    html[data-theme="light"] .theme-pill{ background: rgba(255,255,255,0.35); }
 
-.widget-wrap.dragging > .widget,
-.widget-wrap.dragging > .widget-shadow{
-  animation:none;
-}
+    .theme-options{
+      position:relative;
+      width: 100%;
+      height: 100%;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items:center;
+      z-index: 2;
+    }
 
-.widget-wrap.dragging{
-  z-index: 50;
-}
+    .theme-opt{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      user-select:none;
+      cursor:pointer;
+    }
 
-/* ✅ FIX: NÃO usar pointer-events:none aqui (quebrava drag em alguns browsers) */
-.widget-wrap.dragging.fixed{
-  position: fixed !important;
-  margin: 0 !important;
-  pointer-events: auto;
-}
+    .ico{
+      width: 18px;
+      height: 18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      opacity: 0.92;
+    }
 
-.widget.clock{ text-align:center; }
-.clock-time{ font-size:64px; }
-.clock-date{ opacity:0.6; }
-.widget.forecast{ display:flex; justify-content:space-between; }
+    /* “Thumb” (pill interno) centralizado e suave */
+    .theme-thumb{
+      position:absolute;
+      top: 6px;
+      bottom: 6px;
+      width: calc((100% - 12px) / 3);
+      left: 6px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.14));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        0 10px 24px rgba(0,0,0,0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      transform: translateX(0);
+      transition: transform 240ms var(--ease);
+      z-index: 1;
+    }
 
-#slider{
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 170px;
-  height: 44px;
-  z-index: 80;
+    html[data-theme="light"] .theme-thumb{
+      background: linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.35));
+      border: 1px solid rgba(10,20,40,0.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.35),
+        0 10px 20px rgba(10,20,40,0.12);
+    }
 
-  --tx: 0px;
-  --ty: 0px;
-  transform: translate(var(--tx), var(--ty));
-  transition: transform 0.06s linear;
+    .theme-opt.active{
+      color: var(--text);
+    }
 
-  touch-action:none;
-  user-select:none;
-}
+    /* Small widgets */
+    .clock-widget{
+      width: calc(var(--cell) * 2 + var(--gap));
+      height: calc(var(--cell) * 1);
+    }
+    .info-widget{
+      width: calc(var(--cell) * 1);
+      height: calc(var(--cell) * 1);
+    }
 
-#slider .slider-shadow{
-  position:absolute;
-  inset: var(--shadow-inset);
-  border-radius: calc(999px - var(--shadow-inset));
-  box-shadow: var(--shadow);
-  pointer-events:none;
-  z-index: 0;
-}
+    .big{
+      font-size: 30px;
+      font-weight: 780;
+      letter-spacing: 0.2px;
+      padding: 0 14px 14px 14px;
+    }
 
-#slider .theme-slider-ui{
-  position:absolute;
-  inset:0;
-  border-radius:999px;
-
-  background: var(--glass-light);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
-
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  cursor:pointer;
-
-  z-index: 2;
-}
-
-body[data-theme="dark"] #slider .theme-slider-ui{
-  background: var(--glass-dark);
-  border-color: var(--border-dark);
-}
-
-#slider span{
-  display:block;
-  height:44px;
-  line-height:44px;
-  text-align:center;
-  font-size:14px;
-  z-index:2;
-}
-
-.slider-thumb{
-  position:absolute;
-  height:36px;
-  width:54px;
-  border-radius:999px;
-  left:6px;
-  top:4px;
-  background: rgba(255,255,255,0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.4);
-  transition: left 0.25s ease;
-  z-index:1;
-}
-
-body[data-theme="dark"] .slider-thumb{
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.25);
-}
-
-.edit-toggle{
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  height: 44px;
-  padding: 0 14px;
-  border-radius: 999px;
-
-  background: var(--glass-light);
-  backdrop-filter: var(--blur);
-  border: 1px solid var(--border-light);
-
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-
-  cursor: pointer;
-  user-select: none;
-
-  z-index: 90;
-  box-shadow: var(--shadow);
-}
-
-body[data-theme="dark"] .edit-toggle{
-  background: var(--glass-dark);
-  border-color: var(--border-dark);
-}
-
-.edit-toggle .dot{
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.35);
-}
-
-body[data-theme="dark"] .edit-toggle .dot{
-  background: rgba(255,255,255,0.22);
-}
-
-body.edit-mode .edit-toggle .dot{
-  background: rgba(34, 197, 94, 0.7);
-}
-</style>
+    /* Accessibility focus */
+    .cmd:focus{
+      box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
+      border-color: rgba(var(--accent),0.45);
+    }
+  </style>
 </head>
 
-<body data-theme="light">
+<body>
+  <div class="stage" id="stage">
+    <div class="grid-overlay" id="grid"></div>
 
-<div id="slider" data-widget-id="slider">
-  <div class="slider-shadow" aria-hidden="true"></div>
-  <div class="theme-slider-ui" id="sliderUI">
-    <div class="slider-thumb" id="thumb"></div>
-    <span data-mode="light">☀️</span>
-    <span data-mode="auto">AUTO</span>
-    <span data-mode="dark">🌙</span>
+    <div class="widget-area" id="area">
+      <!-- Ghost preview -->
+      <div class="snap-ghost" id="ghost"></div>
+
+      <!-- Theme Slider Widget (draggable) -->
+      <div class="widget theme-widget" data-id="theme" data-kind="theme">
+        <div class="header">
+          <div class="title">
+            <span class="dot"></span>
+            <div class="name">Tema</div>
+          </div>
+          <div class="name" style="font-weight:700; font-size:12px; color:var(--muted);">Widget</div>
+        </div>
+
+        <div class="theme-body">
+          <div class="theme-row">
+            <div class="theme-label">Light · Dark · Auto</div>
+            <div class="theme-label" id="themeStatus">Dark</div>
+          </div>
+
+          <div class="theme-pill" id="themePill">
+            <div class="theme-thumb" id="themeThumb"></div>
+
+            <div class="theme-options" id="themeOptions">
+              <div class="theme-opt" data-theme="light" title="Light">
+                <span class="ico">☀️</span>
+              </div>
+              <div class="theme-opt" data-theme="dark" title="Dark">
+                <span class="ico">🌙</span>
+              </div>
+              <div class="theme-opt" data-theme="auto" title="Auto">
+                <span class="ico">✨</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clock -->
+      <div class="widget clock-widget" data-id="clock" data-kind="clock">
+        <div class="header">
+          <div class="title">
+            <span class="dot"></span>
+            <div class="name">Relógio</div>
+          </div>
+          <div class="name" style="font-weight:700; font-size:12px; color:var(--muted);" id="dateLabel">—</div>
+        </div>
+        <div class="big" id="clock">--:--</div>
+        <div class="sub">Lisboa · Terminal full screen · snap no grid ✨</div>
+      </div>
+
+      <!-- Small info widgets -->
+      <div class="widget info-widget" data-id="sys" data-kind="info">
+        <div class="header">
+          <div class="title">
+            <span class="dot"></span>
+            <div class="name">Status</div>
+          </div>
+        </div>
+        <div class="sub" id="sysText">Grid ✓<br/>Drag ✓<br/>Snap ✓</div>
+      </div>
+
+      <div class="widget info-widget" data-id="tips" data-kind="info">
+        <div class="header">
+          <div class="title">
+            <span class="dot"></span>
+            <div class="name">Dica</div>
+          </div>
+        </div>
+        <div class="sub">Arraste widgets 👆<br/>Solte para snap.<br/>Comando: <b>jarvis remove theme</b></div>
+      </div>
+    </div>
+
+    <div class="command-bar">
+      <div class="prompt">JARVIS</div>
+      <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando… (ex: "jarvis remove theme")'/>
+      <div class="hint">Enter ↵</div>
+    </div>
   </div>
-</div>
 
-<div class="edit-toggle" id="editToggle" role="button" tabindex="0" aria-label="Alternar modo de edição">
-  <div class="dot" aria-hidden="true"></div>
-  <div id="editToggleText">Editar</div>
-</div>
+  <script>
+    // =========================================================
+    // Core: Grid + Drag/Drop + Snap + Shadow layering + Theme slider
+    // =========================================================
 
-<div class="stage">
-  <div class="app" id="grid">
+    const stage = document.getElementById('stage');
+    const area  = document.getElementById('area');
+    const ghost = document.getElementById('ghost');
+    const cmd   = document.getElementById('cmd');
 
-    <div class="widget weather" data-widget-id="w-weather" data-w="4" data-h="2">
-      <strong>23°C ☀️</strong><br>
-      Sensação 25° · Chuva 10%
-    </div>
+    const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    <div class="widget clock" data-widget-id="w-clock" data-w="8" data-h="3">
-      <div class="clock-time" id="time"></div>
-      <div class="clock-date" id="date"></div>
-    </div>
+    // ---------- Helpers ----------
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-    <div class="widget forecast" data-widget-id="w-forecast" data-w="4" data-h="2">
-      <span>☀️ 24°</span>
-      <span>🌧️ 22°</span>
-      <span>⛅ 23°</span>
-    </div>
+    function getVars(){
+      const cs = getComputedStyle(document.documentElement);
+      return {
+        cell: parseFloat(cs.getPropertyValue('--cell')) || 120,
+        gap:  parseFloat(cs.getPropertyValue('--gap'))  || 14,
+        pad:  parseFloat(cs.getPropertyValue('--pad'))  || 16
+      };
+    }
 
-    <div class="widget" data-widget-id="w-assistant" data-w="4" data-h="2">
-      <span id="assistantTitle"></span>
-    </div>
+    function areaRect(){
+      return area.getBoundingClientRect();
+    }
 
-  </div>
-</div>
+    function snapPoint(x, y, w, h){
+      const { cell, gap } = getVars();
+      const r = areaRect();
 
-<script>
-/* CLOCK (sem depender de globals) */
-const timeEl = document.getElementById("time");
-const dateEl = document.getElementById("date");
+      // Conversão: coords relativas à área
+      let rx = x - r.left;
+      let ry = y - r.top;
 
-function updateClock(){
-  const now = new Date();
-  if(timeEl) timeEl.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  if(dateEl) dateEl.textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
-}
-updateClock();
-setInterval(updateClock,1000);
+      // Snap com “passo” = cell + gap
+      const step = cell + gap;
 
-/* ASSISTANT NAME */
-function getAssistantName(){
-  const v = (localStorage.getItem("assistant_name") || "").trim();
-  return v || "Jarvis";
-}
-function setAssistantName(name){
-  const n = String(name ?? "").trim();
-  if(!n) return false;
-  localStorage.setItem("assistant_name", n);
-  renderAssistantName();
-  return true;
-}
-function renderAssistantName(){
-  const el = document.getElementById("assistantTitle");
-  if(!el) return;
-  el.textContent = `Widget futuro do ${getAssistantName()}`;
-}
-renderAssistantName();
+      // Posiciona para o “canto” do grid
+      let sx = Math.round(rx / step) * step;
+      let sy = Math.round(ry / step) * step;
 
-/* GRID HELPERS */
-const gridEl = document.getElementById("grid");
+      // Mantém gutter (gap mínimo) sem grudar nas bordas
+      const minX = 0;
+      const minY = 0;
+      const maxX = r.width  - w;
+      const maxY = r.height - h;
 
-function gridSize(){
-  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--grid-size")) || 60;
-}
-function gridGap(){
-  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--grid-gap")) || 18;
-}
+      sx = clamp(sx, minX, maxX);
+      sy = clamp(sy, minY, maxY);
 
-function computeCols(){
-  const w = gridEl.clientWidth;
-  const GRID = gridSize();
-  const GAP = gridGap();
+      // Volta para coords absolutas
+      return { left: sx, top: sy };
+    }
 
-  const pitchMin = GRID + GAP;
-  const cols = Math.max(1, Math.floor((w + GAP) / pitchMin));
-  document.documentElement.style.setProperty("--cols", cols);
+    function setGhost(el, left, top){
+      ghost.style.width  = el.offsetWidth + 'px';
+      ghost.style.height = el.offsetHeight + 'px';
+      ghost.style.left   = left + 'px';
+      ghost.style.top    = top + 'px';
+      ghost.classList.add('visible');
+    }
 
-  const cellW = (w - (cols - 1) * GAP) / cols;
-  document.documentElement.style.setProperty("--cell-w", cellW + "px");
-  return { cols, cellW };
-}
+    function hideGhost(){
+      ghost.classList.remove('visible');
+    }
 
-function pxToNum(v){ return Number(String(v).replace("px","").trim()) || 0; }
+    // ---------- Layout persistence ----------
+    const STORAGE_KEY = 'jarvis.layout.v1';
 
-function allWidgetWraps(){
-  return Array.from(document.querySelectorAll(".widget-wrap"))
-    .filter(el => el.style.display !== "none");
-}
-
-function getGridPos(el){
-  const cs = getComputedStyle(el);
-  return {
-    col: parseInt(cs.getPropertyValue("--col")) || 1,
-    row: parseInt(cs.getPropertyValue("--row")) || 1,
-    w:   parseInt(cs.getPropertyValue("--w")) || 4,
-    h:   parseInt(cs.getPropertyValue("--h")) || 2,
-    baseW: parseInt(cs.getPropertyValue("--base-w")) || 4,
-    baseH: parseInt(cs.getPropertyValue("--base-h")) || 2
-  };
-}
-
-function setGridPos(el, col, row){
-  el.style.setProperty("--col", String(col));
-  el.style.setProperty("--row", String(row));
-}
-
-function setBaseSize(el, w, h){
-  el.style.setProperty("--base-w", String(w));
-  el.style.setProperty("--base-h", String(h));
-}
-
-function setGridSize(el, w, h){
-  el.style.setProperty("--w", String(w));
-  el.style.setProperty("--h", String(h));
-}
-
-function buildOccupancy(exceptEl){
-  const { cols } = computeCols();
-  const occ = new Set();
-
-  const mark = (c,r) => occ.add(c + ":" + r);
-  const isMarked = (c,r) => occ.has(c + ":" + r);
-
-  for(const el of allWidgetWraps()){
-    if(el === exceptEl) continue;
-    const {col,row,w,h} = getGridPos(el);
-    for(let yy=0; yy<h; yy++){
-      for(let xx=0; xx<w; xx++){
-        const cc = col + xx;
-        const rr = row + yy;
-        if(cc >= 1 && cc <= cols && rr >= 1) mark(cc, rr);
+    function loadLayout(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return {};
+        return JSON.parse(raw) || {};
+      }catch(e){
+        return {};
       }
     }
-  }
-  return { cols, isMarked };
-}
 
-function fitsAt(occ, col, row, w, h){
-  if(col < 1 || row < 1) return false;
-  if(col + w - 1 > occ.cols) return false;
-  for(let yy=0; yy<h; yy++){
-    for(let xx=0; xx<w; xx++){
-      if(occ.isMarked(col + xx, row + yy)) return false;
+    function saveLayout(layout){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+      }catch(e){}
     }
-  }
-  return true;
-}
 
-function findNearestFreeCell(exceptEl, targetCol, targetRow, w, h){
-  const occ = buildOccupancy(exceptEl);
+    function applyLayout(){
+      const layout = loadLayout();
 
-  const maxCol = Math.max(1, occ.cols - w + 1);
-  const clampCol = (c) => Math.max(1, Math.min(maxCol, c));
-  const clampRow = (r) => Math.max(1, r);
+      document.querySelectorAll('.widget').forEach(w=>{
+        const id = w.dataset.id;
+        if(layout[id] && layout[id].hidden){
+          w.style.display = 'none';
+          return;
+        }
+        if(layout[id] && typeof layout[id].left === 'number' && typeof layout[id].top === 'number'){
+          w.style.left = layout[id].left + 'px';
+          w.style.top  = layout[id].top  + 'px';
+        }
+      });
+    }
 
-  let tc = clampCol(targetCol);
-  let tr = clampRow(targetRow);
+    function commitWidgetPos(w, left, top){
+      w.style.left = left + 'px';
+      w.style.top  = top  + 'px';
 
-  if(fitsAt(occ, tc, tr, w, h)) return { col: tc, row: tr };
+      const layout = loadLayout();
+      layout[w.dataset.id] = layout[w.dataset.id] || {};
+      layout[w.dataset.id].left = left;
+      layout[w.dataset.id].top  = top;
+      layout[w.dataset.id].hidden = false;
+      saveLayout(layout);
+    }
 
-  const maxRings = 24;
-  for(let ring=1; ring<=maxRings; ring++){
-    for(let dy=-ring; dy<=ring; dy++){
-      for(let dx=-ring; dx<=ring; dx++){
-        if(Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue;
-        const c = clampCol(tc + dx);
-        const r = clampRow(tr + dy);
-        if(fitsAt(occ, c, r, w, h)) return { col: c, row: r };
+    function hideWidget(id){
+      const w = document.querySelector(`.widget[data-id="${id}"]`);
+      if(!w) return false;
+      w.style.display = 'none';
+      const layout = loadLayout();
+      layout[id] = layout[id] || {};
+      layout[id].hidden = true;
+      saveLayout(layout);
+      return true;
+    }
+
+    // ---------- Initial placement (only if no saved layout) ----------
+    function defaultLayoutIfNeeded(){
+      const layout = loadLayout();
+      const hasAny = Object.keys(layout).length > 0;
+      if(hasAny) return;
+
+      const widgets = {
+        theme: document.querySelector('.widget[data-id="theme"]'),
+        clock: document.querySelector('.widget[data-id="clock"]'),
+        sys:   document.querySelector('.widget[data-id="sys"]'),
+        tips:  document.querySelector('.widget[data-id="tips"]'),
+      };
+
+      // Place neatly on grid
+      // (0,0) theme, (2,0) clock, (0,1) sys, (1,1) tips
+      const r = areaRect();
+      const { cell, gap } = getVars();
+      const step = cell + gap;
+
+      const positions = {
+        theme: { left: 0, top: 0 },
+        clock: { left: step * 2, top: 0 },
+        sys:   { left: 0, top: step * 1 },
+        tips:  { left: step * 1, top: step * 1 },
+      };
+
+      Object.entries(positions).forEach(([id,pos])=>{
+        const w = widgets[id];
+        if(!w) return;
+        const p = snapPoint(r.left + pos.left, r.top + pos.top, w.offsetWidth, w.offsetHeight);
+        commitWidgetPos(w, p.left, p.top);
+      });
+    }
+
+    // ---------- Drag & Drop ----------
+    let drag = null;
+
+    function onPointerDown(e){
+      const w = e.target.closest('.widget');
+      if(!w) return;
+
+      // Se o pointer down foi dentro do theme pill, não iniciar drag do widget (para permitir slider)
+      const isThemePill = e.target.closest('#themePill');
+      if(isThemePill) return;
+
+      e.preventDefault();
+
+      const r = areaRect();
+      const wr = w.getBoundingClientRect();
+
+      drag = {
+        w,
+        startX: e.clientX,
+        startY: e.clientY,
+        originLeft: parseFloat(w.style.left || (wr.left - r.left)),
+        originTop:  parseFloat(w.style.top  || (wr.top  - r.top)),
+        dx: 0,
+        dy: 0,
+        moved: false
+      };
+
+      w.classList.add('dragging');
+      w.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e){
+      if(!drag) return;
+
+      const w = drag.w;
+      drag.dx = e.clientX - drag.startX;
+      drag.dy = e.clientY - drag.startY;
+
+      if(Math.abs(drag.dx) + Math.abs(drag.dy) > 2) drag.moved = true;
+
+      // Move via transform para performance, sem commit
+      w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
+
+      // Ghost snap preview
+      const r = areaRect();
+      const wr = w.getBoundingClientRect();
+      const width = wr.width;
+      const height = wr.height;
+
+      // Posição alvo considerando origem + delta
+      const targetAbsX = (r.left + drag.originLeft) + drag.dx;
+      const targetAbsY = (r.top  + drag.originTop ) + drag.dy;
+
+      const snapped = snapPoint(targetAbsX, targetAbsY, width, height);
+      setGhost(w, snapped.left, snapped.top);
+    }
+
+    function onPointerUp(e){
+      if(!drag) return;
+
+      const w = drag.w;
+
+      // Finaliza
+      const r = areaRect();
+      const wr = w.getBoundingClientRect();
+      const width = wr.width;
+      const height = wr.height;
+
+      const targetAbsX = (r.left + drag.originLeft) + drag.dx;
+      const targetAbsY = (r.top  + drag.originTop ) + drag.dy;
+
+      const snapped = snapPoint(targetAbsX, targetAbsY, width, height);
+
+      // Commit do drop (resolve “voltar pra onde estava”)
+      w.style.transform = 'translate3d(0,0,0)';
+      commitWidgetPos(w, snapped.left, snapped.top);
+
+      w.classList.remove('dragging');
+      hideGhost();
+      drag = null;
+    }
+
+    // ---------- Theme slider ----------
+    const themeThumb   = document.getElementById('themeThumb');
+    const themeOptions = document.getElementById('themeOptions');
+    const themeStatus  = document.getElementById('themeStatus');
+    const themePill    = document.getElementById('themePill');
+
+    const THEME_KEY = 'jarvis.theme.mode.v1';
+
+    function setTheme(mode){
+      // mode: light | dark | auto
+      localStorage.setItem(THEME_KEY, mode);
+
+      let applied = mode;
+      if(mode === 'auto'){
+        applied = prefersDark() ? 'dark' : 'light';
       }
-    }
-  }
-  return { col: tc, row: tr };
-}
+      document.documentElement.setAttribute('data-theme', applied);
 
-function gridOrigin(){
-  return gridEl.getBoundingClientRect();
-}
+      // UI
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach((opt, idx)=>{
+        opt.classList.toggle('active', opt.dataset.theme === mode);
+      });
 
-function pitchX(){
-  const GRID = gridSize();
-  const GAP = gridGap();
-  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
-  return cellW + GAP;
-}
-function pitchY(){
-  const GRID = gridSize();
-  const GAP = gridGap();
-  return GRID + GAP;
-}
-
-function anchorFromCenter(centerX, centerY, w, h){
-  const r = gridOrigin();
-  const rawCenterCol = ((centerX - r.left) / pitchX()) + 1;
-  const rawCenterRow = ((centerY - r.top)  / pitchY()) + 1;
-
-  const targetCol = Math.round( rawCenterCol - (w - 1) / 2 );
-  const targetRow = Math.round( rawCenterRow - (h - 1) / 2 );
-
-  return { col: targetCol, row: targetRow };
-}
-
-/* WRAP WIDGETS */
-function ensureWrappedWidgets(){
-  const widgets = Array.from(document.querySelectorAll("#grid > .widget"));
-  widgets.forEach(w => {
-    if(w.parentElement && w.parentElement.classList.contains("widget-wrap")) return;
-
-    const wrap = document.createElement("div");
-    wrap.className = "widget-wrap";
-
-    const dw = parseInt(w.getAttribute("data-w")) || (w.classList.contains("clock") ? 8 : 4);
-    const dh = parseInt(w.getAttribute("data-h")) || (w.classList.contains("clock") ? 3 : 2);
-
-    setGridSize(wrap, dw, dh);
-    setBaseSize(wrap, dw, dh);
-
-    const id = w.getAttribute("data-widget-id");
-    if(id){
-      wrap.setAttribute("data-widget-id", id);
-      w.removeAttribute("data-widget-id");
+      const index = mode === 'light' ? 0 : (mode === 'dark' ? 1 : 2);
+      themeThumb.style.transform = `translateX(${index * 100}%)`;
+      themeStatus.textContent = mode[0].toUpperCase() + mode.slice(1);
     }
 
-    const shadow = document.createElement("div");
-    shadow.className = "widget-shadow";
-    shadow.setAttribute("aria-hidden","true");
+    function loadTheme(){
+      const saved = localStorage.getItem(THEME_KEY) || 'dark';
+      setTheme(saved);
+    }
 
-    w.parentNode.insertBefore(wrap, w);
-    wrap.appendChild(shadow);
-    wrap.appendChild(w);
-  });
-}
+    // Click to set theme
+    themeOptions.addEventListener('click', (e)=>{
+      const opt = e.target.closest('.theme-opt');
+      if(!opt) return;
+      setTheme(opt.dataset.theme);
+    });
 
-/* LAYOUT SAVE/LOAD */
-let activeProfile = (localStorage.getItem("layout_profile") || "default").trim() || "default";
-function layoutKey(){ return "terminal_layout_v3_" + activeProfile; }
+    // Drag inside pill to set theme (smooth)
+    let pillDrag = null;
+    themePill.addEventListener('pointerdown', (e)=>{
+      // impedir iniciar drag do widget (já tratado acima), aqui é slider drag
+      e.preventDefault();
+      const rect = themePill.getBoundingClientRect();
+      pillDrag = { startX: e.clientX, rect };
+      themePill.setPointerCapture(e.pointerId);
+    });
 
-function saveLayout(){
-  const data = { _meta: { profile: activeProfile } };
+    themePill.addEventListener('pointermove', (e)=>{
+      if(!pillDrag) return;
+      const rect = pillDrag.rect;
+      const x = clamp(e.clientX - rect.left, 0, rect.width);
+      const t = x / rect.width; // 0..1
+      // 3 slots
+      const idx = clamp(Math.round(t * 2), 0, 2);
+      themeThumb.style.transition = 'none';
+      themeThumb.style.transform = `translateX(${idx * 100}%)`;
+    });
 
-  for(const el of allWidgetWraps()){
-    const id = el.getAttribute("data-widget-id");
-    if(!id) continue;
-    const {col,row,w,h,baseW,baseH} = getGridPos(el);
-    data[id] = { col, row, w, h, baseW, baseH, hidden: false };
-  }
+    themePill.addEventListener('pointerup', (e)=>{
+      if(!pillDrag) return;
+      const rect = pillDrag.rect;
+      const x = clamp(e.clientX - rect.left, 0, rect.width);
+      const t = x / rect.width;
+      const idx = clamp(Math.round(t * 2), 0, 2);
+      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
+      themeThumb.style.transition = ''; // volta transição
+      setTheme(mode);
+      pillDrag = null;
+    });
 
-  const slider = document.getElementById("slider");
-  if(slider){
-    const cs = getComputedStyle(slider);
-    data["slider"] = {
-      tx: pxToNum(cs.getPropertyValue("--tx")),
-      ty: pxToNum(cs.getPropertyValue("--ty")),
-      hidden: false
-    };
-  }
+    // Se o sistema mudar e estiver em auto, re-aplica
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
+      const saved = localStorage.getItem(THEME_KEY) || 'dark';
+      if(saved === 'auto') setTheme('auto');
+    });
 
-  localStorage.setItem(layoutKey(), JSON.stringify(data));
-}
+    // ---------- Clock ----------
+    const clockEl = document.getElementById('clock');
+    const dateLabel = document.getElementById('dateLabel');
 
-function loadLayout(){
-  const raw = localStorage.getItem(layoutKey());
-  if(!raw) return false;
-  let data; try{ data = JSON.parse(raw); } catch { return false; }
+    function tick(){
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      clockEl.textContent = `${hh}:${mm}`;
 
-  for(const el of allWidgetWraps()){
-    const id = el.getAttribute("data-widget-id");
-    if(!id || !data[id]) continue;
-    const v = data[id];
+      const fmt = new Intl.DateTimeFormat('pt-PT', { weekday:'short', day:'2-digit', month:'short' });
+      dateLabel.textContent = fmt.format(now).replace('.', '');
+    }
 
-    if(typeof v.baseW === "number" && typeof v.baseH === "number") setBaseSize(el, v.baseW, v.baseH);
-    if(typeof v.w === "number" && typeof v.h === "number") setGridSize(el, v.w, v.h);
-    if(typeof v.col === "number" && typeof v.row === "number") setGridPos(el, v.col, v.row);
-    if(v.hidden) el.style.display = "none";
-  }
+    // ---------- Commands ----------
+    function runCommand(raw){
+      const input = raw.trim().toLowerCase();
 
-  const slider = document.getElementById("slider");
-  if(slider && data["slider"]){
-    const v = data["slider"];
-    if(typeof v.tx === "number") slider.style.setProperty("--tx", v.tx + "px");
-    if(typeof v.ty === "number") slider.style.setProperty("--ty", v.ty + "px");
-    if(v.hidden) slider.style.display = "none";
-  }
+      // exemplos aceitos
+      // jarvis remove theme
+      // remove theme
+      // jarvis theme dark
+      if(!input) return;
 
-  return true;
-}
+      const say = (msg)=>{
+        const sys = document.getElementById('sysText');
+        sys.innerHTML = msg;
+      };
 
-function packInitial(){
-  const { cols } = computeCols();
-  const wraps = allWidgetWraps();
-
-  const occ = new Set();
-  const mark = (c,r) => occ.add(c + ":" + r);
-  const isMarked = (c,r) => occ.has(c + ":" + r);
-
-  function canPlace(col,row,w,h){
-    if(col + w - 1 > cols) return false;
-    for(let yy=0; yy<h; yy++){
-      for(let xx=0; xx<w; xx++){
-        if(isMarked(col + xx, row + yy)) return false;
+      if(input.includes('remove theme') || input === 'remove tema' || input.includes('remover tema')){
+        const ok = hideWidget('theme');
+        say(ok ? '✅ Theme widget removido.<br/>Dica: recarregue para ver persistência.' : '⚠️ Não achei o widget theme.');
+        return;
       }
-    }
-    return true;
-  }
 
-  function place(el, col, row, w, h){
-    setGridPos(el, col, row);
-    for(let yy=0; yy<h; yy++){
-      for(let xx=0; xx<w; xx++){
-        mark(col + xx, row + yy);
-      }
-    }
-  }
-
-  let curRow = 1;
-  for(const el of wraps){
-    const {w,h} = getGridPos(el);
-    let placed = false;
-
-    for(let r=curRow; r<200 && !placed; r++){
-      for(let c=1; c<=cols; c++){
-        if(canPlace(c, r, w, h)){
-          place(el, c, r, w, h);
-          placed = true;
-          curRow = r;
-          break;
+      if(input.includes('theme ') || input.includes('tema ')){
+        if(input.includes('dark') || input.includes('escuro')){
+          setTheme('dark'); say('🌙 Tema: Dark');
+          return;
+        }
+        if(input.includes('light') || input.includes('claro')){
+          setTheme('light'); say('☀️ Tema: Light');
+          return;
+        }
+        if(input.includes('auto')){
+          setTheme('auto'); say('✨ Tema: Auto');
+          return;
         }
       }
+
+      say('🤖 Comando não reconhecido.<br/>Tente: <b>jarvis remove theme</b> · <b>jarvis theme dark</b>');
     }
 
-    if(!placed){
-      place(el, 1, curRow, Math.min(w, cols), h);
-    }
-  }
-}
+    cmd.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        runCommand(cmd.value);
+        cmd.value = '';
+      }
+    });
 
-function reflowForCols(oldCols, newCols){
-  const wraps = allWidgetWraps();
+    // ---------- Boot ----------
+    function boot(){
+      loadTheme();
 
-  const desired = wraps.map(el => {
-    const p = getGridPos(el);
-    const ratio = (oldCols <= 1) ? 0 : (p.col - 1) / (oldCols - 1);
-    const newCol = Math.floor(ratio * Math.max(0, newCols - 1)) + 1;
-    return { el, row: p.row, col: newCol, w: p.w, h: p.h };
-  });
+      // Drag handlers
+      area.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
 
-  desired.sort((a,b) => (a.row - b.row) || (a.col - b.col));
+      // Layout
+      defaultLayoutIfNeeded();
+      applyLayout();
 
-  for(const it of desired){
-    setGridPos(it.el, it.col, it.row);
-  }
+      // Clock
+      tick();
+      setInterval(tick, 1000);
 
-  for(const it of desired){
-    const best = findNearestFreeCell(it.el, it.col, it.row, it.w, it.h);
-    setGridPos(it.el, best.col, best.row);
-  }
-
-  saveLayout();
-}
-
-/* RESPONSIVE OS ENGINE */
-function getDensity(cols, width){
-  if(width < 520) return "ultra";
-  if(cols <= 4) return "compact";
-  if(cols <= 9) return "normal";
-  return "expanded";
-}
-function densityScale(d){
-  if(d === "ultra") return 0.55;
-  if(d === "compact") return 0.75;
-  if(d === "expanded") return 1.15;
-  return 1.0;
-}
-function applyResponsiveSizes(cols){
-  const density = getDensity(cols, window.innerWidth);
-  const scale = densityScale(density);
-
-  for(const el of allWidgetWraps()){
-    const p = getGridPos(el);
-
-    let nw = Math.max(1, Math.round(p.baseW * scale));
-    let nh = Math.max(1, Math.round(p.baseH * scale));
-
-    nw = Math.min(nw, cols);
-
-    setGridSize(el, nw, nh);
-
-    const best = findNearestFreeCell(el, p.col, p.row, nw, nh);
-    setGridPos(el, best.col, best.row);
-  }
-}
-
-/* FIT-TO-SCREEN */
-function computeGridExtents(){
-  const wraps = allWidgetWraps();
-  let maxCol = 1;
-  let maxRow = 1;
-  for(const el of wraps){
-    const p = getGridPos(el);
-    maxCol = Math.max(maxCol, p.col + p.w - 1);
-    maxRow = Math.max(maxRow, p.row + p.h - 1);
-  }
-  return { maxCol, maxRow };
-}
-
-function applyFitToScreen(){
-  if(document.body.classList.contains("edit-mode")){
-    document.documentElement.style.setProperty("--ui-scale", "1");
-    return;
-  }
-
-  const stage = document.querySelector(".stage");
-  if(!stage){
-    document.documentElement.style.setProperty("--ui-scale", "1");
-    return;
-  }
-
-  const r = stage.getBoundingClientRect();
-
-  const GRID = gridSize();
-  const GAP = gridGap();
-  const cellW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell-w")) || GRID;
-
-  const { maxCol, maxRow } = computeGridExtents();
-
-  const contentW = (maxCol * cellW) + ((maxCol - 1) * GAP);
-  const contentH = (maxRow * GRID) + ((maxRow - 1) * GAP);
-
-  const availW = r.width;
-  const availH = r.height;
-
-  const s = Math.min(1, availW / Math.max(1, contentW), availH / Math.max(1, contentH));
-  document.documentElement.style.setProperty("--ui-scale", String(s));
-}
-
-/* EDIT MODE */
-let editTimer;
-let suppressBodyClickUntil = 0;
-
-function enableEdit(){
-  document.body.classList.add("edit-mode");
-  editToggleText.textContent = "Concluir";
-  applyFitToScreen();
-}
-function disableEdit(){
-  document.body.classList.remove("edit-mode");
-  editToggleText.textContent = "Editar";
-  applyFitToScreen();
-}
-
-function isWidgetArea(target){
-  return !!(target.closest(".widget-wrap") || target.closest(".widget") || target.closest("#slider") || target.closest("#editToggle"));
-}
-
-gridEl.addEventListener("dblclick", e => {
-  if(e.target.closest(".widget-wrap") || e.target.closest(".widget")) enableEdit();
-});
-
-gridEl.addEventListener("pointerdown", e => {
-  if(!e.target.closest(".widget-wrap") && !e.target.closest(".widget")) return;
-  editTimer = setTimeout(() => enableEdit(), 500);
-});
-
-gridEl.addEventListener("pointerup", () => clearTimeout(editTimer));
-gridEl.addEventListener("pointerleave", () => clearTimeout(editTimer));
-
-document.body.addEventListener("click", e => {
-  if(Date.now() < suppressBodyClickUntil) return;
-  if(!isWidgetArea(e.target)) disableEdit();
-});
-
-const editToggle = document.getElementById("editToggle");
-const editToggleText = document.getElementById("editToggleText");
-
-editToggle.addEventListener("click", e => {
-  e.stopPropagation();
-  if(document.body.classList.contains("edit-mode")) disableEdit();
-  else enableEdit();
-});
-
-editToggle.addEventListener("keydown", e => {
-  if(e.key === "Enter" || e.key === " "){
-    e.preventDefault();
-    if(document.body.classList.contains("edit-mode")) disableEdit();
-    else enableEdit();
-  }
-});
-
-/* WIDGET DRAG */
-let dragged = null;
-let dragPid = null;
-let dragOffX = 0;
-let dragOffY = 0;
-let dragW = 0;
-let dragH = 0;
-
-function clearFixedStyles(el){
-  el.style.left = "";
-  el.style.top = "";
-  el.style.width = "";
-  el.style.height = "";
-}
-
-function setFixedRect(el, r){
-  el.style.left = r.left + "px";
-  el.style.top = r.top + "px";
-  el.style.width = r.width + "px";
-  el.style.height = r.height + "px";
-}
-
-function animateSettle(el, startRect, destRect){
-  el.style.transition = "none";
-  setFixedRect(el, startRect);
-  void el.offsetWidth;
-
-  el.style.transition = "left 160ms cubic-bezier(.2,.9,.2,1), top 160ms cubic-bezier(.2,.9,.2,1)";
-  el.style.left = destRect.left + "px";
-  el.style.top  = destRect.top + "px";
-
-  const cleanup = () => {
-    el.removeEventListener("transitionend", cleanup);
-    el.style.transition = "";
-    el.classList.remove("fixed");
-    el.classList.remove("dragging");
-    clearFixedStyles(el);
-  };
-
-  el.addEventListener("transitionend", cleanup);
-  setTimeout(cleanup, 220);
-}
-
-function attachWidgetDrag(el){
-  el.addEventListener("pointerdown", e => {
-    if(!document.body.classList.contains("edit-mode")) return;
-    const wrap = e.target.closest(".widget-wrap");
-    if(!wrap || wrap !== el) return;
-
-    dragged = wrap;
-    dragged.classList.add("dragging");
-
-    const rect = dragged.getBoundingClientRect();
-    dragOffX = e.clientX - rect.left;
-    dragOffY = e.clientY - rect.top;
-    dragW = rect.width;
-    dragH = rect.height;
-
-    dragged.classList.add("fixed");
-    setFixedRect(dragged, rect);
-
-    dragPid = e.pointerId;
-    dragged.setPointerCapture(dragPid);
-  });
-
-  el.addEventListener("pointermove", e => {
-    if(!dragged || dragged !== el) return;
-
-    const left = e.clientX - dragOffX;
-    const top  = e.clientY - dragOffY;
-
-    dragged.style.left = left + "px";
-    dragged.style.top  = top + "px";
-  });
-
-  function endDrag(e, animate=true){
-    if(!dragged) return;
-
-    const startRect = dragged.getBoundingClientRect();
-    const {w,h} = getGridPos(dragged);
-
-    const centerX = (e.clientX - dragOffX) + dragW / 2;
-    const centerY = (e.clientY - dragOffY) + dragH / 2;
-
-    const target = anchorFromCenter(centerX, centerY, w, h);
-    const best = findNearestFreeCell(dragged, target.col, target.row, w, h);
-    setGridPos(dragged, best.col, best.row);
-
-    dragged.classList.remove("fixed");
-    clearFixedStyles(dragged);
-    const destRect = dragged.getBoundingClientRect();
-
-    dragged.classList.add("fixed");
-    setFixedRect(dragged, startRect);
-    void dragged.offsetWidth;
-
-    try{ dragged.releasePointerCapture(dragPid); }catch(_){}
-    dragPid = null;
-
-    suppressBodyClickUntil = Date.now() + 250;
-    saveLayout();
-
-    if(animate){
-      animateSettle(dragged, startRect, destRect);
-    } else {
-      dragged.classList.remove("fixed");
-      dragged.classList.remove("dragging");
-      clearFixedStyles(dragged);
+      // Re-snap on resize (mantém dentro do container)
+      window.addEventListener('resize', ()=>{
+        document.querySelectorAll('.widget').forEach(w=>{
+          if(w.style.display === 'none') return;
+          const left = parseFloat(w.style.left || 0);
+          const top  = parseFloat(w.style.top  || 0);
+          const r = areaRect();
+          const snapped = snapPoint(r.left + left, r.top + top, w.offsetWidth, w.offsetHeight);
+          commitWidgetPos(w, snapped.left, snapped.top);
+        });
+      });
     }
 
-    dragged = null;
-    applyFitToScreen();
-  }
-
-  el.addEventListener("pointerup", e => {
-    if(!dragged || dragged !== el) return;
-    endDrag(e, true);
-  });
-
-  el.addEventListener("pointercancel", e => {
-    if(!dragged || dragged !== el) return;
-    endDrag(e, false);
-  });
-}
-
-/* SLIDER DRAG */
-const slider = document.getElementById("slider");
-let sDragged=false, sPid=null, sStartX=0, sStartY=0, sBaseTX=0, sBaseTY=0;
-
-function getSliderTXTY(){
-  const cs = getComputedStyle(slider);
-  return { tx: pxToNum(cs.getPropertyValue("--tx")), ty: pxToNum(cs.getPropertyValue("--ty")) };
-}
-function setSliderTXTY(tx,ty){
-  slider.style.setProperty("--tx", tx + "px");
-  slider.style.setProperty("--ty", ty + "px");
-}
-
-slider.addEventListener("pointerdown", e => {
-  if(!document.body.classList.contains("edit-mode")) return;
-  sDragged=true;
-  sPid=e.pointerId;
-  slider.setPointerCapture(sPid);
-  sStartX=e.clientX; sStartY=e.clientY;
-  const p = getSliderTXTY();
-  sBaseTX=p.tx; sBaseTY=p.ty;
-});
-slider.addEventListener("pointermove", e => {
-  if(!sDragged) return;
-  const dx=e.clientX - sStartX;
-  const dy=e.clientY - sStartY;
-  setSliderTXTY(sBaseTX + dx, sBaseTY + dy);
-});
-slider.addEventListener("pointerup", e => {
-  if(!sDragged) return;
-  sDragged=false;
-  try{ slider.releasePointerCapture(sPid); }catch(_){}
-  sPid=null;
-  suppressBodyClickUntil = Date.now() + 250;
-  saveLayout();
-});
-slider.addEventListener("pointercancel", e => {
-  if(!sDragged) return;
-  sDragged=false;
-  try{ slider.releasePointerCapture(sPid); }catch(_){}
-  sPid=null;
-  suppressBodyClickUntil = Date.now() + 250;
-  saveLayout();
-});
-
-/* THEME SLIDER */
-const sliderUI = document.getElementById("sliderUI");
-const thumb = document.getElementById("thumb");
-const modes = ["light","auto","dark"];
-let currentMode = "auto";
-
-function computeThumbLeft(mode){
-  const idx = modes.indexOf(mode);
-  const W = sliderUI.clientWidth;
-  const seg = W / 3;
-  const tw = thumb.offsetWidth;
-  const center = seg * idx + seg/2;
-  return (center - tw/2);
-}
-function setThumb(mode, animate=true){
-  thumb.style.transition = animate ? "left 0.25s ease" : "none";
-  thumb.style.left = computeThumbLeft(mode) + "px";
-  currentMode = mode;
-}
-
-function applyTheme(mode){
-  localStorage.setItem("theme_mode", mode);
-
-  if(mode === "auto"){
-    const h=new Date().getHours();
-    document.body.dataset.theme = (h>=6 && h<18) ? "light" : "dark";
-  } else {
-    document.body.dataset.theme = mode;
-  }
-
-  setThumb(mode, true);
-  saveLayout();
-}
-
-function modeFromX(x){
-  const W = sliderUI.clientWidth;
-  const third = W/3;
-  if(x < third) return "light";
-  if(x < third*2) return "auto";
-  return "dark";
-}
-
-sliderUI.querySelectorAll("span").forEach(span => {
-  span.addEventListener("click", e => {
-    if(document.body.classList.contains("edit-mode")) return;
-    e.stopPropagation();
-    applyTheme(span.dataset.mode);
-  });
-});
-
-let themeDrag=false, themePid=null;
-
-sliderUI.addEventListener("pointerdown", e => {
-  if(document.body.classList.contains("edit-mode")) return;
-  themeDrag=true;
-  themePid=e.pointerId;
-  sliderUI.setPointerCapture(themePid);
-
-  const r=sliderUI.getBoundingClientRect();
-  const x=e.clientX-r.left;
-  setThumb(modeFromX(x), false);
-});
-sliderUI.addEventListener("pointermove", e => {
-  if(!themeDrag) return;
-  const r=sliderUI.getBoundingClientRect();
-  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
-  setThumb(modeFromX(x), false);
-});
-sliderUI.addEventListener("pointerup", e => {
-  if(!themeDrag) return;
-  themeDrag=false;
-  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
-  themePid=null;
-
-  const r=sliderUI.getBoundingClientRect();
-  const x=Math.max(0, Math.min(r.width, e.clientX-r.left));
-  applyTheme(modeFromX(x));
-});
-sliderUI.addEventListener("pointercancel", e => {
-  if(!themeDrag) return;
-  themeDrag=false;
-  try{ sliderUI.releasePointerCapture(themePid); }catch(_){}
-  themePid=null;
-  applyTheme(currentMode);
-});
-
-/* ASSISTANT HOST API */
-window.assistant = {
-  setName(name){ return setAssistantName(name); },
-  getName(){ return getAssistantName(); },
-
-  setProfile(name){
-    const n = String(name ?? "").trim();
-    if(!n) return false;
-    localStorage.setItem("layout_profile", n);
-    activeProfile = n;
-    const loaded = loadLayout();
-    if(!loaded) packInitial();
-    applyFitToScreen();
-    return true;
-  },
-  getProfile(){
-    return activeProfile;
-  }
-};
-
-/* INIT */
-ensureWrappedWidgets();
-let lastCols = computeCols().cols;
-
-const loaded = loadLayout();
-if(!loaded) packInitial();
-
-const savedMode = (localStorage.getItem("theme_mode") || "auto").trim();
-applyTheme(modes.includes(savedMode) ? savedMode : "auto");
-
-(function initialLayout(){
-  const newCols = computeCols().cols;
-  applyResponsiveSizes(newCols);
-  reflowForCols(lastCols, newCols);
-  lastCols = newCols;
-  applyFitToScreen();
-})();
-
-for(const w of allWidgetWraps()){
-  attachWidgetDrag(w);
-}
-
-const ro = new ResizeObserver(() => {
-  if(dragged || sDragged) return;
-
-  const newCols = computeCols().cols;
-
-  applyResponsiveSizes(newCols);
-
-  if(newCols !== lastCols){
-    reflowForCols(lastCols, newCols);
-    lastCols = newCols;
-  } else {
-    for(const el of allWidgetWraps()){
-      const p = getGridPos(el);
-      const best = findNearestFreeCell(el, p.col, p.row, p.w, p.h);
-      setGridPos(el, best.col, best.row);
-    }
-    saveLayout();
-  }
-
-  applyFitToScreen();
-});
-ro.observe(gridEl);
-</script>
-
+    boot();
+  </script>
 </body>
 </html>
