@@ -32,9 +32,12 @@
       /* Border thickness compensation */
       --b: 1px;
 
+      /* ✅ seam fix (default none on dark) */
+      --seamFix: 0px;
+
       /* Grid dots */
-      --gridDot: rgba(255,255,255,0.14);      /* micro dots a bit stronger (still subtle) */
-      --gridMajorDot: rgba(255,255,255,0.22); /* major dots */
+      --gridDot: rgba(255,255,255,0.14);
+      --gridMajorDot: rgba(255,255,255,0.22);
       --microStep: 33.5px; /* synced by JS = step/4 */
 
       --ease: cubic-bezier(.2,.9,.2,1);
@@ -54,6 +57,9 @@
 
       --gridDot: rgba(10,20,40,0.14);
       --gridMajorDot: rgba(10,20,40,0.22);
+
+      /* ✅ seam fix only in light */
+      --seamFix: 2px;
     }
 
     @media (max-width: 640px){
@@ -63,6 +69,9 @@
         --pad: 12px;
         --radius: 20px;
         --radius2: 26px;
+      }
+      html[data-theme="light"]{
+        --seamFix: 2px;
       }
     }
 
@@ -104,7 +113,6 @@
       isolation:isolate;
     }
 
-    /* Grid overlay — aligned micro + major dots (only in edit mode) */
     .grid-overlay{
       position:absolute;
       inset: var(--pad);
@@ -113,16 +121,12 @@
       z-index: 0;
 
       background:
-        /* micro dots aligned to --microStep */
         radial-gradient(var(--gridDot) 1px, transparent 1px),
-        /* major dots aligned to --step (subset of micro lattice) */
         radial-gradient(var(--gridMajorDot) 1.7px, transparent 1.7px);
       background-size:
         var(--microStep) var(--microStep),
         var(--step) var(--step);
-      background-position:
-        0 0,
-        0 0;
+      background-position: 0 0, 0 0;
 
       opacity: 0;
       transition: opacity 220ms var(--ease);
@@ -153,7 +157,6 @@
       transition: transform 220ms var(--ease), filter 220ms var(--ease);
     }
 
-    /* Shadow lower layer */
     .widget::before{
       content:"";
       position:absolute;
@@ -180,7 +183,6 @@
       z-index: 50;
     }
 
-    /* iOS-like edit mode floating (subtle) */
     @keyframes floaty {
       0%, 100% { transform: translate3d(0,0,0); }
       50%      { transform: translate3d(0,-4px,0); }
@@ -204,7 +206,6 @@
 
     .pad{ padding: 14px; }
 
-    /* Ghost preview */
     .snap-ghost{
       position:absolute;
       border-radius: var(--radius);
@@ -218,14 +219,10 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    /* ===== Widget sizing: gap guaranteed by size =====
-       Size formula: span*step - gap - 2*border
-    */
-
-    /* Clock spans 2 columns x 1 row */
+    /* ✅ Gap guaranteed by size, PLUS seamFix to kill white seams in Light */
     .clock-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2));
+      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
       display:flex;
       align-items:center;
       justify-content:center;
@@ -245,7 +242,7 @@
       display:flex;
       align-items:baseline;
       justify-content:center;
-      gap: 6px; /* seconds closer to minutes */
+      gap: 6px;
       width:100%;
     }
 
@@ -261,7 +258,7 @@
       font-weight: 700;
       color: var(--muted);
       letter-spacing: 0.2px;
-      transform: translateY(-2px); /* sit near the top-right of minutes */
+      transform: translateY(-2px);
       min-width: 18px;
       text-align:left;
     }
@@ -282,10 +279,9 @@
       line-height: 1.2rem;
     }
 
-    /* Chat spans 3 columns x 1 row */
     .chat-widget{
-      width:  calc(var(--step) * 3 - var(--gap) - (var(--b) * 2));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2));
+      width:  calc(var(--step) * 3 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
       display:flex;
       align-items:center;
     }
@@ -318,10 +314,9 @@
       white-space:nowrap;
     }
 
-    /* Theme spans 2 columns x 1 row */
     .theme-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2));
+      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
       display:flex;
       align-items:center;
       justify-content:center;
@@ -413,7 +408,6 @@
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- Clock -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock">
         <div class="pad" style="width:100%;">
           <div class="clock-inner">
@@ -429,7 +423,6 @@
         </div>
       </div>
 
-      <!-- Chat -->
       <div class="widget chat-widget" data-id="chat" data-kind="chat">
         <div class="pad" style="width:100%;">
           <div class="chat-row">
@@ -439,7 +432,6 @@
         </div>
       </div>
 
-      <!-- Theme slider -->
       <div class="widget theme-widget" data-id="theme" data-kind="theme">
         <div class="pad">
           <div class="theme-pill" id="themePill">
@@ -477,7 +469,6 @@
     function syncGridVars(){
       const { step } = getVars();
       document.documentElement.style.setProperty('--step', step + 'px');
-      // microStep must divide step to keep major dots aligned
       document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
     }
 
@@ -577,8 +568,7 @@
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    // ---------- Persistence ----------
-    const STORAGE_KEY = 'terminal.layout.v7';
+    const STORAGE_KEY = 'terminal.layout.v8';
     const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
@@ -600,7 +590,7 @@
       w.dataset.row = String(row);
 
       const p = colRowToPx(col, row);
-      w.style.left = Math.round(p.left) + 'px';  // avoid subpixel seams (helps light theme)
+      w.style.left = Math.round(p.left) + 'px';
       w.style.top  = Math.round(p.top)  + 'px';
 
       const layout = loadLayout();
@@ -665,9 +655,7 @@
       });
     }
 
-    // ---------- Edit mode ----------
     let isEditMode = false;
-
     function setEditMode(on){
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
@@ -695,14 +683,12 @@
       hold = null;
     }
 
-    // Tap empty exits edit mode
     stage.addEventListener('pointerdown', (e)=>{
       if(!isEditMode) return;
       if(e.target.closest('.widget')) return;
       setEditMode(false);
     }, true);
 
-    // ---------- Drag/drop ----------
     let drag = null;
 
     function canStartDragFromTarget(target){
@@ -733,7 +719,6 @@
       };
 
       w.classList.add('dragging');
-      // stop floating animation while dragging
       w.style.animation = 'none';
       w.setPointerCapture(e.pointerId);
     }
@@ -778,7 +763,7 @@
 
       w.style.transform = 'translate3d(0,0,0)';
       w.classList.remove('dragging');
-      w.style.animation = ''; // return to edit-mode floating if applicable
+      w.style.animation = '';
 
       commitWidgetCell(w, free.col, free.row);
 
@@ -790,7 +775,6 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
-    // ---------- Theme (default AUTO) ----------
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
@@ -808,7 +792,7 @@
     function slotXForMode(mode){
       const rect = themePill.getBoundingClientRect();
       const thumbW = themeThumb.getBoundingClientRect().width || 0;
-      const innerW = rect.width - 14; // padding 7+7
+      const innerW = rect.width - 14;
       const range = Math.max(0, innerW - thumbW);
       const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
       return range * (idx / 2);
@@ -896,7 +880,6 @@
       if(saved === 'auto') applyTheme('auto');
     });
 
-    // ---------- Clock ----------
     const clockEl = document.getElementById('clock');
     const dateLabel = document.getElementById('dateLabel');
     const secondsLabel = document.getElementById('secondsLabel');
@@ -916,7 +899,6 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    // ---------- Commands ----------
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
       if(!input) return;
@@ -938,7 +920,6 @@
       }
     });
 
-    // ---------- Normalize layout ----------
     function normalizeAll(){
       const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
       widgets.forEach(w=>{
@@ -954,7 +935,6 @@
       }
     }
 
-    // ---------- Boot ----------
     function boot(){
       syncGridVars();
       loadTheme();
