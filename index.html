@@ -178,10 +178,7 @@
       opacity: 0.85;
     }
 
-    .widget.dragging{
-      cursor: grabbing;
-      z-index: 50;
-    }
+    .widget.dragging{ cursor: grabbing; z-index: 50; }
 
     @keyframes floaty {
       0%, 100% { transform: translate3d(0,0,0); }
@@ -227,7 +224,6 @@
       justify-content:center;
       text-align:center;
     }
-
     .clock-inner{
       width:100%;
       display:flex;
@@ -236,7 +232,6 @@
       justify-content:center;
       gap: 6px;
     }
-
     .time-row{
       display:flex;
       align-items:baseline;
@@ -244,14 +239,12 @@
       gap: 6px;
       width:100%;
     }
-
     .big-time{
       font-size: 34px;
       font-weight: 800;
       letter-spacing: 0.2px;
       line-height: 1.0;
     }
-
     .seconds{
       font-size: 13px;
       font-weight: 700;
@@ -261,7 +254,6 @@
       min-width: 18px;
       text-align:left;
     }
-
     .date-line{
       font-size: 13px;
       color: var(--muted);
@@ -271,7 +263,6 @@
       gap: 8px;
       width:100%;
     }
-
     .subline{
       font-size: 12.5px;
       color: var(--muted);
@@ -320,12 +311,10 @@
       align-items:center;
       justify-content:center;
     }
-
     .theme-widget .pad{
       padding: 12px;
       width: 100%;
     }
-
     .theme-pill{
       position:relative;
       width: 100%;
@@ -402,30 +391,49 @@
        MENU WIDGET + SIDEBAR (PÁGINAS INTERNAS)
     ========================== */
 
+    /* ✅ menu widget agora ocupa 1 célula do grid (resolve o "gap" grande) */
     .menu-widget{
-      width: 56px;
-      height: 56px;
+      width:  calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
       display:flex;
       align-items:center;
       justify-content:center;
     }
-    .menu-widget .pad{ padding: 8px; }
+    .menu-widget .pad{
+      padding: 12px;
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
+    /* ✅ botão do menu quadrado glass (sem retângulo feio) */
     .menu-btn{
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
       border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 12px 26px rgba(0,0,0,0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       user-select:none;
       touch-action: manipulation;
-      transition: transform 160ms var(--ease), background 160ms var(--ease);
+      transition: transform 160ms var(--ease), filter 160ms var(--ease);
     }
-    html[data-theme="light"] .menu-btn{ background: rgba(255,255,255,0.35); }
+    html[data-theme="light"] .menu-btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.38));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.40),
+        0 12px 22px rgba(10,20,40,0.12);
+    }
     .menu-btn:active{ transform: scale(0.98); }
     .menu-btn svg{ opacity: 0.92; }
 
@@ -551,7 +559,6 @@
       height: calc(100% - 66px);
       overflow:hidden;
     }
-
     .sidebar-pages{
       position:absolute;
       inset: 0;
@@ -568,7 +575,7 @@
       opacity: 0;
       pointer-events:none;
       transition: transform 260ms var(--ease), opacity 220ms var(--ease);
-      padding-bottom: 120px;
+      padding-bottom: 96px; /* ✅ menor porque dock agora é pequeno */
     }
     .side-page.active{
       transform: translateX(0);
@@ -662,30 +669,28 @@
       padding: 8px 6px;
     }
 
-    /* ✅ Dock inferior (HOME) — agora só ícones */
+    /* ✅ Dock inferior: sem barra, só 2 botões quadrados */
     .side-dock{
       position:absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.08);
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-      display:flex;
-      gap: 10px;
-      justify-content:space-between;
-      align-items:center;
+      left: 16px;
+      right: 16px;
+      bottom: 14px;
       z-index: 5;
+      display:flex;
+      justify-content:space-between;
+      gap: 14px;
+
+      /* remove a barra */
+      background: transparent;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+
       opacity: 1;
       transform: translateY(0);
       transition: opacity 200ms var(--ease), transform 200ms var(--ease);
-    }
-    html[data-theme="light"] .side-dock{
-      border: 1px solid rgba(10,20,40,0.10);
-      background: rgba(255,255,255,0.35);
     }
     .side-dock.hidden{
       opacity: 0;
@@ -694,33 +699,41 @@
     }
 
     .dock-btn{
-      flex: 1 1 0;
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 14px 34px rgba(0,0,0,0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 12px 10px;
-      border-radius: 18px;
-      border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,0.06);
       cursor:pointer;
       user-select:none;
-      transition: transform 160ms var(--ease), background 160ms var(--ease);
+      transition: transform 160ms var(--ease);
+      flex: 0 0 auto;
     }
-    html[data-theme="light"] .dock-btn{ background: rgba(255,255,255,0.55); }
-    .dock-btn:active{ transform: scale(0.99); }
-
+    html[data-theme="light"] .dock-btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.40),
+        0 12px 22px rgba(10,20,40,0.12);
+    }
+    .dock-btn:active{ transform: scale(0.98); }
     .dock-ico{
       width: 44px;
       height: 44px;
-      border-radius: 16px;
-      border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.08);
+      border-radius: 18px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-size: 18px;
+      opacity: 0.95;
     }
-    html[data-theme="light"] .dock-ico{ background: rgba(255,255,255,0.45); }
 
     /* ✅ Edit Mode: desativar interação do menu e theme slider (mas manter arrastável) */
     .stage.edit-mode #menuBtn,
@@ -738,7 +751,7 @@
       <div class="snap-ghost" id="ghost"></div>
 
       <div class="widget menu-widget" data-id="menu" data-kind="menu">
-        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+        <div class="pad">
           <div class="menu-btn no-drag" id="menuBtn" title="Menu">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
@@ -807,7 +820,6 @@
               <!-- HOME -->
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
-                  <!-- ✅ sem "RESTO" e sem Config/Conta duplicados -->
                   <div class="side-item" data-nav="personalize">
                     <div class="side-left">
                       <div class="side-ico">🎨</div>
@@ -1033,7 +1045,7 @@
 
             </div>
 
-            <!-- Dock (HOME) — agora só ícones -->
+            <!-- Dock (HOME) — agora só 2 botões quadrados -->
             <div class="side-dock" id="sideDock">
               <div class="dock-btn" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
@@ -1296,9 +1308,7 @@
       stage.classList.toggle('edit-mode', isEditMode);
       try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
 
-      // ✅ se entrar no edit mode, fecha o menu pra não atrapalhar
       if(isEditMode) closeSidebar();
-
       if(!isEditMode) hideGhost();
     }
 
@@ -1455,7 +1465,6 @@
       setTheme(saved);
     }
 
-    // ✅ bloquear clicks no theme durante edit mode
     themeOptions.addEventListener('click', (e)=>{
       if(isEditMode) return;
       const opt = e.target.closest('.theme-opt');
@@ -1649,7 +1658,7 @@
     }
 
     function openSidebar(){
-      if(isEditMode) return; // ✅ bloqueia menu no edit mode
+      if(isEditMode) return;
       sidebarOverlay.classList.add('open');
       sidebarOverlay.setAttribute('aria-hidden', 'false');
       resetMenuNav();
@@ -1663,7 +1672,7 @@
     }
 
     menuBtn.addEventListener('click', (e)=>{
-      if(isEditMode) return; // ✅ bloqueia menu no edit mode
+      if(isEditMode) return;
       toggleSidebar();
       e.stopPropagation();
     });
@@ -1735,7 +1744,41 @@
 
     function boot(){
       syncGridVars();
-      loadTheme();
+
+      // theme
+      const THEME_KEY = 'terminal.theme.mode.v4';
+      const saved = localStorage.getItem(THEME_KEY) || 'auto';
+      (function loadTheme(){
+        function applyTheme(mode){
+          let applied = mode;
+          if(mode === 'auto'){
+            applied = prefersDark() ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', applied);
+        }
+        function slotXForMode(mode){
+          const rect = themePill.getBoundingClientRect();
+          const thumbW = themeThumb.getBoundingClientRect().width || 0;
+          const innerW = rect.width - 14;
+          const range = Math.max(0, innerW - thumbW);
+          const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
+          return range * (idx / 2);
+        }
+        function setTheme(mode){
+          localStorage.setItem(THEME_KEY, mode);
+          applyTheme(mode);
+
+          [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
+            opt.classList.toggle('active', opt.dataset.theme === mode);
+          });
+
+          themeThumb.style.transition = 'transform 240ms var(--ease)';
+          themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
+        }
+        window.__setTheme = setTheme;
+        window.__slotXForMode = slotXForMode;
+        setTheme(saved);
+      })();
 
       const em = localStorage.getItem('terminal.editmode.v1');
       setEditMode(em === '1');
@@ -1752,9 +1795,9 @@
         syncGridVars();
         normalizeAll();
 
-        const saved = localStorage.getItem(THEME_KEY) || 'auto';
+        const savedMode = localStorage.getItem('terminal.theme.mode.v4') || 'auto';
         themeThumb.style.transition = '';
-        themeThumb.style.transform = `translate3d(${slotXForMode(saved)}px,0,0)`;
+        themeThumb.style.transform = `translate3d(${window.__slotXForMode(savedMode)}px,0,0)`;
       });
     }
 
