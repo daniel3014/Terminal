@@ -219,7 +219,6 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    /* ✅ Gap guaranteed by size, PLUS seamFix to kill white seams in Light */
     .clock-widget{
       width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
       height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
@@ -547,11 +546,10 @@
     }
     html[data-theme="light"] .sidebar-close{ background: rgba(255,255,255,0.35); }
 
-    /* Conteúdo: agora vira "stack" de páginas */
     .sidebar-body{
       position:relative;
       height: calc(100% - 66px);
-      overflow:hidden; /* pages lidam com scroll internamente */
+      overflow:hidden;
     }
 
     .sidebar-pages{
@@ -570,7 +568,7 @@
       opacity: 0;
       pointer-events:none;
       transition: transform 260ms var(--ease), opacity 220ms var(--ease);
-      padding-bottom: 120px; /* espaço pro dock quando existir */
+      padding-bottom: 120px;
     }
     .side-page.active{
       transform: translateX(0);
@@ -591,14 +589,6 @@
     html[data-theme="light"] .side-section{
       border: 1px solid rgba(10,20,40,0.08);
       background: rgba(255,255,255,0.28);
-    }
-
-    .section-title{
-      font-size: 12px;
-      color: var(--muted);
-      padding: 2px 6px 10px 6px;
-      letter-spacing: 0.2px;
-      text-transform: uppercase;
     }
 
     .side-item{
@@ -672,7 +662,7 @@
       padding: 8px 6px;
     }
 
-    /* ✅ Dock inferior (apenas na HOME) */
+    /* ✅ Dock inferior (HOME) — agora só ícones */
     .side-dock{
       position:absolute;
       left: 12px;
@@ -708,8 +698,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 10px;
-      padding: 14px 12px;
+      padding: 12px 10px;
       border-radius: 18px;
       border: 1px solid var(--stroke2);
       background: rgba(255,255,255,0.06);
@@ -721,9 +710,9 @@
     .dock-btn:active{ transform: scale(0.99); }
 
     .dock-ico{
-      width: 36px;
-      height: 36px;
-      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
       border: 1px solid var(--stroke2);
       background: rgba(0,0,0,0.08);
       display:flex;
@@ -733,21 +722,10 @@
     }
     html[data-theme="light"] .dock-ico{ background: rgba(255,255,255,0.45); }
 
-    .dock-label{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      line-height: 1.1;
-      min-width:0;
-    }
-    .dock-label b{ font-size: 13px; }
-    .dock-label span{
-      font-size: 12px;
-      color: var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 140px;
+    /* ✅ Edit Mode: desativar interação do menu e theme slider (mas manter arrastável) */
+    .stage.edit-mode #menuBtn,
+    .stage.edit-mode #themePill{
+      pointer-events: none;
     }
   </style>
 </head>
@@ -816,7 +794,7 @@
 
               <div class="sidebar-title-wrap">
                 <div class="sidebar-title" id="sidebarTitle">Menu</div>
-                <div class="sidebar-sub" id="sidebarSub">Configs • Conta • Automação • Dispositivos</div>
+                <div class="sidebar-sub" id="sidebarSub">Config • Conta • Personalização • Automação • Dispositivos</div>
               </div>
             </div>
 
@@ -829,30 +807,7 @@
               <!-- HOME -->
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
-                  <div class="section-title">Resto</div>
-
-                  <div class="side-item" data-nav="configs">
-                    <div class="side-left">
-                      <div class="side-ico">⚙️</div>
-                      <div class="side-label">
-                        <b>Configurações</b>
-                        <span>sistema, layout, preferências</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-nav="account">
-                    <div class="side-left">
-                      <div class="side-ico">👤</div>
-                      <div class="side-label">
-                        <b>Conta</b>
-                        <span>perfil e segurança</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
+                  <!-- ✅ sem "RESTO" e sem Config/Conta duplicados -->
                   <div class="side-item" data-nav="personalize">
                     <div class="side-left">
                       <div class="side-ico">🎨</div>
@@ -891,8 +846,6 @@
               <!-- CONFIGS -->
               <div class="side-page" data-page="configs" id="page-configs">
                 <div class="side-section">
-                  <div class="section-title">Geral</div>
-
                   <div class="side-item" data-action="layout">
                     <div class="side-left">
                       <div class="side-ico">🧩</div>
@@ -927,7 +880,7 @@
                   </div>
 
                   <div class="side-note">
-                    Esses itens são placeholders por enquanto. Depois a IA pode controlar tudo por voz + mouse/touch. 🎙️✨
+                    Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨
                   </div>
                 </div>
               </div>
@@ -935,8 +888,6 @@
               <!-- CONTA -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
-                  <div class="section-title">Conta</div>
-
                   <div class="side-item" data-action="profile">
                     <div class="side-left">
                       <div class="side-ico">👤</div>
@@ -971,7 +922,7 @@
                   </div>
 
                   <div class="side-note">
-                    Futuro: login, sync de layout por dispositivo e permissões de microfone/voz. 🧠
+                    Futuro: login, sync por dispositivo e permissões do microfone. 🧠
                   </div>
                 </div>
               </div>
@@ -979,8 +930,6 @@
               <!-- PERSONALIZAÇÃO -->
               <div class="side-page" data-page="personalize" id="page-personalize">
                 <div class="side-section">
-                  <div class="section-title">Aparência</div>
-
                   <div class="side-item" data-action="themes">
                     <div class="side-left">
                       <div class="side-ico">✨</div>
@@ -1015,7 +964,7 @@
                   </div>
 
                   <div class="side-note">
-                    Aqui é onde vamos evoluir o “liquid glass premium” sem pesar em devices antigos. 🫶
+                    Aqui a gente evolui o “liquid glass” mantendo leve pra devices antigos. 🫶
                   </div>
                 </div>
               </div>
@@ -1023,8 +972,6 @@
               <!-- AUTOMAÇÃO -->
               <div class="side-page" data-page="automation" id="page-automation">
                 <div class="side-section">
-                  <div class="section-title">Automação & Agendamento</div>
-
                   <div class="side-item" data-action="routines">
                     <div class="side-left">
                       <div class="side-ico">🧷</div>
@@ -1048,7 +995,7 @@
                   </div>
 
                   <div class="side-note">
-                    Futuro: agente por voz com wake word, automações e notificações. 🎙️⏰
+                    Futuro: wake word + automações + notificações. 🎙️⏰
                   </div>
                 </div>
               </div>
@@ -1056,8 +1003,6 @@
               <!-- DISPOSITIVOS -->
               <div class="side-page" data-page="devices" id="page-devices">
                 <div class="side-section">
-                  <div class="section-title">Dispositivos</div>
-
                   <div class="side-item" data-action="current">
                     <div class="side-left">
                       <div class="side-ico">💻</div>
@@ -1081,29 +1026,21 @@
                   </div>
 
                   <div class="side-note">
-                    A ideia aqui: cada device pode ter widgets/layout próprios, sincronizados. 🔁
+                    Ideia: cada device com widgets/layout próprios, sincronizados. 🔁
                   </div>
                 </div>
               </div>
 
             </div>
 
-            <!-- Dock (só aparece na HOME) -->
+            <!-- Dock (HOME) — agora só ícones -->
             <div class="side-dock" id="sideDock">
               <div class="dock-btn" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
-                <div class="dock-label">
-                  <b>Config</b>
-                  <span>preferências</span>
-                </div>
               </div>
 
               <div class="dock-btn" data-nav="account" title="Conta">
                 <div class="dock-ico">👤</div>
-                <div class="dock-label">
-                  <b>Conta</b>
-                  <span>perfil</span>
-                </div>
               </div>
             </div>
 
@@ -1358,6 +1295,10 @@
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
       try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
+
+      // ✅ se entrar no edit mode, fecha o menu pra não atrapalhar
+      if(isEditMode) closeSidebar();
+
       if(!isEditMode) hideGhost();
     }
 
@@ -1514,7 +1455,9 @@
       setTheme(saved);
     }
 
+    // ✅ bloquear clicks no theme durante edit mode
     themeOptions.addEventListener('click', (e)=>{
+      if(isEditMode) return;
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
@@ -1539,6 +1482,7 @@
     }
 
     themePill.addEventListener('pointerdown', (e)=>{
+      if(isEditMode) return;
       e.preventDefault();
       const rect = themePill.getBoundingClientRect();
       const thumbW = themeThumb.getBoundingClientRect().width || 0;
@@ -1548,6 +1492,7 @@
     });
 
     themePill.addEventListener('pointermove', (e)=>{
+      if(isEditMode) return;
       if(!pillDrag) return;
       pillDrag.lastX = e.clientX;
       if(rafId) return;
@@ -1558,6 +1503,7 @@
     });
 
     themePill.addEventListener('pointerup', (e)=>{
+      if(isEditMode) return;
       if(!pillDrag) return;
 
       const { rect, thumbW } = pillDrag;
@@ -1609,7 +1555,7 @@
     const sideDock = document.getElementById('sideDock');
 
     const pages = {
-      home:        { title: 'Menu',            sub: 'Configs • Conta • Automação • Dispositivos' },
+      home:        { title: 'Menu',            sub: 'Config • Conta • Personalização • Automação • Dispositivos' },
       configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
       account:     { title: 'Conta',           sub: 'Perfil e segurança' },
       personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
@@ -1640,28 +1586,25 @@
       const nextEl = getPageEl(nextId);
       if(!nextEl) return;
 
-      // Preparação do slide
       document.querySelectorAll('.side-page').forEach(p=>{
         if(p !== currentEl && p !== nextEl){
           p.classList.remove('active','left');
         }
       });
 
-      // Direção: 'forward' (entra da direita), 'back' (entra da esquerda)
       if(direction === 'back'){
-        if(currentEl) currentEl.classList.add('left');  // sai levemente pra direita? (efeito)
-        nextEl.classList.add('left');                   // começa à esquerda
+        if(currentEl) currentEl.classList.add('left');
+        nextEl.classList.add('left');
         nextEl.classList.add('active');
         requestAnimationFrame(()=>{
-          nextEl.classList.remove('left');              // move para 0
+          nextEl.classList.remove('left');
           if(currentEl) currentEl.classList.remove('active');
         });
       }else{
-        // forward
         nextEl.classList.remove('left');
-        nextEl.classList.add('active');                 // vem da direita (default)
+        nextEl.classList.add('active');
         requestAnimationFrame(()=>{
-          if(currentEl) currentEl.classList.add('left'); // current vai pra esquerda
+          if(currentEl) currentEl.classList.add('left');
           if(currentEl) currentEl.classList.remove('active');
         });
       }
@@ -1681,7 +1624,7 @@
       if(navStack.length <= 1) return;
       const current = navStack.pop();
       const prev = navStack[navStack.length - 1] || 'home';
-      // garantir que a página anterior esteja pronta para entrar pela esquerda
+
       const prevEl = getPageEl(prev);
       if(prevEl){
         prevEl.classList.add('left');
@@ -1689,7 +1632,6 @@
       }
       showPage(prev, 'back');
 
-      // limpar estado da page que saiu
       const currentEl = getPageEl(current);
       if(currentEl){
         currentEl.classList.remove('active','left');
@@ -1707,6 +1649,7 @@
     }
 
     function openSidebar(){
+      if(isEditMode) return; // ✅ bloqueia menu no edit mode
       sidebarOverlay.classList.add('open');
       sidebarOverlay.setAttribute('aria-hidden', 'false');
       resetMenuNav();
@@ -1720,6 +1663,7 @@
     }
 
     menuBtn.addEventListener('click', (e)=>{
+      if(isEditMode) return; // ✅ bloqueia menu no edit mode
       toggleSidebar();
       e.stopPropagation();
     });
@@ -1731,7 +1675,6 @@
       if(e.target === sidebarOverlay) closeSidebar();
     });
 
-    // Click nos itens que abrem páginas internas
     document.querySelectorAll('[data-nav]').forEach(el=>{
       el.addEventListener('click', ()=>{
         const id = el.dataset.nav;
@@ -1740,7 +1683,6 @@
       });
     });
 
-    // Itens placeholder (ações futuras)
     document.querySelectorAll('[data-action]').forEach(el=>{
       el.addEventListener('click', ()=>{
         const a = el.dataset.action;
@@ -1765,7 +1707,6 @@
         if(input.includes('auto')) return setTheme('auto');
       }
 
-      // bônus: abrir menu por comando (não altera visual)
       if(input === 'menu' || input === 'abrir menu') openSidebar();
       if(input === 'fechar menu') closeSidebar();
     }
