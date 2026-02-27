@@ -410,14 +410,10 @@
       align-items:center;
       justify-content:center;
     }
-
-    /* ✅ FIX: diminuir padding interno só do menu para não ficar "estreito" */
-    .menu-widget .pad{
-      padding: 8px; /* antes era 14px herdado */
-    }
+    .menu-widget .pad{ padding: 8px; }
 
     .menu-btn{
-      width: 44px;  /* ✅ mais próximo do quadrado externo */
+      width: 44px;
       height: 44px;
       border-radius: 14px;
       border: 1px solid var(--stroke2);
@@ -434,12 +430,11 @@
     .menu-btn:active{ transform: scale(0.98); }
     .menu-btn svg{ opacity: 0.92; }
 
-    /* Sidebar overlay */
     .sidebar-overlay{
       position:absolute;
       inset: var(--pad);
       border-radius: var(--radius2);
-      z-index: 60; /* acima dos widgets */
+      z-index: 60;
       pointer-events:none;
       opacity:0;
       transition: opacity 220ms var(--ease);
@@ -447,9 +442,7 @@
       backdrop-filter: blur(0px);
       -webkit-backdrop-filter: blur(0px);
     }
-    html[data-theme="light"] .sidebar-overlay{
-      background: rgba(0,0,0,0.10);
-    }
+    html[data-theme="light"] .sidebar-overlay{ background: rgba(0,0,0,0.10); }
     .sidebar-overlay.open{
       opacity: 1;
       pointer-events:auto;
@@ -473,9 +466,7 @@
       transition: transform 240ms var(--ease);
       overflow:hidden;
     }
-    .sidebar-overlay.open .sidebar{
-      transform: translateX(0);
-    }
+    .sidebar-overlay.open .sidebar{ transform: translateX(0); }
 
     .sidebar-header{
       padding: 16px 16px 12px 16px;
@@ -484,9 +475,7 @@
       justify-content:space-between;
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    html[data-theme="light"] .sidebar-header{
-      border-bottom: 1px solid rgba(10,20,40,0.08);
-    }
+    html[data-theme="light"] .sidebar-header{ border-bottom: 1px solid rgba(10,20,40,0.08); }
 
     .sidebar-title{
       font-weight: 800;
@@ -513,10 +502,13 @@
     }
     html[data-theme="light"] .sidebar-close{ background: rgba(255,255,255,0.35); }
 
+    /* Corpo do menu + dock inferior como no mock */
     .sidebar-body{
+      position:relative;
       padding: 12px;
       height: calc(100% - 66px);
       overflow:auto;
+      padding-bottom: 120px; /* espaço reservado pro dock */
     }
 
     .side-section{
@@ -531,12 +523,20 @@
       background: rgba(255,255,255,0.28);
     }
 
+    .section-title{
+      font-size: 12px;
+      color: var(--muted);
+      padding: 2px 6px 10px 6px;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
     .side-item{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 10px;
-      padding: 10px 10px;
+      padding: 12px 10px;
       border-radius: 14px;
       cursor:pointer;
       border: 1px solid transparent;
@@ -568,9 +568,8 @@
       justify-content:center;
       flex: 0 0 auto;
     }
-    html[data-theme="light"] .side-ico{
-      background: rgba(255,255,255,0.45);
-    }
+    html[data-theme="light"] .side-ico{ background: rgba(255,255,255,0.45); }
+
     .side-label{
       min-width:0;
       display:flex;
@@ -596,28 +595,73 @@
       flex: 0 0 auto;
     }
 
-    .side-row{
+    /* ✅ Dock inferior (Config/Conta) como na imagem */
+    .side-dock{
+      position:absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.08);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
       display:flex;
       gap: 10px;
-      flex-wrap:wrap;
+      justify-content:space-between;
       align-items:center;
-      justify-content:flex-start;
-      margin-top: 8px;
+    }
+    html[data-theme="light"] .side-dock{
+      border: 1px solid rgba(10,20,40,0.10);
+      background: rgba(255,255,255,0.35);
     }
 
-    .side-btn{
-      border-radius: 14px;
+    .dock-btn{
+      flex: 1 1 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 14px 12px;
+      border-radius: 18px;
       border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.10);
-      color: var(--text);
-      padding: 10px 12px;
-      font-size: 13px;
+      background: rgba(255,255,255,0.06);
       cursor:pointer;
       user-select:none;
+      transition: transform 160ms var(--ease), background 160ms var(--ease);
     }
-    html[data-theme="light"] .side-btn{
-      background: rgba(255,255,255,0.35);
-      color: var(--text);
+    html[data-theme="light"] .dock-btn{ background: rgba(255,255,255,0.55); }
+    .dock-btn:active{ transform: scale(0.99); }
+
+    .dock-ico{
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
+    }
+    html[data-theme="light"] .dock-ico{ background: rgba(255,255,255,0.45); }
+
+    .dock-label{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      line-height: 1.1;
+      min-width:0;
+    }
+    .dock-label b{ font-size: 13px; }
+    .dock-label span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 140px;
     }
   </style>
 </head>
@@ -677,6 +721,7 @@
         </div>
       </div>
 
+      <!-- Sidebar -->
       <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
         <div class="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
           <div class="sidebar-header">
@@ -688,13 +733,16 @@
           </div>
 
           <div class="sidebar-body">
+            <!-- ✅ “Resto” (como no mock) -->
             <div class="side-section">
+              <div class="section-title">Resto</div>
+
               <div class="side-item" data-action="configs">
                 <div class="side-left">
                   <div class="side-ico">⚙️</div>
                   <div class="side-label">
                     <b>Configurações</b>
-                    <span>(futuro) aparência, sistema, layout</span>
+                    <span>sistema, layout, preferências</span>
                   </div>
                 </div>
                 <div class="side-right">›</div>
@@ -705,7 +753,18 @@
                   <div class="side-ico">👤</div>
                   <div class="side-label">
                     <b>Conta</b>
-                    <span>(futuro) perfil e preferências</span>
+                    <span>perfil e segurança</span>
+                  </div>
+                </div>
+                <div class="side-right">›</div>
+              </div>
+
+              <div class="side-item" data-action="personalize">
+                <div class="side-left">
+                  <div class="side-ico">🎨</div>
+                  <div class="side-label">
+                    <b>Personalização</b>
+                    <span>tema, grid, vidro, animações</span>
                   </div>
                 </div>
                 <div class="side-right">›</div>
@@ -716,7 +775,7 @@
                   <div class="side-ico">🗓️</div>
                   <div class="side-label">
                     <b>Automação & Agendamento</b>
-                    <span>(futuro) rotinas e lembretes</span>
+                    <span>rotinas e lembretes (em breve)</span>
                   </div>
                 </div>
                 <div class="side-right">Soon</div>
@@ -727,21 +786,29 @@
                   <div class="side-ico">📱</div>
                   <div class="side-label">
                     <b>Dispositivos</b>
-                    <span>(futuro) layouts por dispositivo</span>
+                    <span>layouts por dispositivo (em breve)</span>
                   </div>
                 </div>
                 <div class="side-right">›</div>
               </div>
             </div>
 
-            <div class="side-section">
-              <div class="side-label" style="padding: 2px 6px 8px 6px;">
-                <b>Widgets</b>
-                <span>Adicionar de volta (se remover)</span>
+            <!-- ✅ Dock inferior (Config / Conta) -->
+            <div class="side-dock">
+              <div class="dock-btn" data-action="configs" title="Configurações">
+                <div class="dock-ico">⚙️</div>
+                <div class="dock-label">
+                  <b>Config</b>
+                  <span>preferências</span>
+                </div>
               </div>
 
-              <div class="side-row">
-                <button class="side-btn" id="addMenuBtn">Adicionar ☰</button>
+              <div class="dock-btn" data-action="account" title="Conta">
+                <div class="dock-ico">👤</div>
+                <div class="dock-label">
+                  <b>Conta</b>
+                  <span>perfil</span>
+                </div>
               </div>
             </div>
 
@@ -962,11 +1029,6 @@
       const chat  = document.querySelector('.widget[data-id="chat"]');
       const theme = document.querySelector('.widget[data-id="theme"]');
 
-      /* ✅ FIX: layout inicial considera o menu
-         - menu em (0,0)
-         - chat em (1,0) para poder ficar ao lado do menu
-         - desloca clock/theme +1
-      */
       const desired = [
         { w: menu,  col: 0, row: 0 },
         { w: chat,  col: 1, row: 0 },
@@ -1241,10 +1303,10 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
+    /* Sidebar controls */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarClose = document.getElementById('sidebarClose');
     const menuBtn = document.getElementById('menuBtn');
-    const addMenuBtn = document.getElementById('addMenuBtn');
 
     function openSidebar(){
       sidebarOverlay.classList.add('open');
@@ -1268,14 +1330,18 @@
       if(e.target === sidebarOverlay) closeSidebar();
     });
 
-    addMenuBtn.addEventListener('click', ()=>{
-      showWidget('menu', 0, 0);
-    });
+    // ✅ Menu actions: lista + dock usam o mesmo data-action
+    function handleMenuAction(action){
+      // Por enquanto placeholder — depois vira páginas reais dentro do menu
+      alert(`${action} (placeholder)`);
+      // opcional: closeSidebar();
+    }
 
-    document.querySelectorAll('.side-item[data-action]').forEach(it=>{
-      it.addEventListener('click', ()=>{
-        const a = it.dataset.action;
-        alert(`${a} (placeholder)`);
+    document.querySelectorAll('[data-action]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const a = el.dataset.action;
+        if(!a) return;
+        handleMenuAction(a);
       });
     });
 
@@ -1327,9 +1393,7 @@
 
       defaultLayoutIfNeeded();
       applyLayout();
-
       placeMenuIfMissing();
-
       normalizeAll();
 
       tick();
