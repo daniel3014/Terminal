@@ -400,8 +400,7 @@
     }
 
     /* =========================
-       ✅ ADDED: MENU WIDGET + SIDEBAR
-       (sem mexer nos outros)
+       MENU WIDGET + SIDEBAR
     ========================== */
 
     .menu-widget{
@@ -412,9 +411,14 @@
       justify-content:center;
     }
 
+    /* ✅ FIX: diminuir padding interno só do menu para não ficar "estreito" */
+    .menu-widget .pad{
+      padding: 8px; /* antes era 14px herdado */
+    }
+
     .menu-btn{
-      width: 42px;
-      height: 42px;
+      width: 44px;  /* ✅ mais próximo do quadrado externo */
+      height: 44px;
       border-radius: 14px;
       border: 1px solid var(--stroke2);
       background: rgba(0,0,0,0.10);
@@ -625,7 +629,6 @@
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- ✅ ADDED: MENU WIDGET -->
       <div class="widget menu-widget" data-id="menu" data-kind="menu">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
           <div class="menu-btn no-drag" id="menuBtn" title="Menu">
@@ -674,7 +677,6 @@
         </div>
       </div>
 
-      <!-- ✅ ADDED: SIDEBAR -->
       <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
         <div class="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
           <div class="sidebar-header">
@@ -935,7 +937,6 @@
       return true;
     }
 
-    // ✅ ADDED: unhide widget + place it nicely
     function showWidget(id, desiredCol=0, desiredRow=0){
       const w = document.querySelector(`.widget[data-id="${id}"]`);
       if(!w) return false;
@@ -947,7 +948,6 @@
       layout[id].hidden = false;
       saveLayout(layout);
 
-      // Place without moving others
       const free = findNearestFreeCell(w, desiredCol, desiredRow);
       commitWidgetCell(w, free.col, free.row);
       return true;
@@ -957,14 +957,21 @@
       const layout = loadLayout();
       if(Object.keys(layout).length) return;
 
+      const menu  = document.querySelector('.widget[data-id="menu"]');
       const clock = document.querySelector('.widget[data-id="clock"]');
       const chat  = document.querySelector('.widget[data-id="chat"]');
       const theme = document.querySelector('.widget[data-id="theme"]');
 
+      /* ✅ FIX: layout inicial considera o menu
+         - menu em (0,0)
+         - chat em (1,0) para poder ficar ao lado do menu
+         - desloca clock/theme +1
+      */
       const desired = [
-        { w: chat,  col: 0, row: 0 },
-        { w: clock, col: 3, row: 0 },
-        { w: theme, col: 5, row: 0 },
+        { w: menu,  col: 0, row: 0 },
+        { w: chat,  col: 1, row: 0 },
+        { w: clock, col: 4, row: 0 },
+        { w: theme, col: 6, row: 0 },
       ];
 
       desired.forEach(({w,col,row})=>{
@@ -974,24 +981,18 @@
       });
     }
 
-    // ✅ ADDED: ensure menu exists in layout without moving others
     function placeMenuIfMissing(){
       const layout = loadLayout();
       const menu = document.querySelector('.widget[data-id="menu"]');
       if(!menu) return;
 
       if(layout.menu && typeof layout.menu.col === 'number' && typeof layout.menu.row === 'number' && !layout.menu.hidden){
-        // already placed by saved layout
         return;
       }
-
-      // If hidden, keep hidden (user removed)
       if(layout.menu && layout.menu.hidden) {
         menu.style.display = 'none';
         return;
       }
-
-      // Place near top-left
       showWidget('menu', 0, 0);
     }
 
@@ -1033,9 +1034,7 @@
 
     function canStartDragFromTarget(target){
       if(target.closest('#themePill')) return false;
-      // ✅ ADDED: allow clicking menu button even in edit mode (no preventDefault)
       if(target.closest('.no-drag')) return false;
-
       if(target.closest('input, textarea, button, select')) return false;
       return true;
     }
@@ -1242,7 +1241,6 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    // ✅ ADDED: Sidebar controls (minimal, sem mexer no resto)
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarClose = document.getElementById('sidebarClose');
     const menuBtn = document.getElementById('menuBtn');
@@ -1261,7 +1259,6 @@
     }
 
     menuBtn.addEventListener('click', (e)=>{
-      // clique abre o menu (inclusive no edit mode)
       toggleSidebar();
       e.stopPropagation();
     });
@@ -1275,7 +1272,6 @@
       showWidget('menu', 0, 0);
     });
 
-    // placeholders dos itens
     document.querySelectorAll('.side-item[data-action]').forEach(it=>{
       it.addEventListener('click', ()=>{
         const a = it.dataset.action;
@@ -1290,7 +1286,6 @@
       if(input.includes('remove theme') || input.includes('remover tema')) return hideWidget('theme');
       if(input.includes('remove chat')  || input.includes('remover chat')) return hideWidget('chat');
 
-      // ✅ ADDED: remove/add menu via comando
       if(input.includes('remove menu')  || input.includes('remover menu')) return hideWidget('menu');
       if(input.includes('add menu')     || input.includes('adicionar menu')) return showWidget('menu', 0, 0);
 
@@ -1333,7 +1328,6 @@
       defaultLayoutIfNeeded();
       applyLayout();
 
-      // ✅ ADDED: place menu without changing other widgets
       placeMenuIfMissing();
 
       normalizeAll();
