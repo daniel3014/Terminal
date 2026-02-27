@@ -400,7 +400,7 @@
     }
 
     /* =========================
-       MENU WIDGET + SIDEBAR
+       MENU WIDGET + SIDEBAR (PÁGINAS INTERNAS)
     ========================== */
 
     .menu-widget{
@@ -469,23 +469,67 @@
     .sidebar-overlay.open .sidebar{ transform: translateX(0); }
 
     .sidebar-header{
-      padding: 16px 16px 12px 16px;
+      padding: 14px 14px 12px 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 10px;
     }
     html[data-theme="light"] .sidebar-header{ border-bottom: 1px solid rgba(10,20,40,0.08); }
 
+    .sidebar-head-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .sidebar-back{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+      opacity: 0;
+      pointer-events:none;
+      transform: translateX(-6px);
+      transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+    }
+    html[data-theme="light"] .sidebar-back{ background: rgba(255,255,255,0.35); }
+    .sidebar.has-back .sidebar-back{
+      opacity: 1;
+      pointer-events:auto;
+      transform: translateX(0);
+    }
+
+    .sidebar-title-wrap{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+    }
     .sidebar-title{
       font-weight: 800;
       letter-spacing: 0.2px;
       font-size: 14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .sidebar-sub{
       font-size: 12px;
       color: var(--muted);
-      margin-top: 2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .sidebar-close{
@@ -499,16 +543,42 @@
       justify-content:center;
       cursor:pointer;
       user-select:none;
+      flex: 0 0 auto;
     }
     html[data-theme="light"] .sidebar-close{ background: rgba(255,255,255,0.35); }
 
-    /* Corpo do menu + dock inferior como no mock */
+    /* Conteúdo: agora vira "stack" de páginas */
     .sidebar-body{
       position:relative;
-      padding: 12px;
       height: calc(100% - 66px);
+      overflow:hidden; /* pages lidam com scroll internamente */
+    }
+
+    .sidebar-pages{
+      position:absolute;
+      inset: 0;
+      overflow:hidden;
+    }
+
+    .side-page{
+      position:absolute;
+      inset: 0;
+      padding: 12px;
       overflow:auto;
-      padding-bottom: 120px; /* espaço reservado pro dock */
+      -webkit-overflow-scrolling: touch;
+      transform: translateX(110%);
+      opacity: 0;
+      pointer-events:none;
+      transition: transform 260ms var(--ease), opacity 220ms var(--ease);
+      padding-bottom: 120px; /* espaço pro dock quando existir */
+    }
+    .side-page.active{
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events:auto;
+    }
+    .side-page.left{
+      transform: translateX(-18%);
     }
 
     .side-section{
@@ -595,7 +665,14 @@
       flex: 0 0 auto;
     }
 
-    /* ✅ Dock inferior (Config/Conta) como na imagem */
+    .side-note{
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.35rem;
+      padding: 8px 6px;
+    }
+
+    /* ✅ Dock inferior (apenas na HOME) */
     .side-dock{
       position:absolute;
       left: 12px;
@@ -611,10 +688,19 @@
       gap: 10px;
       justify-content:space-between;
       align-items:center;
+      z-index: 5;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 200ms var(--ease), transform 200ms var(--ease);
     }
     html[data-theme="light"] .side-dock{
       border: 1px solid rgba(10,20,40,0.10);
       background: rgba(255,255,255,0.35);
+    }
+    .side-dock.hidden{
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events:none;
     }
 
     .dock-btn{
@@ -723,79 +809,288 @@
 
       <!-- Sidebar -->
       <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
-        <div class="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
+        <div class="sidebar" id="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
           <div class="sidebar-header">
-            <div>
-              <div class="sidebar-title">Menu</div>
-              <div class="sidebar-sub">Configs • Conta • Automação • Dispositivos</div>
+            <div class="sidebar-head-left">
+              <div class="sidebar-back" id="sidebarBack" title="Voltar">←</div>
+
+              <div class="sidebar-title-wrap">
+                <div class="sidebar-title" id="sidebarTitle">Menu</div>
+                <div class="sidebar-sub" id="sidebarSub">Configs • Conta • Automação • Dispositivos</div>
+              </div>
             </div>
+
             <div class="sidebar-close" id="sidebarClose" title="Fechar">✕</div>
           </div>
 
           <div class="sidebar-body">
-            <!-- ✅ “Resto” (como no mock) -->
-            <div class="side-section">
-              <div class="section-title">Resto</div>
+            <div class="sidebar-pages" id="sidebarPages">
 
-              <div class="side-item" data-action="configs">
-                <div class="side-left">
-                  <div class="side-ico">⚙️</div>
-                  <div class="side-label">
-                    <b>Configurações</b>
-                    <span>sistema, layout, preferências</span>
+              <!-- HOME -->
+              <div class="side-page active" data-page="home" id="page-home">
+                <div class="side-section">
+                  <div class="section-title">Resto</div>
+
+                  <div class="side-item" data-nav="configs">
+                    <div class="side-left">
+                      <div class="side-ico">⚙️</div>
+                      <div class="side-label">
+                        <b>Configurações</b>
+                        <span>sistema, layout, preferências</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-nav="account">
+                    <div class="side-left">
+                      <div class="side-ico">👤</div>
+                      <div class="side-label">
+                        <b>Conta</b>
+                        <span>perfil e segurança</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-nav="personalize">
+                    <div class="side-left">
+                      <div class="side-ico">🎨</div>
+                      <div class="side-label">
+                        <b>Personalização</b>
+                        <span>tema, grid, vidro, animações</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-nav="automation">
+                    <div class="side-left">
+                      <div class="side-ico">🗓️</div>
+                      <div class="side-label">
+                        <b>Automação & Agendamento</b>
+                        <span>rotinas e lembretes (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-item" data-nav="devices">
+                    <div class="side-left">
+                      <div class="side-ico">📱</div>
+                      <div class="side-label">
+                        <b>Dispositivos</b>
+                        <span>layouts por dispositivo (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
                   </div>
                 </div>
-                <div class="side-right">›</div>
               </div>
 
-              <div class="side-item" data-action="account">
-                <div class="side-left">
-                  <div class="side-ico">👤</div>
-                  <div class="side-label">
-                    <b>Conta</b>
-                    <span>perfil e segurança</span>
+              <!-- CONFIGS -->
+              <div class="side-page" data-page="configs" id="page-configs">
+                <div class="side-section">
+                  <div class="section-title">Geral</div>
+
+                  <div class="side-item" data-action="layout">
+                    <div class="side-left">
+                      <div class="side-ico">🧩</div>
+                      <div class="side-label">
+                        <b>Layout</b>
+                        <span>grid, snap, organização</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="preferences">
+                    <div class="side-left">
+                      <div class="side-ico">⚡</div>
+                      <div class="side-label">
+                        <b>Preferências</b>
+                        <span>atalhos, acessibilidade</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="about">
+                    <div class="side-left">
+                      <div class="side-ico">ℹ️</div>
+                      <div class="side-label">
+                        <b>Sobre</b>
+                        <span>versão e informações</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-note">
+                    Esses itens são placeholders por enquanto. Depois a IA pode controlar tudo por voz + mouse/touch. 🎙️✨
                   </div>
                 </div>
-                <div class="side-right">›</div>
               </div>
 
-              <div class="side-item" data-action="personalize">
-                <div class="side-left">
-                  <div class="side-ico">🎨</div>
-                  <div class="side-label">
-                    <b>Personalização</b>
-                    <span>tema, grid, vidro, animações</span>
+              <!-- CONTA -->
+              <div class="side-page" data-page="account" id="page-account">
+                <div class="side-section">
+                  <div class="section-title">Conta</div>
+
+                  <div class="side-item" data-action="profile">
+                    <div class="side-left">
+                      <div class="side-ico">👤</div>
+                      <div class="side-label">
+                        <b>Perfil</b>
+                        <span>nome, foto, preferências</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="security">
+                    <div class="side-left">
+                      <div class="side-ico">🔒</div>
+                      <div class="side-label">
+                        <b>Segurança</b>
+                        <span>sessões e permissões</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="sessions">
+                    <div class="side-left">
+                      <div class="side-ico">🛰️</div>
+                      <div class="side-label">
+                        <b>Sessões</b>
+                        <span>dispositivos conectados</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-note">
+                    Futuro: login, sync de layout por dispositivo e permissões de microfone/voz. 🧠
                   </div>
                 </div>
-                <div class="side-right">›</div>
               </div>
 
-              <div class="side-item" data-action="automation">
-                <div class="side-left">
-                  <div class="side-ico">🗓️</div>
-                  <div class="side-label">
-                    <b>Automação & Agendamento</b>
-                    <span>rotinas e lembretes (em breve)</span>
+              <!-- PERSONALIZAÇÃO -->
+              <div class="side-page" data-page="personalize" id="page-personalize">
+                <div class="side-section">
+                  <div class="section-title">Aparência</div>
+
+                  <div class="side-item" data-action="themes">
+                    <div class="side-left">
+                      <div class="side-ico">✨</div>
+                      <div class="side-label">
+                        <b>Temas</b>
+                        <span>light, dark, auto</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="grid">
+                    <div class="side-left">
+                      <div class="side-ico">•</div>
+                      <div class="side-label">
+                        <b>Grid</b>
+                        <span>opacidade e estilo</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="motion">
+                    <div class="side-left">
+                      <div class="side-ico">🫧</div>
+                      <div class="side-label">
+                        <b>Animações</b>
+                        <span>float no edit mode</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-note">
+                    Aqui é onde vamos evoluir o “liquid glass premium” sem pesar em devices antigos. 🫶
                   </div>
                 </div>
-                <div class="side-right">Soon</div>
               </div>
 
-              <div class="side-item" data-action="devices">
-                <div class="side-left">
-                  <div class="side-ico">📱</div>
-                  <div class="side-label">
-                    <b>Dispositivos</b>
-                    <span>layouts por dispositivo (em breve)</span>
+              <!-- AUTOMAÇÃO -->
+              <div class="side-page" data-page="automation" id="page-automation">
+                <div class="side-section">
+                  <div class="section-title">Automação & Agendamento</div>
+
+                  <div class="side-item" data-action="routines">
+                    <div class="side-left">
+                      <div class="side-ico">🧷</div>
+                      <div class="side-label">
+                        <b>Rotinas</b>
+                        <span>gatilhos e ações (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-item" data-action="calendar">
+                    <div class="side-left">
+                      <div class="side-ico">📅</div>
+                      <div class="side-label">
+                        <b>Agenda</b>
+                        <span>tarefas e lembretes (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-note">
+                    Futuro: agente por voz com wake word, automações e notificações. 🎙️⏰
                   </div>
                 </div>
-                <div class="side-right">›</div>
               </div>
+
+              <!-- DISPOSITIVOS -->
+              <div class="side-page" data-page="devices" id="page-devices">
+                <div class="side-section">
+                  <div class="section-title">Dispositivos</div>
+
+                  <div class="side-item" data-action="current">
+                    <div class="side-left">
+                      <div class="side-ico">💻</div>
+                      <div class="side-label">
+                        <b>Este dispositivo</b>
+                        <span>layout atual</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="manage">
+                    <div class="side-left">
+                      <div class="side-ico">📱</div>
+                      <div class="side-label">
+                        <b>Gerenciar</b>
+                        <span>layouts por dispositivo (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-note">
+                    A ideia aqui: cada device pode ter widgets/layout próprios, sincronizados. 🔁
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <!-- ✅ Dock inferior (Config / Conta) -->
-            <div class="side-dock">
-              <div class="dock-btn" data-action="configs" title="Configurações">
+            <!-- Dock (só aparece na HOME) -->
+            <div class="side-dock" id="sideDock">
+              <div class="dock-btn" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
                 <div class="dock-label">
                   <b>Config</b>
@@ -803,7 +1098,7 @@
                 </div>
               </div>
 
-              <div class="dock-btn" data-action="account" title="Conta">
+              <div class="dock-btn" data-nav="account" title="Conta">
                 <div class="dock-ico">👤</div>
                 <div class="dock-label">
                   <b>Conta</b>
@@ -1303,14 +1598,118 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    /* Sidebar controls */
+    /* Sidebar controls + Pages Router */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarBack = document.getElementById('sidebarBack');
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarSub = document.getElementById('sidebarSub');
     const menuBtn = document.getElementById('menuBtn');
+    const sideDock = document.getElementById('sideDock');
+
+    const pages = {
+      home:        { title: 'Menu',            sub: 'Configs • Conta • Automação • Dispositivos' },
+      configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
+      account:     { title: 'Conta',           sub: 'Perfil e segurança' },
+      personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
+      automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
+      devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
+    };
+
+    let navStack = ['home'];
+
+    function getPageEl(id){ return document.querySelector(`.side-page[data-page="${id}"]`); }
+
+    function updateHeader(){
+      const current = navStack[navStack.length - 1] || 'home';
+      const meta = pages[current] || pages.home;
+
+      sidebarTitle.textContent = meta.title;
+      sidebarSub.textContent = meta.sub;
+
+      sidebar.classList.toggle('has-back', current !== 'home');
+      sideDock.classList.toggle('hidden', current !== 'home');
+    }
+
+    function showPage(nextId, direction){
+      const currentId = navStack[navStack.length - 1] || 'home';
+      if(nextId === currentId) return;
+
+      const currentEl = getPageEl(currentId);
+      const nextEl = getPageEl(nextId);
+      if(!nextEl) return;
+
+      // Preparação do slide
+      document.querySelectorAll('.side-page').forEach(p=>{
+        if(p !== currentEl && p !== nextEl){
+          p.classList.remove('active','left');
+        }
+      });
+
+      // Direção: 'forward' (entra da direita), 'back' (entra da esquerda)
+      if(direction === 'back'){
+        if(currentEl) currentEl.classList.add('left');  // sai levemente pra direita? (efeito)
+        nextEl.classList.add('left');                   // começa à esquerda
+        nextEl.classList.add('active');
+        requestAnimationFrame(()=>{
+          nextEl.classList.remove('left');              // move para 0
+          if(currentEl) currentEl.classList.remove('active');
+        });
+      }else{
+        // forward
+        nextEl.classList.remove('left');
+        nextEl.classList.add('active');                 // vem da direita (default)
+        requestAnimationFrame(()=>{
+          if(currentEl) currentEl.classList.add('left'); // current vai pra esquerda
+          if(currentEl) currentEl.classList.remove('active');
+        });
+      }
+
+      updateHeader();
+    }
+
+    function navTo(id){
+      if(!pages[id]) return;
+      const current = navStack[navStack.length - 1] || 'home';
+      if(id === current) return;
+      navStack.push(id);
+      showPage(id, 'forward');
+    }
+
+    function navBack(){
+      if(navStack.length <= 1) return;
+      const current = navStack.pop();
+      const prev = navStack[navStack.length - 1] || 'home';
+      // garantir que a página anterior esteja pronta para entrar pela esquerda
+      const prevEl = getPageEl(prev);
+      if(prevEl){
+        prevEl.classList.add('left');
+        prevEl.classList.add('active');
+      }
+      showPage(prev, 'back');
+
+      // limpar estado da page que saiu
+      const currentEl = getPageEl(current);
+      if(currentEl){
+        currentEl.classList.remove('active','left');
+      }
+    }
+
+    function resetMenuNav(){
+      navStack = ['home'];
+      document.querySelectorAll('.side-page').forEach(p=>{
+        p.classList.remove('active','left');
+      });
+      const homeEl = getPageEl('home');
+      if(homeEl) homeEl.classList.add('active');
+      updateHeader();
+    }
 
     function openSidebar(){
       sidebarOverlay.classList.add('open');
       sidebarOverlay.setAttribute('aria-hidden', 'false');
+      resetMenuNav();
     }
     function closeSidebar(){
       sidebarOverlay.classList.remove('open');
@@ -1326,22 +1725,27 @@
     });
 
     sidebarClose.addEventListener('click', closeSidebar);
+    sidebarBack.addEventListener('click', navBack);
+
     sidebarOverlay.addEventListener('pointerdown', (e)=>{
       if(e.target === sidebarOverlay) closeSidebar();
     });
 
-    // ✅ Menu actions: lista + dock usam o mesmo data-action
-    function handleMenuAction(action){
-      // Por enquanto placeholder — depois vira páginas reais dentro do menu
-      alert(`${action} (placeholder)`);
-      // opcional: closeSidebar();
-    }
+    // Click nos itens que abrem páginas internas
+    document.querySelectorAll('[data-nav]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const id = el.dataset.nav;
+        if(!id) return;
+        navTo(id);
+      });
+    });
 
+    // Itens placeholder (ações futuras)
     document.querySelectorAll('[data-action]').forEach(el=>{
       el.addEventListener('click', ()=>{
         const a = el.dataset.action;
         if(!a) return;
-        handleMenuAction(a);
+        alert(`${a} (placeholder)`);
       });
     });
 
@@ -1360,6 +1764,10 @@
         if(input.includes('light')|| input.includes('claro'))  return setTheme('light');
         if(input.includes('auto')) return setTheme('auto');
       }
+
+      // bônus: abrir menu por comando (não altera visual)
+      if(input === 'menu' || input === 'abrir menu') openSidebar();
+      if(input === 'fechar menu') closeSidebar();
     }
 
     cmd.addEventListener('keydown', (e)=>{
