@@ -1,965 +1,1348 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Terminal</title>
 
   <style>
     :root{
-      --bg0: #06080f;
-      --bg1: #0a1020;
+      --bg0:#070A12;
+      --bg1:#0A1320;
+      --bg2:#0B1022;
 
-      --glass: rgba(255,255,255,0.10);
-      --glass2: rgba(255,255,255,0.14);
-      --stroke: rgba(255,255,255,0.18);
-      --stroke2: rgba(255,255,255,0.26);
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.14);
+      --border2: rgba(255,255,255,.10);
 
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.62);
+      --txt: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
 
-      --accent: 105, 199, 255;
+      --shadow: 0 22px 60px rgba(0,0,0,.45);
+      --blur: 18px;
+
+      --gridDot: rgba(255,255,255,.055);
+      --gridDot2: rgba(255,255,255,.09);
 
       --radius: 22px;
-      --radius2: 28px;
-
-      /* Grid system */
-      --cell: 120px;
-      --gap: 14px;
       --pad: 16px;
-      --step: 134px; /* synced by JS = cell+gap */
 
-      /* Border thickness compensation */
-      --b: 1px;
+      --sidebarW: 360px;
+      --sidebarBlur: 22px;
 
-      /* ✅ seam fix (default none on dark) */
-      --seamFix: 0px;
-
-      /* Grid dots */
-      --gridDot: rgba(255,255,255,0.14);
-      --gridMajorDot: rgba(255,255,255,0.22);
-      --microStep: 33.5px; /* synced by JS = step/4 */
-
-      --ease: cubic-bezier(.2,.9,.2,1);
+      --gap: 18px;
     }
 
-    html[data-theme="light"]{
-      --bg0: #f5f7ff;
-      --bg1: #dfe7ff;
+    /* Light theme base (mantém a mesma estrutura) */
+    [data-theme="light"]{
+      --bg0:#EFF3FF;
+      --bg1:#E7EDFF;
+      --bg2:#F7FAFF;
 
-      --glass: rgba(255,255,255,0.62);
-      --glass2: rgba(255,255,255,0.52);
-      --stroke: rgba(10,20,40,0.10);
-      --stroke2: rgba(10,20,40,0.16);
+      --glass: rgba(255,255,255,.62);
+      --glass2: rgba(255,255,255,.78);
+      --border: rgba(0,0,0,.10);
+      --border2: rgba(0,0,0,.07);
 
-      --text: rgba(10,18,34,0.90);
-      --muted: rgba(10,18,34,0.56);
+      --txt: rgba(10,18,30,.88);
+      --muted: rgba(10,18,30,.60);
 
-      --gridDot: rgba(10,20,40,0.14);
-      --gridMajorDot: rgba(10,20,40,0.22);
+      --shadow: 0 22px 60px rgba(0,0,0,.16);
 
-      /* ✅ seam fix only in light */
-      --seamFix: 2px;
-    }
-
-    @media (max-width: 640px){
-      :root{
-        --cell: 104px;
-        --gap: 12px;
-        --pad: 12px;
-        --radius: 20px;
-        --radius2: 26px;
-      }
-      html[data-theme="light"]{
-        --seamFix: 2px;
-      }
+      --gridDot: rgba(10,18,30,.06);
+      --gridDot2: rgba(10,18,30,.10);
     }
 
     *{ box-sizing:border-box; }
-    html, body{
-      width:100%;
-      height:100%;
+    html,body{ height:100%; }
+    body{
       margin:0;
-      padding:0;
-      overflow:hidden;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--txt);
+      overflow:hidden; /* Terminal ocupa tela inteira */
       background:
-        radial-gradient(1200px 900px at 20% 10%, rgba(var(--accent),0.18), transparent 55%),
-        radial-gradient(900px 900px at 80% 40%, rgba(140,120,255,0.16), transparent 55%),
-        linear-gradient(160deg, var(--bg0), var(--bg1));
+        radial-gradient(1200px 700px at 12% 0%, rgba(72,186,255,.14), transparent 60%),
+        radial-gradient(1000px 700px at 86% 30%, rgba(128,86,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 90%, rgba(0,255,190,.08), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg0) 35%, var(--bg2));
+      position:relative;
     }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
+    /* Grid pontilhado sutil (bem alinhado) */
+    .grid{
+      position:absolute; inset:0;
       pointer-events:none;
+      opacity:1;
       background:
-        radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.05), transparent 50%),
-        radial-gradient(1px 1px at 70px 90px, rgba(255,255,255,0.04), transparent 50%),
-        radial-gradient(1px 1px at 140px 60px, rgba(255,255,255,0.04), transparent 50%);
-      background-size: 220px 220px;
-      mix-blend-mode: overlay;
-      opacity: 0.55;
-      filter: blur(0.2px);
+        radial-gradient(circle at 1px 1px, var(--gridDot2) 1.25px, transparent 1.35px) 0 0 / 28px 28px,
+        radial-gradient(circle at 1px 1px, var(--gridDot) 1px, transparent 1.2px) 14px 14px / 28px 28px;
+      mask-image: radial-gradient(circle at 40% 40%, rgba(0,0,0,.95), rgba(0,0,0,.35) 55%, rgba(0,0,0,0) 80%);
+      -webkit-mask-image: radial-gradient(circle at 40% 40%, rgba(0,0,0,.95), rgba(0,0,0,.35) 55%, rgba(0,0,0,0) 80%);
     }
 
+    /* Stage */
     .stage{
       position:relative;
       width:100%;
       height:100%;
-      padding: var(--pad);
-      isolation:isolate;
     }
 
-    .grid-overlay{
-      position:absolute;
-      inset: var(--pad);
-      border-radius: var(--radius2);
-      pointer-events:none;
-      z-index: 0;
-
-      background:
-        radial-gradient(var(--gridDot) 1px, transparent 1px),
-        radial-gradient(var(--gridMajorDot) 1.7px, transparent 1.7px);
-      background-size:
-        var(--microStep) var(--microStep),
-        var(--step) var(--step);
-      background-position: 0 0, 0 0;
-
-      opacity: 0;
-      transition: opacity 220ms var(--ease);
-      mask-image: radial-gradient(120% 120% at 50% 40%, #000 58%, transparent 100%);
-    }
-    .stage.edit-mode .grid-overlay{ opacity: 0.70; }
-
-    .widget-area{
-      position:absolute;
-      inset: var(--pad);
-      border-radius: var(--radius2);
-      z-index: 1;
+    /* Widgets layer */
+    .widgets{
+      position:absolute; inset:0;
     }
 
+    /* Base widget */
     .widget{
       position:absolute;
+      width: 270px;
+      min-height: 86px;
       border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border: var(--b) solid var(--stroke);
-      backdrop-filter: blur(16px) saturate(140%);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
-      overflow: visible;
+      background: linear-gradient(180deg, var(--glass2), var(--glass));
+      border: 1px solid var(--border);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow);
+      overflow:hidden;
       user-select:none;
       touch-action:none;
       transform: translate3d(0,0,0);
-      will-change: transform, left, top;
-      z-index: 2;
-      transition: transform 220ms var(--ease), filter 220ms var(--ease);
     }
 
+    /* Shadow must be below other widgets: using pseudo element with lower z-index */
     .widget::before{
       content:"";
-      position:absolute;
-      inset:-10px;
-      border-radius: calc(var(--radius) + 10px);
-      z-index:-1;
+      position:absolute; inset:-16px -16px -18px -16px;
+      background: radial-gradient(60% 70% at 50% 60%, rgba(0,0,0,.22), transparent 62%);
+      filter: blur(10px);
+      opacity:.55;
+      z-index:0;
       pointer-events:none;
-      box-shadow:
-        0 14px 40px rgba(0,0,0,0.28),
-        0 4px 16px rgba(0,0,0,0.20);
-      opacity: 0.95;
-      filter: blur(0.2px);
-      transition: box-shadow 240ms var(--ease), opacity 240ms var(--ease);
     }
-    html[data-theme="light"] .widget::before{
-      box-shadow:
-        0 14px 38px rgba(10,20,40,0.18),
-        0 4px 14px rgba(10,20,40,0.12);
-      opacity: 0.85;
+    [data-theme="light"] .widget::before{
+      opacity:.18;
+      background: radial-gradient(60% 70% at 50% 60%, rgba(0,0,0,.22), transparent 62%);
     }
 
-    .widget.dragging{
-      cursor: grabbing;
-      z-index: 50;
-    }
-
-    @keyframes floaty {
-      0%, 100% { transform: translate3d(0,0,0); }
-      50%      { transform: translate3d(0,-4px,0); }
-    }
-    .stage.edit-mode .widget:not(.dragging){
-      animation: floaty 2.8s ease-in-out infinite;
-      filter: saturate(1.02);
-    }
-    .stage.edit-mode .widget:not(.dragging)::before{
-      box-shadow:
-        0 18px 46px rgba(0,0,0,0.34),
-        0 6px 18px rgba(0,0,0,0.22);
-      opacity: 0.98;
-    }
-    html[data-theme="light"] .stage.edit-mode .widget:not(.dragging)::before{
-      box-shadow:
-        0 18px 40px rgba(10,20,40,0.22),
-        0 6px 16px rgba(10,20,40,0.14);
-      opacity: 0.92;
-    }
-
-    .pad{ padding: 14px; }
-
-    .snap-ghost{
-      position:absolute;
-      border-radius: var(--radius);
-      border: 1px dashed rgba(var(--accent),0.55);
-      background: rgba(var(--accent),0.10);
-      box-shadow: 0 0 0 8px rgba(var(--accent),0.06);
-      pointer-events:none;
-      z-index: 10;
-      opacity: 0;
-      transition: opacity 180ms var(--ease);
-    }
-    .snap-ghost.visible{ opacity: 1; }
-
-    /* ✅ Gap guaranteed by size, PLUS seamFix to kill white seams in Light */
-    .clock-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+    .widget > .inner{
+      position:relative;
+      z-index:1;
+      padding: var(--pad);
       display:flex;
+      gap:12px;
       align-items:center;
-      justify-content:center;
-      text-align:center;
+      justify-content:space-between;
     }
 
-    .clock-inner{
+    .widget .title{
+      font-weight:650;
+      letter-spacing:.2px;
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    /* Edit mode iOS-like */
+    .edit-mode .widget{
+      animation: wiggle 0.14s ease-in-out infinite alternate;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .edit-mode .widget:not(.dragging){
+      box-shadow: 0 26px 80px rgba(0,0,0,.35);
+    }
+    .edit-mode .widget .remove-btn{ opacity:1; transform: scale(1); pointer-events:auto; }
+
+    @keyframes wiggle{
+      from{ transform: translate3d(var(--x,0), var(--y,0), 0) rotate(-.35deg); }
+      to  { transform: translate3d(var(--x,0), var(--y,0), 0) rotate(.35deg); }
+    }
+
+    /* remove btn */
+    .remove-btn{
+      position:absolute;
+      top:10px; left:10px;
+      width:26px; height:26px;
+      border-radius:999px;
+      border:1px solid var(--border2);
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      opacity:0;
+      transform: scale(.9);
+      pointer-events:none;
+      transition: .16s ease;
+      z-index:2;
+    }
+    [data-theme="light"] .remove-btn{
+      background: rgba(255,255,255,.55);
+    }
+
+    .dragging{
+      z-index:9999 !important;
+      animation:none !important;
+      cursor:grabbing;
+    }
+
+    /* Menu widget (hamburger) */
+    .menu-widget{
+      width:54px;
+      height:54px;
+      border-radius: 14px;
+      min-height: 54px;
+    }
+    .menu-widget .inner{
+      padding: 10px;
+      justify-content:center;
+    }
+    .hamburger{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .hamburger:active{ transform: scale(.97); }
+    .hamburger svg{ opacity:.92; }
+
+    /* Clock widget */
+    .clock-widget{
+      width: 330px;
+      min-height: 92px;
+    }
+    .clock{
       width:100%;
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
-      gap: 6px;
+      gap:4px;
     }
-
-    .time-row{
+    .clock .time{
       display:flex;
       align-items:baseline;
-      justify-content:center;
-      gap: 6px;
+      gap:6px; /* segundos mais perto dos minutos */
+      font-size:34px;
+      font-weight:800;
+      letter-spacing:.3px;
+      line-height:1;
+      justify-content:center; /* centraliza */
       width:100%;
     }
-
-    .big-time{
-      font-size: 34px;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      line-height: 1.0;
-    }
-
-    .seconds{
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: 0.2px;
+    .clock .sec{
+      font-size:14px;
+      opacity:.75;
+      font-weight:700;
       transform: translateY(-2px);
-      min-width: 18px;
-      text-align:left;
+    }
+    .clock .meta{
+      font-size:12px;
+      opacity:.78;
+      text-align:center;
     }
 
-    .date-line{
-      font-size: 13px;
-      color: var(--muted);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
+    /* Theme widget */
+    .theme-widget{
+      width: 340px;
+      min-height: 88px;
+    }
+    .theme-pill{
       width:100%;
-    }
-
-    .subline{
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.2rem;
-    }
-
-    .chat-widget{
-      width:  calc(var(--step) * 3 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.05);
+      border-radius:999px;
+      padding:6px;
       display:flex;
+      gap:6px;
       align-items:center;
+      justify-content:space-between;
+      position:relative;
     }
-    .chat-row{
+    [data-theme="light"] .theme-pill{
+      background: rgba(255,255,255,.55);
+    }
+
+    .seg{
+      flex:1;
+      text-align:center;
+      font-size:13px;
+      opacity:.85;
+      padding:8px 10px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .knob{
+      position:absolute;
+      top:6px;
+      left:6px;
+      height: calc(100% - 12px);
+      width: calc((100% - 12px) / 3);
+      border-radius:999px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: transform .18s ease;
+      pointer-events:none;
+    }
+    [data-theme="light"] .knob{
+      background: rgba(255,255,255,.86);
+    }
+
+    /* Terminal input widget */
+    .terminal-widget{
+      width: 360px;
+      min-height: 96px;
+    }
+    .cmdrow{
       width:100%;
       display:flex;
+      gap:10px;
       align-items:center;
-      gap: 10px;
     }
     .cmd{
-      flex:1 1 auto;
-      height: 44px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.12);
-      color: var(--text);
-      padding: 0 14px;
-      outline: none;
-      font-size: 14px;
+      flex:1;
+      border-radius:999px;
+      border:1px solid var(--border2);
+      padding:10px 12px;
+      outline:none;
+      background: rgba(0,0,0,.18);
+      color: var(--txt);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
-    html[data-theme="light"] .cmd{ background: rgba(255,255,255,0.40); }
-    .cmd:focus{
-      box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
-      border-color: rgba(var(--accent),0.45);
+    [data-theme="light"] .cmd{
+      background: rgba(255,255,255,.55);
     }
     .hint{
-      flex:0 0 auto;
-      font-size: 12px;
-      color: var(--muted);
+      font-size:12px;
+      opacity:.72;
       white-space:nowrap;
     }
 
-    .theme-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      display:flex;
-      align-items:center;
-      justify-content:center;
+    /* Sidebar overlay */
+    .sidebar-overlay{
+      position:absolute; inset:0;
+      background: rgba(0,0,0,.28);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      z-index: 9000;
+    }
+    [data-theme="light"] .sidebar-overlay{
+      background: rgba(0,0,0,.12);
+    }
+    .sidebar-overlay.open{
+      opacity:1;
+      pointer-events:auto;
     }
 
-    .theme-widget .pad{
-      padding: 12px;
-      width: 100%;
-    }
-
-    .theme-pill{
-      position:relative;
-      width: 100%;
-      height: 52px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.10);
+    .sidebar{
+      position:absolute;
+      top:14px; left:14px;
+      width: var(--sidebarW);
+      height: calc(100% - 28px);
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--border);
+      backdrop-filter: blur(var(--sidebarBlur));
+      -webkit-backdrop-filter: blur(var(--sidebarBlur));
+      box-shadow: 0 40px 120px rgba(0,0,0,.55);
+      transform: translateX(calc(-100% - 18px));
+      transition: transform .22s ease;
       overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 7px;
-      touch-action:none;
     }
-    html[data-theme="light"] .theme-pill{ background: rgba(255,255,255,0.35); }
+    [data-theme="light"] .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.62));
+      box-shadow: 0 30px 90px rgba(0,0,0,.16);
+    }
+    .sidebar-overlay.open .sidebar{ transform: translateX(0); }
 
-    .theme-options{
-      position:relative;
-      width: 100%;
-      height: 100%;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      align-items:center;
-      z-index: 2;
-    }
-    .theme-opt{
+    .sidebar-header{
+      padding: 18px 18px 14px 18px;
       display:flex;
       align-items:center;
-      justify-content:center;
-      font-size: 13px;
-      color: var(--muted);
-      user-select:none;
+      justify-content:space-between;
+      border-bottom:1px solid var(--border2);
+    }
+    .sidebar-header .h{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .sidebar-title{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .sidebar-sub{
+      font-size:12px;
+      opacity:.72;
+    }
+    .close{
+      width:36px;height:36px;
+      border-radius:14px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.06);
+      display:grid;
+      place-items:center;
       cursor:pointer;
     }
-    .theme-opt.active{ color: var(--text); }
+    [data-theme="light"] .close{ background: rgba(255,255,255,.7); }
 
-    .ico{
-      width: 18px;
-      height: 18px;
-      display:inline-flex;
+    .sidebar-body{
+      padding: 14px 12px 16px 12px;
+      height: calc(100% - 70px);
+      overflow:auto;
+    }
+    .section{
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.05);
+      border-radius: 18px;
+      padding: 12px;
+      margin: 10px 6px;
+    }
+    [data-theme="light"] .section{ background: rgba(255,255,255,.6); }
+    .section h3{
+      margin:0 0 10px 0;
+      font-size:13px;
+      letter-spacing:.2px;
+      opacity:.85;
+    }
+    .item{
+      display:flex;
       align-items:center;
-      justify-content:center;
-      opacity: 0.92;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      cursor:pointer;
+      border:1px solid transparent;
+      transition: .14s ease;
+    }
+    .item:hover{
+      background: rgba(255,255,255,.06);
+      border-color: var(--border2);
+    }
+    [data-theme="light"] .item:hover{
+      background: rgba(255,255,255,.85);
+    }
+    .item .left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .badge{
+      width:30px;height:30px;
+      border-radius:12px;
+      border:1px solid var(--border2);
+      display:grid;
+      place-items:center;
+      background: rgba(255,255,255,.06);
+      flex:0 0 auto;
+    }
+    .label{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .label b{
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .label span{
+      font-size:12px;
+      opacity:.68;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .right{
+      opacity:.6;
+      font-size:12px;
+      flex:0 0 auto;
     }
 
-    .theme-thumb{
-      position:absolute;
-      top: 7px;
-      bottom: 7px;
-      width: calc((100% - 14px) / 3);
-      left: 7px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.14));
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.18),
-        0 10px 24px rgba(0,0,0,0.18);
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-      transform: translate3d(0,0,0);
-      transition: transform 240ms var(--ease);
-      z-index: 1;
-      will-change: transform;
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 4px;
+      flex-wrap:wrap;
     }
-    html[data-theme="light"] .theme-thumb{
-      background: linear-gradient(180deg, rgba(255,255,255,0.70), rgba(255,255,255,0.35));
-      border: 1px solid rgba(10,20,40,0.12);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.35),
-        0 10px 20px rgba(10,20,40,0.12);
+    select, button.small{
+      border-radius: 14px;
+      border:1px solid var(--border2);
+      padding: 10px 10px;
+      background: rgba(255,255,255,.06);
+      color: var(--txt);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      outline:none;
+      cursor:pointer;
+    }
+    [data-theme="light"] select, [data-theme="light"] button.small{
+      background: rgba(255,255,255,.78);
+      color: rgba(10,18,30,.92);
+    }
+    button.small:active{ transform: scale(.99); }
+
+    .note{
+      font-size:12px;
+      opacity:.72;
+      padding: 0 4px 6px 4px;
+    }
+
+    /* Mobile */
+    @media (max-width: 520px){
+      :root{ --sidebarW: 92vw; }
+      .clock-widget{ width: 88vw; }
+      .theme-widget{ width: 88vw; }
+      .terminal-widget{ width: 88vw; }
     }
   </style>
 </head>
 
-<body>
+<body data-theme="dark">
+  <div class="grid"></div>
+
   <div class="stage" id="stage">
-    <div class="grid-overlay" id="grid"></div>
+    <div class="widgets" id="widgets"></div>
 
-    <div class="widget-area" id="area">
-      <div class="snap-ghost" id="ghost"></div>
-
-      <div class="widget clock-widget" data-id="clock" data-kind="clock">
-        <div class="pad" style="width:100%;">
-          <div class="clock-inner">
-            <div class="time-row">
-              <div class="big-time" id="clock">--:--</div>
-              <div class="seconds" id="secondsLabel">--</div>
-            </div>
-            <div class="date-line">
-              <div id="dateLabel">—</div>
-            </div>
-            <div class="subline">Lisboa</div>
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
+      <div class="sidebar" role="dialog" aria-modal="true" aria-label="Menu">
+        <div class="sidebar-header">
+          <div class="h">
+            <div class="sidebar-title">Menu</div>
+            <div class="sidebar-sub">Configs • Conta • Automação • Dispositivos</div>
+          </div>
+          <div class="close" id="sidebarClose" title="Fechar">
+            ✕
           </div>
         </div>
-      </div>
 
-      <div class="widget chat-widget" data-id="chat" data-kind="chat">
-        <div class="pad" style="width:100%;">
-          <div class="chat-row">
-            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando…'/>
-            <div class="hint">Enter ↵</div>
-          </div>
-        </div>
-      </div>
+        <div class="sidebar-body">
+          <div class="section">
+            <h3>Atalhos</h3>
 
-      <div class="widget theme-widget" data-id="theme" data-kind="theme">
-        <div class="pad">
-          <div class="theme-pill" id="themePill">
-            <div class="theme-thumb" id="themeThumb"></div>
+            <div class="item" data-action="open-configs">
+              <div class="left">
+                <div class="badge">⚙️</div>
+                <div class="label">
+                  <b>Configurações</b>
+                  <span>Aparência, layout e sistema</span>
+                </div>
+              </div>
+              <div class="right">›</div>
+            </div>
 
-            <div class="theme-options" id="themeOptions">
-              <div class="theme-opt" data-theme="light" title="Light"><span class="ico">☀️</span></div>
-              <div class="theme-opt" data-theme="dark"  title="Dark"><span class="ico">🌙</span></div>
-              <div class="theme-opt" data-theme="auto"  title="Auto"><span class="ico">✨</span></div>
+            <div class="item" data-action="open-account">
+              <div class="left">
+                <div class="badge">👤</div>
+                <div class="label">
+                  <b>Conta</b>
+                  <span>Perfil e preferências</span>
+                </div>
+              </div>
+              <div class="right">›</div>
+            </div>
+
+            <div class="item" data-action="open-automation">
+              <div class="left">
+                <div class="badge">🗓️</div>
+                <div class="label">
+                  <b>Automação & Agendamento</b>
+                  <span>(em breve) rotinas, lembretes</span>
+                </div>
+              </div>
+              <div class="right">Soon</div>
+            </div>
+
+            <div class="item" data-action="open-customize">
+              <div class="left">
+                <div class="badge">🎨</div>
+                <div class="label">
+                  <b>Personalização</b>
+                  <span>Grid, blur, widgets</span>
+                </div>
+              </div>
+              <div class="right">›</div>
             </div>
           </div>
+
+          <div class="section">
+            <h3>Dispositivos</h3>
+
+            <div class="note">
+              Perfis de layout por dispositivo/perfil. Base para “widgets diferentes em cada dispositivo”. 🧩
+            </div>
+
+            <div class="row">
+              <select id="deviceProfileSelect" title="Perfil de layout"></select>
+              <button class="small" id="dupProfileBtn" title="Duplicar layout atual para novo perfil">Duplicar</button>
+              <button class="small" id="newProfileBtn" title="Criar perfil vazio">Novo</button>
+            </div>
+
+            <div class="row">
+              <button class="small" id="resetLayoutBtn" title="Resetar layout deste perfil">Resetar layout</button>
+              <button class="small" id="toggleEditBtn" title="Editar (mover/remover widgets)">Edit mode</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Widgets</h3>
+            <div class="note">Se você remover o botão ☰, pode adicionar de volta aqui ✅</div>
+
+            <div class="row">
+              <button class="small" id="addMenuWidgetBtn">Adicionar ☰</button>
+              <button class="small" id="addClockWidgetBtn">Adicionar Relógio</button>
+              <button class="small" id="addThemeWidgetBtn">Adicionar Theme</button>
+              <button class="small" id="addTerminalWidgetBtn">Adicionar Terminal</button>
+            </div>
+          </div>
+
         </div>
       </div>
-
     </div>
   </div>
 
-  <script>
-    const stage = document.getElementById('stage');
-    const area  = document.getElementById('area');
-    const ghost = document.getElementById('ghost');
-    const cmd   = document.getElementById('cmd');
+<script>
+(() => {
+  /* -----------------------------
+     Storage keys (per profile)
+  ------------------------------*/
+  const LS = {
+    GLOBAL: 'terminal.v1.global',
+    PROFILES: 'terminal.v1.profiles',
+    CURRENT_PROFILE: 'terminal.v1.currentProfile',
+  };
 
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-    const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const DEFAULT_WIDGETS = [
+    { id:'menu', type:'menu', x: 16, y: 16 },
+    { id:'clock', type:'clock', x: 520, y: 18 },
+    { id:'theme', type:'theme', x: 1520, y: 20 },
+    { id:'terminal', type:'terminal', x: 18, y: window.innerHeight - 130 },
+  ];
 
-    function getVars(){
-      const cs = getComputedStyle(document.documentElement);
-      const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
-      const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
-      const step = cell + gap;
-      return { cell, gap, step };
+  const state = {
+    themeMode: 'auto',     // auto default ✅
+    editMode: false,
+    sidebarOpen: false,
+    dragging: null,
+    widgets: new Map(),    // id -> el
+    model: [],             // array of {id,type,x,y}
+    removed: new Set(),    // ids removed
+    profileId: null,
+    profiles: [],
+    z: 1,
+  };
+
+  const stage = document.getElementById('stage');
+  const widgetsLayer = document.getElementById('widgets');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const sidebarClose = document.getElementById('sidebarClose');
+
+  const deviceProfileSelect = document.getElementById('deviceProfileSelect');
+  const dupProfileBtn = document.getElementById('dupProfileBtn');
+  const newProfileBtn = document.getElementById('newProfileBtn');
+  const resetLayoutBtn = document.getElementById('resetLayoutBtn');
+  const toggleEditBtn = document.getElementById('toggleEditBtn');
+
+  const addMenuWidgetBtn = document.getElementById('addMenuWidgetBtn');
+  const addClockWidgetBtn = document.getElementById('addClockWidgetBtn');
+  const addThemeWidgetBtn = document.getElementById('addThemeWidgetBtn');
+  const addTerminalWidgetBtn = document.getElementById('addTerminalWidgetBtn');
+
+  /* -----------------------------
+     Helpers
+  ------------------------------*/
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const now = () => Date.now();
+
+  function getOrCreateDeviceId(){
+    const g = JSON.parse(localStorage.getItem(LS.GLOBAL) || '{}');
+    if(!g.deviceId){
+      g.deviceId = 'dev_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+      localStorage.setItem(LS.GLOBAL, JSON.stringify(g));
+    }
+    return g.deviceId;
+  }
+
+  function loadProfiles(){
+    const deviceId = getOrCreateDeviceId();
+    const raw = JSON.parse(localStorage.getItem(LS.PROFILES) || '[]');
+
+    // if no profiles, create default profile for this device
+    if(!raw.length){
+      const p = { id: deviceId, name: 'Este dispositivo' };
+      localStorage.setItem(LS.PROFILES, JSON.stringify([p]));
+      localStorage.setItem(LS.CURRENT_PROFILE, deviceId);
+      return [p];
     }
 
-    function syncGridVars(){
-      const { step } = getVars();
-      document.documentElement.style.setProperty('--step', step + 'px');
-      document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
+    // ensure default exists
+    if(!raw.some(p => p.id === deviceId)){
+      raw.unshift({ id: deviceId, name: 'Este dispositivo' });
+      localStorage.setItem(LS.PROFILES, JSON.stringify(raw));
     }
 
-    function areaRect(){ return area.getBoundingClientRect(); }
+    return raw;
+  }
 
-    function colRowToPx(col, row){
-      const { step } = getVars();
-      return { left: col * step, top: row * step };
+  function getCurrentProfileId(){
+    const deviceId = getOrCreateDeviceId();
+    return localStorage.getItem(LS.CURRENT_PROFILE) || deviceId;
+  }
+
+  function setCurrentProfileId(id){
+    localStorage.setItem(LS.CURRENT_PROFILE, id);
+    state.profileId = id;
+  }
+
+  function profileKey(){
+    return `terminal.v1.profile.${state.profileId}`;
+  }
+
+  function loadProfile(){
+    const raw = JSON.parse(localStorage.getItem(profileKey()) || '{}');
+    // widgets list and removed list
+    state.model = Array.isArray(raw.model) ? raw.model : structuredClone(DEFAULT_WIDGETS);
+    state.removed = new Set(Array.isArray(raw.removed) ? raw.removed : []);
+  }
+
+  function saveProfile(){
+    const data = {
+      model: state.model.map(w => ({...w})),
+      removed: Array.from(state.removed),
+    };
+    localStorage.setItem(profileKey(), JSON.stringify(data));
+  }
+
+  function applyTheme(){
+    // auto = based on prefers-color-scheme
+    let t = state.themeMode;
+    if(t === 'auto'){
+      t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
+    document.body.setAttribute('data-theme', t);
+  }
 
-    function pxToColRow(absX, absY){
-      const { step } = getVars();
-      const r = areaRect();
-      const rx = (absX - r.left);
-      const ry = (absY - r.top);
-      return { col: Math.round(rx / step), row: Math.round(ry / step) };
-    }
+  /* -----------------------------
+     Sidebar
+  ------------------------------*/
+  function openSidebar(){
+    state.sidebarOpen = true;
+    sidebarOverlay.classList.add('open');
+    sidebarOverlay.setAttribute('aria-hidden', 'false');
+  }
+  function closeSidebar(){
+    state.sidebarOpen = false;
+    sidebarOverlay.classList.remove('open');
+    sidebarOverlay.setAttribute('aria-hidden', 'true');
+  }
+  function toggleSidebar(){
+    state.sidebarOpen ? closeSidebar() : openSidebar();
+  }
 
-    function getSpan(w){
-      const { step } = getVars();
-      const spanX = Math.max(1, Math.ceil(w.offsetWidth  / step));
-      const spanY = Math.max(1, Math.ceil(w.offsetHeight / step));
-      return { spanX, spanY };
-    }
+  sidebarOverlay.addEventListener('pointerdown', (e) => {
+    // click outside closes
+    if(e.target === sidebarOverlay) closeSidebar();
+  });
+  sidebarClose.addEventListener('click', closeSidebar);
 
-    function maxColsRowsFor(w){
-      const { step } = getVars();
-      const r = areaRect();
-      const maxCol = Math.max(0, Math.floor((r.width  - w.offsetWidth)  / step));
-      const maxRow = Math.max(0, Math.floor((r.height - w.offsetHeight) / step));
-      return { maxCol, maxRow };
-    }
+  document.querySelectorAll('.item[data-action]').forEach(el => {
+    el.addEventListener('click', () => {
+      const act = el.getAttribute('data-action');
+      // Placeholder hooks: futuro você liga em rotas/overlays
+      if(act === 'open-configs') alert('Configs (placeholder) ⚙️');
+      if(act === 'open-account') alert('Conta (placeholder) 👤');
+      if(act === 'open-automation') alert('Automação & Agendamento (em breve) 🗓️');
+      if(act === 'open-customize') alert('Personalização (placeholder) 🎨');
+    });
+  });
 
-    function buildOccupancy(exceptId=null){
-      const occ = new Set();
-      document.querySelectorAll('.widget').forEach(w=>{
-        if(w.style.display === 'none') return;
-        const id = w.dataset.id;
-        if(exceptId && id === exceptId) return;
+  /* -----------------------------
+     Edit mode
+  ------------------------------*/
+  function setEditMode(v){
+    state.editMode = !!v;
+    document.body.classList.toggle('edit-mode', state.editMode);
+    toggleEditBtn.textContent = state.editMode ? 'Sair do edit' : 'Edit mode';
+  }
+  toggleEditBtn.addEventListener('click', () => setEditMode(!state.editMode));
 
-        const col = parseInt(w.dataset.col || '0', 10);
-        const row = parseInt(w.dataset.row || '0', 10);
-        const { spanX, spanY } = getSpan(w);
+  // Long press on empty stage toggles edit mode
+  let lpTimer = null;
+  stage.addEventListener('pointerdown', (e) => {
+    if(e.target.closest('.widget')) return;
+    if(state.sidebarOpen) return;
 
-        for(let y=0; y<spanY; y++){
-          for(let x=0; x<spanX; x++){
-            occ.add(`${col+x},${row+y}`);
-          }
-        }
-      });
-      return occ;
-    }
+    const startT = now();
+    lpTimer = setTimeout(() => {
+      // avoid accidental when moving mouse
+      setEditMode(!state.editMode);
+    }, 520);
 
-    function canPlace(w, col, row, occ){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      col = clamp(col, 0, maxCol);
-      row = clamp(row, 0, maxRow);
+    const cancel = () => {
+      clearTimeout(lpTimer);
+      stage.removeEventListener('pointerup', cancel);
+      stage.removeEventListener('pointercancel', cancel);
+      stage.removeEventListener('pointermove', moved);
+    };
 
-      const { spanX, spanY } = getSpan(w);
-      for(let y=0; y<spanY; y++){
-        for(let x=0; x<spanX; x++){
-          if(occ.has(`${col+x},${row+y}`)) return false;
-        }
-      }
-      return true;
-    }
+    let movedPx = 0;
+    const moved = (ev) => {
+      movedPx += Math.abs(ev.movementX) + Math.abs(ev.movementY);
+      if(movedPx > 6) cancel();
+    };
 
-    function findNearestFreeCell(w, desiredCol, desiredRow){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      desiredCol = clamp(desiredCol, 0, maxCol);
-      desiredRow = clamp(desiredRow, 0, maxRow);
+    stage.addEventListener('pointerup', cancel);
+    stage.addEventListener('pointercancel', cancel);
+    stage.addEventListener('pointermove', moved);
 
-      const occ = buildOccupancy(w.dataset.id);
-      const maxRadius = Math.max(maxCol, maxRow) + 6;
+    // quick tap does nothing
+    if(now() - startT < 120) { /* no-op */ }
+  });
 
-      for(let rad=0; rad<=maxRadius; rad++){
-        for(let dr=-rad; dr<=rad; dr++){
-          for(let dc=-rad; dc<=rad; dc++){
-            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue;
-            const col = desiredCol + dc;
-            const row = desiredRow + dr;
-            if(col < 0 || row < 0 || col > maxCol || row > maxRow) continue;
-            if(canPlace(w, col, row, occ)) return { col, row };
-          }
-        }
-      }
-      return { col: desiredCol, row: desiredRow };
-    }
+  /* -----------------------------
+     Widget creation
+  ------------------------------*/
+  function widgetShell(id, className){
+    const w = document.createElement('div');
+    w.className = `widget ${className || ''}`.trim();
+    w.dataset.widgetId = id;
 
-    function setGhost(w, col, row){
-      const { left, top } = colRowToPx(col, row);
-      ghost.style.width  = w.offsetWidth + 'px';
-      ghost.style.height = w.offsetHeight + 'px';
-      ghost.style.left   = left + 'px';
-      ghost.style.top    = top  + 'px';
-      ghost.classList.add('visible');
-    }
-    function hideGhost(){ ghost.classList.remove('visible'); }
-
-    const STORAGE_KEY = 'terminal.layout.v8';
-    const EDIT_KEY    = 'terminal.editmode.v1';
-
-    function loadLayout(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? (JSON.parse(raw) || {}) : {};
-      }catch(e){ return {}; }
-    }
-    function saveLayout(layout){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(layout)); }catch(e){}
-    }
-
-    function commitWidgetCell(w, col, row){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      col = clamp(col, 0, maxCol);
-      row = clamp(row, 0, maxRow);
-
-      w.dataset.col = String(col);
-      w.dataset.row = String(row);
-
-      const p = colRowToPx(col, row);
-      w.style.left = Math.round(p.left) + 'px';
-      w.style.top  = Math.round(p.top)  + 'px';
-
-      const layout = loadLayout();
-      const id = w.dataset.id;
-      layout[id] = layout[id] || {};
-      layout[id].col = col;
-      layout[id].row = row;
-      layout[id].hidden = false;
-      saveLayout(layout);
-    }
-
-    function applyLayout(){
-      const layout = loadLayout();
-      document.querySelectorAll('.widget').forEach(w=>{
-        const id = w.dataset.id;
-
-        if(layout[id] && layout[id].hidden){
-          w.style.display = 'none';
-          return;
-        } else {
-          w.style.display = '';
-        }
-
-        const col = (layout[id] && typeof layout[id].col === 'number') ? layout[id].col : null;
-        const row = (layout[id] && typeof layout[id].row === 'number') ? layout[id].row : null;
-
-        if(col !== null && row !== null){
-          commitWidgetCell(w, col, row);
-        }
-      });
-    }
-
-    function hideWidget(id){
-      const w = document.querySelector(`.widget[data-id="${id}"]`);
-      if(!w) return false;
-      w.style.display = 'none';
-      const layout = loadLayout();
-      layout[id] = layout[id] || {};
-      layout[id].hidden = true;
-      saveLayout(layout);
-      return true;
-    }
-
-    function defaultLayoutIfNeeded(){
-      const layout = loadLayout();
-      if(Object.keys(layout).length) return;
-
-      const clock = document.querySelector('.widget[data-id="clock"]');
-      const chat  = document.querySelector('.widget[data-id="chat"]');
-      const theme = document.querySelector('.widget[data-id="theme"]');
-
-      const desired = [
-        { w: chat,  col: 0, row: 0 },
-        { w: clock, col: 3, row: 0 },
-        { w: theme, col: 5, row: 0 },
-      ];
-
-      desired.forEach(({w,col,row})=>{
-        if(!w) return;
-        const free = findNearestFreeCell(w, col, row);
-        commitWidgetCell(w, free.col, free.row);
-      });
-    }
-
-    let isEditMode = false;
-    function setEditMode(on){
-      isEditMode = !!on;
-      stage.classList.toggle('edit-mode', isEditMode);
-      try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
-      if(!isEditMode) hideGhost();
-    }
-
-    const HOLD_MS = 450;
-    let hold = null;
-
-    function startHold(e){
-      clearHold();
-      hold = {
-        startX: e.clientX,
-        startY: e.clientY,
-        timer: setTimeout(()=>{
-          setEditMode(!isEditMode);
-          clearHold();
-        }, HOLD_MS)
-      };
-    }
-    function clearHold(){
-      if(!hold) return;
-      clearTimeout(hold.timer);
-      hold = null;
-    }
-
-    stage.addEventListener('pointerdown', (e)=>{
-      if(!isEditMode) return;
-      if(e.target.closest('.widget')) return;
-      setEditMode(false);
-    }, true);
-
-    let drag = null;
-
-    function canStartDragFromTarget(target){
-      if(target.closest('#themePill')) return false;
-      if(target.closest('input, textarea, button, select')) return false;
-      return true;
-    }
-
-    function onPointerDown(e){
-      const w = e.target.closest('.widget');
-      if(!w) return;
-
-      startHold(e);
-
-      if(!isEditMode) return;
-      if(!canStartDragFromTarget(e.target)) return;
-
-      e.preventDefault();
-
-      drag = {
-        w,
-        startX: e.clientX,
-        startY: e.clientY,
-        originCol: parseInt(w.dataset.col || '0', 10),
-        originRow: parseInt(w.dataset.row || '0', 10),
-        dx: 0,
-        dy: 0
-      };
-
-      w.classList.add('dragging');
-      w.style.animation = 'none';
-      w.setPointerCapture(e.pointerId);
-    }
-
-    function onPointerMove(e){
-      if(hold){
-        const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
-        if(md > 6) clearHold();
-      }
-      if(!drag) return;
-
-      const w = drag.w;
-      drag.dx = e.clientX - drag.startX;
-      drag.dy = e.clientY - drag.startY;
-
-      w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
-
-      const originPx = colRowToPx(drag.originCol, drag.originRow);
-      const r = areaRect();
-      const absX = (r.left + originPx.left) + drag.dx;
-      const absY = (r.top  + originPx.top ) + drag.dy;
-
-      const { col, row } = pxToColRow(absX, absY);
-      const free = findNearestFreeCell(w, col, row);
-
-      setGhost(w, free.col, free.row);
-    }
-
-    function onPointerUp(){
-      clearHold();
-      if(!drag) return;
-
-      const w = drag.w;
-
-      const originPx = colRowToPx(drag.originCol, drag.originRow);
-      const r = areaRect();
-      const absX = (r.left + originPx.left) + drag.dx;
-      const absY = (r.top  + originPx.top ) + drag.dy;
-
-      const { col, row } = pxToColRow(absX, absY);
-      const free = findNearestFreeCell(w, col, row);
-
-      w.style.transform = 'translate3d(0,0,0)';
-      w.classList.remove('dragging');
-      w.style.animation = '';
-
-      commitWidgetCell(w, free.col, free.row);
-
-      hideGhost();
-      drag = null;
-    }
-
-    area.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-
-    const themeThumb   = document.getElementById('themeThumb');
-    const themeOptions = document.getElementById('themeOptions');
-    const themePill    = document.getElementById('themePill');
-
-    const THEME_KEY = 'terminal.theme.mode.v4';
-
-    function applyTheme(mode){
-      let applied = mode;
-      if(mode === 'auto'){
-        applied = prefersDark() ? 'dark' : 'light';
-      }
-      document.documentElement.setAttribute('data-theme', applied);
-    }
-
-    function slotXForMode(mode){
-      const rect = themePill.getBoundingClientRect();
-      const thumbW = themeThumb.getBoundingClientRect().width || 0;
-      const innerW = rect.width - 14;
-      const range = Math.max(0, innerW - thumbW);
-      const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
-      return range * (idx / 2);
-    }
-
-    function setTheme(mode){
-      localStorage.setItem(THEME_KEY, mode);
-      applyTheme(mode);
-
-      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
-        opt.classList.toggle('active', opt.dataset.theme === mode);
-      });
-
-      themeThumb.style.transition = 'transform 240ms var(--ease)';
-      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
-    }
-
-    function loadTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || 'auto';
-      setTheme(saved);
-    }
-
-    themeOptions.addEventListener('click', (e)=>{
-      const opt = e.target.closest('.theme-opt');
-      if(!opt) return;
-      setTheme(opt.dataset.theme);
+    const remove = document.createElement('div');
+    remove.className = 'remove-btn';
+    remove.textContent = '–';
+    remove.title = 'Remover widget';
+    remove.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeWidget(id);
     });
 
-    let pillDrag = null;
-    let rafId = 0;
+    const inner = document.createElement('div');
+    inner.className = 'inner';
 
-    function thumbXFromClientX(clientX, rect, thumbW){
-      const innerLeft = 7;
-      const innerRight = rect.width - 7;
-      const innerW = innerRight - innerLeft;
-      const range = Math.max(0, innerW - thumbW);
+    w.appendChild(remove);
+    w.appendChild(inner);
+    return { w, inner };
+  }
 
-      const local = clamp(clientX - rect.left - innerLeft, 0, innerW);
-      return clamp(local - thumbW/2, 0, range);
-    }
+  function createMenuWidget(id){
+    const { w, inner } = widgetShell(id, 'menu-widget');
+    const btn = document.createElement('div');
+    btn.className = 'hamburger';
+    btn.title = 'Menu';
 
-    function renderThumbX(px){
-      themeThumb.style.transition = 'none';
-      themeThumb.style.transform = `translate3d(${px}px,0,0)`;
-    }
-
-    themePill.addEventListener('pointerdown', (e)=>{
-      e.preventDefault();
-      const rect = themePill.getBoundingClientRect();
-      const thumbW = themeThumb.getBoundingClientRect().width || 0;
-      pillDrag = { rect, thumbW, lastX: e.clientX };
-      themePill.setPointerCapture(e.pointerId);
-      renderThumbX(thumbXFromClientX(e.clientX, rect, thumbW));
+    btn.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    `;
+    btn.addEventListener('click', (e) => {
+      // if in edit mode, allow drag without toggling (click still works, but we keep it)
+      if(state.dragging) return;
+      toggleSidebar();
+      e.stopPropagation();
     });
+    inner.appendChild(btn);
+    return w;
+  }
 
-    themePill.addEventListener('pointermove', (e)=>{
-      if(!pillDrag) return;
-      pillDrag.lastX = e.clientX;
-      if(rafId) return;
-      rafId = requestAnimationFrame(()=>{
-        rafId = 0;
-        renderThumbX(thumbXFromClientX(pillDrag.lastX, pillDrag.rect, pillDrag.thumbW));
-      });
-    });
+  function createClockWidget(id){
+    const { w, inner } = widgetShell(id, 'clock-widget');
 
-    themePill.addEventListener('pointerup', (e)=>{
-      if(!pillDrag) return;
+    const box = document.createElement('div');
+    box.className = 'clock';
 
-      const { rect, thumbW } = pillDrag;
-      pillDrag = null;
+    const time = document.createElement('div');
+    time.className = 'time';
+    const hhmm = document.createElement('div');
+    const sec = document.createElement('div');
+    sec.className = 'sec';
+    time.appendChild(hhmm);
+    time.appendChild(sec);
 
-      const innerW = rect.width - 14;
-      const range = Math.max(0, innerW - thumbW);
+    const meta = document.createElement('div');
+    meta.className = 'meta';
 
-      const x = thumbXFromClientX(e.clientX, rect, thumbW);
-      const t = range === 0 ? 0 : (x / range);
-      const idx = clamp(Math.round(t * 2), 0, 2);
-
-      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
-      setTheme(mode);
-    });
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
-      const saved = localStorage.getItem(THEME_KEY) || 'auto';
-      if(saved === 'auto') applyTheme('auto');
-    });
-
-    const clockEl = document.getElementById('clock');
-    const dateLabel = document.getElementById('dateLabel');
-    const secondsLabel = document.getElementById('secondsLabel');
+    box.appendChild(time);
+    box.appendChild(meta);
+    inner.appendChild(box);
 
     function tick(){
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2,'0');
-      const mm = String(now.getMinutes()).padStart(2,'0');
-      const ss = String(now.getSeconds()).padStart(2,'0');
+      const d = new Date();
+      const h = String(d.getHours()).padStart(2,'0');
+      const m = String(d.getMinutes()).padStart(2,'0');
+      const s = String(d.getSeconds()).padStart(2,'0');
 
-      clockEl.textContent = `${hh}:${mm}`;
-      secondsLabel.textContent = ss;
+      hhmm.textContent = `${h}:${m}`;
+      sec.textContent = s;
 
-      const weekday = new Intl.DateTimeFormat('pt-PT', { weekday:'long' }).format(now);
-      const dd = String(now.getDate()).padStart(2,'0');
-      const mo = String(now.getMonth()+1).padStart(2,'0');
-      dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
+      const weekday = d.toLocaleDateString('pt-PT', { weekday:'long' });
+      const date = d.toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' });
+      meta.textContent = `${weekday}, ${date} • Lisboa`;
     }
+    tick();
+    setInterval(tick, 1000);
 
-    function runCommand(raw){
-      const input = raw.trim().toLowerCase();
-      if(!input) return;
+    return w;
+  }
 
-      if(input.includes('remove theme') || input.includes('remover tema')) return hideWidget('theme');
-      if(input.includes('remove chat')  || input.includes('remover chat')) return hideWidget('chat');
+  function createThemeWidget(id){
+    const { w, inner } = widgetShell(id, 'theme-widget');
 
-      if(input.includes('theme ') || input.includes('tema ')){
-        if(input.includes('dark') || input.includes('escuro')) return setTheme('dark');
-        if(input.includes('light')|| input.includes('claro'))  return setTheme('light');
-        if(input.includes('auto')) return setTheme('auto');
-      }
-    }
+    const pill = document.createElement('div');
+    pill.className = 'theme-pill';
 
-    cmd.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        runCommand(cmd.value);
-        cmd.value = '';
-      }
+    const knob = document.createElement('div');
+    knob.className = 'knob';
+
+    const modes = [
+      { key:'light', icon:'☀️' },
+      { key:'auto',  icon:'🌙' },
+      { key:'dark',  icon:'✨' },
+    ];
+
+    const segs = modes.map((m, idx) => {
+      const s = document.createElement('div');
+      s.className = 'seg';
+      s.textContent = m.icon;
+      s.title = m.key;
+
+      s.addEventListener('click', () => setThemeMode(m.key));
+      return s;
     });
 
-    function normalizeAll(){
-      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
-      widgets.forEach(w=>{
-        if(w.dataset.col == null) w.dataset.col = '0';
-        if(w.dataset.row == null) w.dataset.row = '0';
-      });
+    // swipe/drag knob (touch friendly)
+    let dragActive = false;
+    let startX = 0;
+    let startIdx = 1;
 
-      for(const w of widgets){
-        const col = parseInt(w.dataset.col || '0', 10);
-        const row = parseInt(w.dataset.row || '0', 10);
-        const free = findNearestFreeCell(w, col, row);
-        commitWidgetCell(w, free.col, free.row);
+    const idxOf = (key) => modes.findIndex(m => m.key === key);
+
+    function setKnobByMode(mode){
+      const i = idxOf(mode);
+      const w3 = pill.clientWidth - 12;
+      const step = w3 / 3;
+      knob.style.transform = `translateX(${step * i}px)`;
+    }
+
+    function setThemeMode(mode){
+      state.themeMode = mode;
+      applyTheme();
+      setKnobByMode(mode);
+      // persist global theme mode
+      const g = JSON.parse(localStorage.getItem(LS.GLOBAL) || '{}');
+      g.themeMode = mode;
+      localStorage.setItem(LS.GLOBAL, JSON.stringify(g));
+    }
+
+    pill.addEventListener('pointerdown', (e) => {
+      dragActive = true;
+      startX = e.clientX;
+      startIdx = idxOf(state.themeMode);
+      pill.setPointerCapture(e.pointerId);
+    });
+    pill.addEventListener('pointermove', (e) => {
+      if(!dragActive) return;
+      const dx = e.clientX - startX;
+      const w3 = pill.clientWidth - 12;
+      const step = w3 / 3;
+      const raw = startIdx + (dx / step);
+      const idx = clamp(Math.round(raw), 0, 2);
+      const mode = modes[idx].key;
+      if(mode !== state.themeMode){
+        setThemeMode(mode);
       }
-    }
+    });
+    pill.addEventListener('pointerup', () => dragActive = false);
+    pill.addEventListener('pointercancel', () => dragActive = false);
 
-    function boot(){
-      syncGridVars();
-      loadTheme();
+    pill.appendChild(knob);
+    segs.forEach(s => pill.appendChild(s));
+    inner.appendChild(pill);
 
-      const em = localStorage.getItem('terminal.editmode.v1');
-      setEditMode(em === '1');
+    // init from global
+    const g = JSON.parse(localStorage.getItem(LS.GLOBAL) || '{}');
+    state.themeMode = g.themeMode || 'auto';
+    applyTheme();
+    setKnobByMode(state.themeMode);
 
-      defaultLayoutIfNeeded();
-      applyLayout();
-      normalizeAll();
-
-      tick();
-      setInterval(tick, 1000);
-
-      window.addEventListener('resize', ()=>{
-        syncGridVars();
-        normalizeAll();
-
-        const saved = localStorage.getItem(THEME_KEY) || 'auto';
-        themeThumb.style.transition = '';
-        themeThumb.style.transform = `translate3d(${slotXForMode(saved)}px,0,0)`;
+    // sync on system theme changes when in auto
+    if(window.matchMedia){
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+        if(state.themeMode === 'auto') applyTheme();
       });
     }
 
-    boot();
-  </script>
+    return w;
+  }
+
+  function createTerminalWidget(id){
+    const { w, inner } = widgetShell(id, 'terminal-widget');
+
+    const row = document.createElement('div');
+    row.className = 'cmdrow';
+
+    const input = document.createElement('input');
+    input.className = 'cmd';
+    input.placeholder = 'Digite um comando...';
+
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = 'Enter ↵';
+
+    row.appendChild(input);
+    row.appendChild(hint);
+    inner.appendChild(row);
+
+    input.addEventListener('keydown', (e) => {
+      if(e.key !== 'Enter') return;
+      const cmd = input.value.trim().toLowerCase();
+      input.value = '';
+      runCommand(cmd);
+    });
+
+    return w;
+  }
+
+  function buildWidget(type, id){
+    if(type === 'menu') return createMenuWidget(id);
+    if(type === 'clock') return createClockWidget(id);
+    if(type === 'theme') return createThemeWidget(id);
+    if(type === 'terminal') return createTerminalWidget(id);
+    return null;
+  }
+
+  /* -----------------------------
+     Add/remove widgets
+  ------------------------------*/
+  function addWidget(type){
+    // choose an id
+    let base = type;
+    let n = 1;
+    let id = base;
+    while(state.model.some(w => w.id === id) || state.widgets.has(id)){
+      n++;
+      id = `${base}${n}`;
+    }
+
+    // default position (near top-left but not overlapping menu)
+    const x = 86 + (Math.random()*40)|0;
+    const y = 18 + (Math.random()*40)|0;
+
+    state.model.push({ id, type, x, y });
+    state.removed.delete(id);
+    render();
+    saveProfile();
+  }
+
+  function removeWidget(id){
+    state.removed.add(id);
+    const el = state.widgets.get(id);
+    if(el) el.remove();
+    state.widgets.delete(id);
+    saveProfile();
+  }
+
+  function ensureMenuWidget(){
+    const exists = state.model.some(w => w.type === 'menu' && !state.removed.has(w.id));
+    if(!exists){
+      // restore menu in a known place
+      const found = state.model.find(w => w.type === 'menu');
+      if(found){
+        state.removed.delete(found.id);
+        found.x = 16; found.y = 16;
+      }else{
+        state.model.unshift({ id:'menu', type:'menu', x:16, y:16 });
+      }
+      render();
+      saveProfile();
+    }
+  }
+
+  /* -----------------------------
+     Drag & drop (edit mode only)
+  ------------------------------*/
+  function attachDrag(el, modelItem){
+    let startX=0, startY=0, baseX=0, baseY=0;
+    let moved=false;
+
+    el.addEventListener('pointerdown', (e) => {
+      // Only drag in edit mode
+      if(!state.editMode) return;
+
+      // allow clicking on inner controls without dragging if not intended
+      // but in edit mode we still want drag almost anywhere:
+      const targetIsControl = e.target.closest('input,button,select,.hamburger');
+      if(targetIsControl) {
+        // still allow drag if user drags a bit
+      }
+
+      state.dragging = el.dataset.widgetId;
+      el.classList.add('dragging');
+      el.style.zIndex = String(1000 + (++state.z));
+
+      startX = e.clientX;
+      startY = e.clientY;
+      baseX = modelItem.x;
+      baseY = modelItem.y;
+      moved = false;
+
+      el.setPointerCapture(e.pointerId);
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if(state.dragging !== el.dataset.widgetId) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if(Math.abs(dx)+Math.abs(dy) > 2) moved = true;
+
+      // clamp to edges (encostar na direita/baixo ✅)
+      const rect = el.getBoundingClientRect();
+      const maxX = window.innerWidth - rect.width - 8;
+      const maxY = window.innerHeight - rect.height - 8;
+
+      modelItem.x = clamp(baseX + dx, 8, maxX);
+      modelItem.y = clamp(baseY + dy, 8, maxY);
+
+      setWidgetPos(el, modelItem.x, modelItem.y);
+    });
+
+    el.addEventListener('pointerup', () => {
+      if(state.dragging !== el.dataset.widgetId) return;
+      el.classList.remove('dragging');
+      state.dragging = null;
+      saveProfile();
+    });
+
+    el.addEventListener('pointercancel', () => {
+      if(state.dragging !== el.dataset.widgetId) return;
+      el.classList.remove('dragging');
+      state.dragging = null;
+      saveProfile();
+    });
+  }
+
+  function setWidgetPos(el, x, y){
+    // store for edit-mode wiggle keyframes
+    el.style.setProperty('--x', x + 'px');
+    el.style.setProperty('--y', y + 'px');
+
+    // actual placement
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+  }
+
+  /* -----------------------------
+     Render
+  ------------------------------*/
+  function render(){
+    // Clear and re-render (simple and safe)
+    widgetsLayer.innerHTML = '';
+    state.widgets.clear();
+
+    state.model.forEach(item => {
+      if(state.removed.has(item.id)) return;
+
+      const el = buildWidget(item.type, item.id);
+      if(!el) return;
+
+      // ensure inside bounds
+      // (after create, we can clamp with actual size)
+      widgetsLayer.appendChild(el);
+
+      // after in DOM, clamp properly
+      requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width - 8;
+        const maxY = window.innerHeight - rect.height - 8;
+        item.x = clamp(item.x, 8, maxX);
+        item.y = clamp(item.y, 8, maxY);
+        setWidgetPos(el, item.x, item.y);
+      });
+
+      attachDrag(el, item);
+      state.widgets.set(item.id, el);
+    });
+  }
+
+  /* -----------------------------
+     Commands (basic)
+  ------------------------------*/
+  function runCommand(cmd){
+    if(!cmd) return;
+
+    if(cmd === 'menu' || cmd === 'sidebar'){
+      toggleSidebar();
+      return;
+    }
+    if(cmd === 'edit'){
+      setEditMode(!state.editMode);
+      return;
+    }
+    if(cmd === 'add menu'){
+      ensureMenuWidget();
+      return;
+    }
+    if(cmd.startsWith('add ')){
+      const t = cmd.replace('add ','').trim();
+      if(['clock','theme','terminal','menu'].includes(t)){
+        if(t === 'menu') ensureMenuWidget();
+        else addWidget(t);
+      }
+      return;
+    }
+    if(cmd.startsWith('remove ')){
+      const id = cmd.replace('remove ','').trim();
+      if(state.widgets.has(id)) removeWidget(id);
+      return;
+    }
+
+    alert('Comando não reconhecido 🤖\n\nDicas:\n- sidebar\n- edit\n- add clock | add theme | add terminal | add menu\n- remove <id>');
+  }
+
+  /* -----------------------------
+     Profiles (Dispositivos)
+  ------------------------------*/
+  function refreshProfilesUI(){
+    deviceProfileSelect.innerHTML = '';
+    state.profiles.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      deviceProfileSelect.appendChild(opt);
+    });
+    deviceProfileSelect.value = state.profileId;
+  }
+
+  deviceProfileSelect.addEventListener('change', () => {
+    setCurrentProfileId(deviceProfileSelect.value);
+    loadProfile();
+    render();
+  });
+
+  function promptName(def='Novo perfil'){
+    const name = prompt('Nome do perfil:', def);
+    return (name || '').trim();
+  }
+
+  dupProfileBtn.addEventListener('click', () => {
+    const name = promptName('Cópia do layout');
+    if(!name) return;
+
+    const id = 'profile_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+    state.profiles.push({ id, name });
+    localStorage.setItem(LS.PROFILES, JSON.stringify(state.profiles));
+
+    // duplicate current data
+    const src = JSON.parse(localStorage.getItem(profileKey()) || '{}');
+    localStorage.setItem(`terminal.v1.profile.${id}`, JSON.stringify(src));
+
+    setCurrentProfileId(id);
+    refreshProfilesUI();
+    loadProfile();
+    render();
+  });
+
+  newProfileBtn.addEventListener('click', () => {
+    const name = promptName('Perfil vazio');
+    if(!name) return;
+
+    const id = 'profile_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+    state.profiles.push({ id, name });
+    localStorage.setItem(LS.PROFILES, JSON.stringify(state.profiles));
+
+    // empty / default
+    localStorage.setItem(`terminal.v1.profile.${id}`, JSON.stringify({
+      model: structuredClone(DEFAULT_WIDGETS),
+      removed: []
+    }));
+
+    setCurrentProfileId(id);
+    refreshProfilesUI();
+    loadProfile();
+    render();
+  });
+
+  resetLayoutBtn.addEventListener('click', () => {
+    if(!confirm('Resetar o layout deste perfil?')) return;
+    localStorage.setItem(profileKey(), JSON.stringify({
+      model: structuredClone(DEFAULT_WIDGETS),
+      removed: []
+    }));
+    loadProfile();
+    render();
+  });
+
+  /* Sidebar widget buttons */
+  addMenuWidgetBtn.addEventListener('click', () => { ensureMenuWidget(); });
+  addClockWidgetBtn.addEventListener('click', () => { addWidget('clock'); });
+  addThemeWidgetBtn.addEventListener('click', () => { addWidget('theme'); });
+  addTerminalWidgetBtn.addEventListener('click', () => { addWidget('terminal'); });
+
+  /* -----------------------------
+     Boot
+  ------------------------------*/
+  function boot(){
+    // profiles
+    state.profiles = loadProfiles();
+    state.profileId = getCurrentProfileId();
+    refreshProfilesUI();
+
+    // load profile model
+    loadProfile();
+
+    // theme mode (global, default auto ✅)
+    const g = JSON.parse(localStorage.getItem(LS.GLOBAL) || '{}');
+    state.themeMode = g.themeMode || 'auto';
+    applyTheme();
+
+    // render widgets
+    render();
+
+    // keep terminal widget bottom-left if very first time
+    // (optional: already in DEFAULT_WIDGETS)
+
+    // Resize: clamp positions so you can still encostar nas bordas
+    window.addEventListener('resize', () => {
+      state.model.forEach(item => {
+        const el = state.widgets.get(item.id);
+        if(!el) return;
+        const rect = el.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width - 8;
+        const maxY = window.innerHeight - rect.height - 8;
+        item.x = clamp(item.x, 8, maxX);
+        item.y = clamp(item.y, 8, maxY);
+        setWidgetPos(el, item.x, item.y);
+      });
+      saveProfile();
+    });
+
+    // ESC closes sidebar
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && state.sidebarOpen) closeSidebar();
+    });
+  }
+
+  boot();
+})();
+</script>
 </body>
 </html>
