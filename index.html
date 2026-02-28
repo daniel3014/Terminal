@@ -115,10 +115,10 @@
       isolation:isolate;
     }
 
-    /* ✅ GATE: trava tudo por baixo até logar */
+    /* ✅ Gate: trava tudo por baixo até escolher login/convidado */
     body.auth-locked .stage{
-      pointer-events: none;
-      user-select: none;
+      pointer-events:none;
+      user-select:none;
     }
 
     .grid-overlay{
@@ -782,11 +782,11 @@
     }
     .auth-overlay.open{
       display:flex;
-      pointer-events: auto; /* ✅ garante captura de input */
+      pointer-events: auto;
     }
 
     .auth-modal{
-      width: min(440px, 100%);
+      width: min(460px, 100%);
       border-radius: 26px;
       border: 1px solid var(--stroke);
       background: linear-gradient(180deg, var(--glass), var(--glass2));
@@ -847,7 +847,7 @@
       text-overflow:ellipsis;
     }
 
-    /* ✅ sem botão fechar no gate (mantém layout clean) */
+    /* sem fechar no gate (mantém obrigatório até escolher algo) */
     .auth-close{ display:none; }
 
     .auth-body{
@@ -958,7 +958,6 @@
       color: var(--muted);
       line-height: 1.3rem;
     }
-    .auth-link{ display:none; } /* ✅ remove “convidado” */
 
     .auth-error{
       display:none;
@@ -975,7 +974,69 @@
       background: rgba(140,20,20,0.06);
     }
 
-    /* ===== Account page extras ===== */
+    /* ===== Account page extras (premium) ===== */
+    .acct-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 6px 6px 2px;
+    }
+    .acct-left{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .avatar{
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .avatar{ background: rgba(255,255,255,0.45); }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .acct-meta{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .acct-name-row{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .acct-name{
+      font-size: 13px;
+      font-weight: 900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 210px;
+    }
+    .acct-email{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 250px;
+    }
+
     .mini-pill{
       display:inline-flex;
       align-items:center;
@@ -986,8 +1047,26 @@
       background: rgba(0,0,0,0.10);
       font-size: 12px;
       color: var(--muted);
+      flex: 0 0 auto;
     }
     html[data-theme="light"] .mini-pill{ background: rgba(255,255,255,0.35); }
+
+    .pencil-btn{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .pencil-btn{ background: rgba(255,255,255,0.35); }
+    .pencil-btn:active{ transform: scale(0.99); }
+
     .row{
       display:flex;
       align-items:center;
@@ -1014,6 +1093,7 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+
     .tiny-btn{
       height: 36px;
       padding: 0 12px;
@@ -1031,8 +1111,11 @@
       justify-content:center;
       gap: 8px;
       flex: 0 0 auto;
+      transition: transform 160ms var(--ease);
     }
     html[data-theme="light"] .tiny-btn{ background: rgba(255,255,255,0.35); }
+    .tiny-btn:active{ transform: scale(0.99); }
+
     .tiny-btn.danger{
       border-color: rgba(255,120,120,0.25);
       background: rgba(255,80,80,0.06);
@@ -1082,7 +1165,146 @@
     .toggle.on::after{
       transform: translateX(22px);
     }
+
+    .acct-switch-list{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      padding: 8px 6px 0;
+    }
+    .acct-chip{
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 0 10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    html[data-theme="light"] .acct-chip{ background: rgba(255,255,255,0.35); }
+    .acct-chip:active{ transform: scale(0.995); }
+
+    .chip-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .chip-ava{
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      overflow:hidden;
+      background: rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+    html[data-theme="light"] .chip-ava{ background: rgba(255,255,255,0.45); }
+    .chip-ava img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .chip-txt{
+      display:flex;
+      flex-direction:column;
+      min-width: 0;
+      gap: 1px;
+    }
+    .chip-txt b{
+      font-size: 12.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 230px;
+    }
+    .chip-txt span{
+      font-size: 11.5px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 240px;
+    }
+    .chip-right{
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    /* ===== Simple modal for profile edit ===== */
+    .mini-overlay{
+      position:fixed;
+      inset:0;
+      z-index: 1000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    html[data-theme="light"] .mini-overlay{ background: rgba(0,0,0,0.16); }
+    .mini-overlay.open{ display:flex; }
+
+    .mini-modal{
+      width: min(430px, 100%);
+      border-radius: 24px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      box-shadow: 0 28px 88px rgba(0,0,0,0.38);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      overflow:hidden;
+    }
+    .mini-head{
+      padding: 12px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    html[data-theme="light"] .mini-head{ border-bottom: 1px solid rgba(10,20,40,0.08); }
+    .mini-head b{ font-size: 13px; letter-spacing: 0.2px; }
+    .mini-close{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    html[data-theme="light"] .mini-close{ background: rgba(255,255,255,0.35); }
+    .mini-body{
+      padding: 12px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .mini-actions{
+      display:flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .mini-actions .auth-btn{ height: 42px; border-radius: 16px; }
+
   </style>
+
+  <!-- ✅ Firebase (Auth + Firestore) - CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -1243,50 +1465,66 @@
                 </div>
               </div>
 
+              <!-- ✅ ACCOUNT PAGE (com topo + editar + logout + trocar conta) -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
-                  <div class="row">
-                    <div class="left">
-                      <b id="acctName">Conta</b>
-                      <span id="acctEmail">—</span>
+
+                  <div class="acct-top">
+                    <div class="acct-left">
+                      <div class="avatar" id="acctAvatar">
+                        <div style="font-weight:900; color: var(--muted); font-size: 14px;">⌁</div>
+                      </div>
+
+                      <div class="acct-meta">
+                        <div class="acct-name-row">
+                          <div class="acct-name" id="acctName">Conta</div>
+                          <button class="pencil-btn" id="editProfileBtn" title="Editar perfil">✏️</button>
+                        </div>
+                        <div class="acct-email" id="acctEmail">—</div>
+                      </div>
                     </div>
+
                     <span class="mini-pill" id="acctBadge">—</span>
                   </div>
 
-                  <div class="row" style="padding-top: 6px;">
+                  <div class="row" style="padding-top: 8px;">
                     <div class="left">
                       <b>Sincronizar configurações</b>
-                      <span>tema, layout e modo de edição</span>
+                      <span>layout, tema e perfil via nuvem</span>
                     </div>
                     <div class="toggle on" id="syncToggle" title="Sync"></div>
                   </div>
 
                   <div class="row">
                     <div class="left">
-                      <b>Gerenciar conta</b>
-                      <span>trocar conta</span>
-                    </div>
-                    <button class="tiny-btn" id="openAuthFromAccount">🔁 Trocar</button>
-                  </div>
-
-                  <div class="row">
-                    <div class="left">
                       <b>Salvar agora</b>
-                      <span>força salvar layout e tema na conta</span>
+                      <span>força salvar no cloud (se logado)</span>
                     </div>
                     <button class="tiny-btn" id="forceSaveBtn">💾 Salvar</button>
                   </div>
 
-                  <div class="row">
+                  <div class="row" id="switchRow" style="display:none;">
                     <div class="left">
-                      <b>Sair</b>
-                      <span>encerra a sessão</span>
+                      <b>Trocar conta</b>
+                      <span>alternar rapidamente</span>
+                    </div>
+                    <button class="tiny-btn" id="openSwitcherBtn">🔁 Trocar</button>
+                  </div>
+
+                  <div id="switcherBox" style="display:none;">
+                    <div class="acct-switch-list" id="acctSwitchList"></div>
+                  </div>
+
+                  <div class="row" id="logoutRow" style="display:none;">
+                    <div class="left">
+                      <b>Logout</b>
+                      <span>sair da conta atual</span>
                     </div>
                     <button class="tiny-btn danger" id="logoutBtn">⎋ Sair</button>
                   </div>
 
                   <div class="side-note" id="acctNote">
-                    Ao sair, o Terminal volta a exigir login para acesso. 🔒
+                    Dica: use “Convidado” para testar rápido sem cloud. 🫧
                   </div>
                 </div>
               </div>
@@ -1411,7 +1649,7 @@
     </div>
   </div>
 
-  <!-- ✅ AUTH POPUP (obrigatório) -->
+  <!-- ✅ AUTH POPUP -->
   <div class="auth-overlay" id="authOverlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
       <div class="auth-top">
@@ -1419,7 +1657,7 @@
           <div class="auth-logo">⌁</div>
           <div class="auth-title">
             <b>Terminal • Conta</b>
-            <span>crie/entre para acessar o Terminal</span>
+            <span>entre/crie ou use convidado</span>
           </div>
         </div>
         <div class="auth-close" id="authClose" title="Fechar">✕</div>
@@ -1447,19 +1685,87 @@
         <div class="auth-actions">
           <button class="auth-btn" id="primaryAuthBtn">✨ Criar e entrar</button>
           <button class="auth-btn secondary" id="googleBtn">🟦 Entrar com Google</button>
+          <button class="auth-btn secondary" id="guestBtn">🫧 Entrar como convidado</button>
         </div>
 
         <div class="auth-meta">
           <div class="auth-small" id="authHint">
-            Acesso ao Terminal só após login. 🔒
+            Você pode trocar de conta depois no menu. 🔁
           </div>
-          <div class="auth-link" id="guestLink">Continuar como convidado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ EDIT PROFILE POPUP -->
+  <div class="mini-overlay" id="profileOverlay" aria-hidden="true">
+    <div class="mini-modal" role="dialog" aria-modal="true" aria-label="Editar perfil">
+      <div class="mini-head">
+        <b>Editar perfil</b>
+        <div class="mini-close" id="profileClose" title="Fechar">✕</div>
+      </div>
+      <div class="mini-body">
+        <div class="auth-field">
+          <label>Nome</label>
+          <input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/>
+        </div>
+        <div class="auth-field">
+          <label>Foto (URL)</label>
+          <input class="auth-input" id="profilePhotoUrl" type="url" placeholder="https://..."/>
+        </div>
+        <div class="auth-field">
+          <label>ou Foto (arquivo)</label>
+          <input class="auth-input" id="profilePhotoFile" type="file" accept="image/*"/>
+        </div>
+
+        <div class="auth-error" id="profileError">—</div>
+
+        <div class="mini-actions">
+          <button class="auth-btn secondary" id="profileCancel">Cancelar</button>
+          <button class="auth-btn" id="profileSave">💾 Salvar</button>
+        </div>
+
+        <div class="auth-small" style="color: var(--muted);">
+          Obs: para conta Google/Email, a foto usa URL (ou dataURL). Em produção, o ideal é Storage + URL pública. 🧊
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    /* =========================================================
+       Firebase Setup (✅ COLE SUA CONFIG AQUI)
+       ========================================================= */
+    const firebaseConfig = {
+      apiKey: "COLE_AQUI",
+      authDomain: "COLE_AQUI",
+      projectId: "COLE_AQUI",
+      storageBucket: "COLE_AQUI",
+      messagingSenderId: "COLE_AQUI",
+      appId: "COLE_AQUI"
+    };
+
+    let fbApp = null, fbAuth = null, fbDb = null;
+    let firebaseReady = false;
+
+    function initFirebase(){
+      try{
+        // Só inicializa se o usuário colou algo real (evita quebrar demo offline)
+        const hasReal = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_AQUI";
+        if(!hasReal) return false;
+
+        fbApp = firebase.initializeApp(firebaseConfig);
+        fbAuth = firebase.auth();
+        fbDb = firebase.firestore();
+        firebaseReady = true;
+        return true;
+      }catch(e){
+        console.warn("Firebase init falhou:", e);
+        firebaseReady = false;
+        return false;
+      }
+    }
+
     const stage = document.getElementById('stage');
     const area  = document.getElementById('area');
     const ghost = document.getElementById('ghost');
@@ -1595,30 +1901,19 @@
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    /* =========================
-       Account-aware storage
-       ========================= */
-    const AUTH_SESSION_KEY = 'terminal.auth.session.v1';
-    const USERS_KEY        = 'terminal.users.v1';
-    const SYNC_KEY         = 'terminal.account.sync.v1';
+    /* =========================================================
+       Profiles, storage & account switch
+       ========================================================= */
+    const SYNC_KEY = 'terminal.account.sync.v2';
+    const ACCOUNTS_USED_KEY = 'terminal.accounts.used.v1'; // lista rápida
+    const ACTIVE_PROFILE_KEY = 'terminal.profile.active.v1'; // uid | guest
+    const GUEST_PROFILE_KEY = 'terminal.profile.guest.v1'; // nome/foto
 
-    const LEGACY_LAYOUT_KEY = 'terminal.layout.v9';
-    const LEGACY_THEME_KEY  = 'terminal.theme.mode.v4';
-    const LEGACY_EDIT_KEY   = 'terminal.editmode.v1';
+    let activeProfileId = 'guest'; // 'guest' ou 'uid:<uid>'
+    let currentUser = null; // firebase user
 
-    let activeProfileId = 'guest';
-
-    const safeB64 = (s) => {
-      try{ return btoa(unescape(encodeURIComponent(s))).replace(/=+$/,''); }
-      catch(e){ return 'u'; }
-    };
-
-    function profileKeyBase(){
-      return activeProfileId === 'guest' ? 'guest' : activeProfileId;
-    }
-    function k(name){
-      return `terminal.${name}.${profileKeyBase()}`;
-    }
+    function lockApp(){ document.body.classList.add('auth-locked'); }
+    function unlockApp(){ document.body.classList.remove('auth-locked'); }
 
     function getSyncEnabled(){
       try{
@@ -1633,80 +1928,27 @@
       if(t) t.classList.toggle('on', !!on);
     }
 
-    function getSession(){
-      try{
-        const raw = localStorage.getItem(AUTH_SESSION_KEY);
-        return raw ? JSON.parse(raw) : null;
-      }catch(e){ return null; }
+    function setActiveProfile(id){
+      activeProfileId = id || 'guest';
+      try{ localStorage.setItem(ACTIVE_PROFILE_KEY, activeProfileId); }catch(e){}
     }
-    function setSession(sess){
+    function loadActiveProfile(){
       try{
-        if(!sess) localStorage.removeItem(AUTH_SESSION_KEY);
-        else localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sess));
+        const raw = localStorage.getItem(ACTIVE_PROFILE_KEY);
+        if(raw) activeProfileId = raw;
       }catch(e){}
     }
 
-    function isLoggedIn(){
-      const s = getSession();
-      return !!(s && s.email);
+    function profileKeyBase(){
+      return activeProfileId === 'guest' ? 'guest' : activeProfileId.replace('uid:','uid_');
+    }
+    function k(name){
+      return `terminal.${name}.${profileKeyBase()}`;
     }
 
-    function setActiveProfileFromSession(){
-      const s = getSession();
-      if(s && s.email){
-        activeProfileId = 'u:' + safeB64(String(s.email).trim().toLowerCase());
-      }else{
-        activeProfileId = 'guest';
-      }
-    }
-
-    function getUsers(){
-      try{
-        return JSON.parse(localStorage.getItem(USERS_KEY) || '{}') || {};
-      }catch(e){ return {}; }
-    }
-    function setUsers(obj){
-      try{ localStorage.setItem(USERS_KEY, JSON.stringify(obj)); }catch(e){}
-    }
-
-    function pwHash(pw){
-      let h = 2166136261;
-      for(let i=0;i<pw.length;i++){
-        h ^= pw.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return (h>>>0).toString(16);
-    }
-
-    function getLayoutKey(){ return getSyncEnabled() ? k('layout.v9') : LEGACY_LAYOUT_KEY; }
-    function getThemeKey(){  return getSyncEnabled() ? k('theme.mode.v4') : LEGACY_THEME_KEY; }
-    function getEditKey(){   return getSyncEnabled() ? k('editmode.v1') : LEGACY_EDIT_KEY; }
-
-    function migrateGuestToAccountIfNeeded(){
-      if(!isLoggedIn()) return;
-      const accLayoutKey = k('layout.v9');
-      const accThemeKey  = k('theme.mode.v4');
-      const accEditKey   = k('editmode.v1');
-
-      try{
-        const hasLayout = localStorage.getItem(accLayoutKey) != null;
-        const hasTheme  = localStorage.getItem(accThemeKey) != null;
-        const hasEdit   = localStorage.getItem(accEditKey)  != null;
-
-        if(!hasLayout){
-          const legacy = localStorage.getItem(LEGACY_LAYOUT_KEY);
-          if(legacy) localStorage.setItem(accLayoutKey, legacy);
-        }
-        if(!hasTheme){
-          const legacy = localStorage.getItem(LEGACY_THEME_KEY);
-          if(legacy) localStorage.setItem(accThemeKey, legacy);
-        }
-        if(!hasEdit){
-          const legacy = localStorage.getItem(LEGACY_EDIT_KEY);
-          if(legacy) localStorage.setItem(accEditKey, legacy);
-        }
-      }catch(e){}
-    }
+    function getLayoutKey(){ return k('layout.v9'); }
+    function getThemeKey(){  return k('theme.mode.v4'); }
+    function getEditKey(){   return k('editmode.v1'); }
 
     function loadLayout(){
       try{
@@ -1716,8 +1958,38 @@
     }
     function saveLayout(layout){
       try{ localStorage.setItem(getLayoutKey(), JSON.stringify(layout)); }catch(e){}
+      requestCloudSyncDebounced();
     }
 
+    function loadGuestProfile(){
+      try{
+        return JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || '{}') || {};
+      }catch(e){ return {}; }
+    }
+    function saveGuestProfile(p){
+      try{ localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(p || {})); }catch(e){}
+    }
+
+    function upsertUsedAccount(entry){
+      try{
+        const list = JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || [];
+        const key = entry && entry.key;
+        if(!key) return;
+        const filtered = list.filter(x => x && x.key !== key);
+        filtered.unshift(entry);
+        localStorage.setItem(ACCOUNTS_USED_KEY, JSON.stringify(filtered.slice(0, 8)));
+      }catch(e){}
+    }
+
+    function getUsedAccounts(){
+      try{
+        return JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || [];
+      }catch(e){ return []; }
+    }
+
+    /* =========================================================
+       Layout commit
+       ========================================================= */
     function commitWidgetCellUnits(w, colU, rowU){
       const { maxColU, maxRowU } = maxColsRowsForUnits(w);
       colU = clamp(colU, 0, maxColU);
@@ -1766,33 +2038,6 @@
       });
     }
 
-    function hideWidget(id){
-      const w = document.querySelector(`.widget[data-id="${id}"]`);
-      if(!w) return false;
-      w.style.display = 'none';
-      const layout = loadLayout();
-      layout[id] = layout[id] || {};
-      layout[id].hidden = true;
-      saveLayout(layout);
-      return true;
-    }
-
-    function showWidget(id, desiredColU=0, desiredRowU=0){
-      const w = document.querySelector(`.widget[data-id="${id}"]`);
-      if(!w) return false;
-
-      w.style.display = '';
-
-      const layout = loadLayout();
-      layout[id] = layout[id] || {};
-      layout[id].hidden = false;
-      saveLayout(layout);
-
-      const free = findNearestFreeCellUnits(w, desiredColU, desiredRowU);
-      commitWidgetCellUnits(w, free.colU, free.rowU);
-      return true;
-    }
-
     function defaultLayoutIfNeeded(){
       const layout = loadLayout();
       if(Object.keys(layout).length) return;
@@ -1834,7 +2079,36 @@
       }
     }
 
-    /* ===== Edit Mode ===== */
+    function hideWidget(id){
+      const w = document.querySelector(`.widget[data-id="${id}"]`);
+      if(!w) return false;
+      w.style.display = 'none';
+      const layout = loadLayout();
+      layout[id] = layout[id] || {};
+      layout[id].hidden = true;
+      saveLayout(layout);
+      return true;
+    }
+
+    function showWidget(id, desiredColU=0, desiredRowU=0){
+      const w = document.querySelector(`.widget[data-id="${id}"]`);
+      if(!w) return false;
+
+      w.style.display = '';
+
+      const layout = loadLayout();
+      layout[id] = layout[id] || {};
+      layout[id].hidden = false;
+      saveLayout(layout);
+
+      const free = findNearestFreeCellUnits(w, desiredColU, desiredRowU);
+      commitWidgetCellUnits(w, free.colU, free.rowU);
+      return true;
+    }
+
+    /* =========================================================
+       Edit Mode
+       ========================================================= */
     let isEditMode = false;
     function setEditMode(on){
       isEditMode = !!on;
@@ -1842,6 +2116,7 @@
       try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
       if(isEditMode) closeSidebar();
       if(!isEditMode) hideGhost();
+      requestCloudSyncDebounced();
     }
 
     const HOLD_MS = 450;
@@ -1950,9 +2225,9 @@
       w.style.animation = '';
 
       commitWidgetCellUnits(w, free.colU, free.rowU);
-
       hideGhost();
       drag = null;
+
       refreshAccountUI();
     }
 
@@ -1960,7 +2235,9 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
-    /* ===== Theme ===== */
+    /* =========================================================
+       Theme
+       ========================================================= */
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
@@ -1997,6 +2274,8 @@
       });
 
       syncThemeThumb(mode, false);
+      requestCloudSyncDebounced();
+      refreshAccountUI();
     }
 
     function loadTheme(){
@@ -2009,7 +2288,6 @@
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
-      refreshAccountUI();
     });
 
     let pillDrag = null;
@@ -2067,7 +2345,6 @@
 
       const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
       setTheme(mode);
-      refreshAccountUI();
     });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
@@ -2075,7 +2352,9 @@
       if(saved === 'auto') applyTheme('auto');
     });
 
-    /* ===== Clock ===== */
+    /* =========================================================
+       Clock
+       ========================================================= */
     const clockEl = document.getElementById('clock');
     const dateLabel = document.getElementById('dateLabel');
     const secondsLabel = document.getElementById('secondsLabel');
@@ -2106,7 +2385,9 @@
       w.style.setProperty('--clockScale', scale.toFixed(3));
     }
 
-    /* ===== Resize (Edit Mode) ===== */
+    /* =========================================================
+       Resize (Edit Mode)
+       ========================================================= */
     let resize = null;
 
     function startResize(e){
@@ -2222,7 +2503,9 @@
     window.addEventListener('pointermove', moveResize);
     window.addEventListener('pointerup', endResize);
 
-    /* ===== Sidebar Router ===== */
+    /* =========================================================
+       Sidebar Router
+       ========================================================= */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebarClose');
@@ -2235,7 +2518,7 @@
     const pages = {
       home:        { title: 'Menu',            sub: 'Config • Conta • Personalização • Automação • Dispositivos' },
       configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
-      account:     { title: 'Conta',           sub: 'Login e sincronização' },
+      account:     { title: 'Conta',           sub: 'Perfil, sync, logout e troca' },
       personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
       automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
       devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
@@ -2372,7 +2655,9 @@
       });
     });
 
-    /* ===== Commands ===== */
+    /* =========================================================
+       Commands
+       ========================================================= */
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
       if(!input) return;
@@ -2402,27 +2687,21 @@
       }
     });
 
-    /* =========================
-       ✅ Auth modal logic (GATED)
-       ========================= */
+    /* =========================================================
+       Auth Modal (gated)
+       ========================================================= */
     const authOverlay = document.getElementById('authOverlay');
     const tabCreate   = document.getElementById('tabCreate');
     const tabLogin    = document.getElementById('tabLogin');
     const primaryAuthBtn = document.getElementById('primaryAuthBtn');
     const googleBtn   = document.getElementById('googleBtn');
+    const guestBtn    = document.getElementById('guestBtn');
     const authEmail   = document.getElementById('authEmail');
     const authPass    = document.getElementById('authPass');
     const authError   = document.getElementById('authError');
     const authHint    = document.getElementById('authHint');
 
     let authTab = 'create';
-
-    function lockApp(){
-      document.body.classList.add('auth-locked');
-    }
-    function unlockApp(){
-      document.body.classList.remove('auth-locked');
-    }
 
     function showAuthError(msg){
       authError.textContent = msg;
@@ -2441,10 +2720,10 @@
 
       if(tab === 'create'){
         primaryAuthBtn.textContent = '✨ Criar e entrar';
-        authHint.textContent = 'Crie sua conta para acessar o Terminal e sincronizar suas configs. 🔒';
+        authHint.textContent = 'Crie sua conta para sincronizar layout/tema/perfil. ☁️';
       }else{
         primaryAuthBtn.textContent = '🔓 Entrar';
-        authHint.textContent = 'Entre para acessar o Terminal e carregar suas configs. 🔒';
+        authHint.textContent = 'Entre para carregar suas configs. 🔁';
       }
     }
 
@@ -2460,137 +2739,488 @@
     }
 
     function closeAuth(){
-      // ✅ GATE: não fecha enquanto não logar
-      if(!isLoggedIn()) return;
       authOverlay.classList.remove('open');
       authOverlay.setAttribute('aria-hidden','true');
       clearAuthError();
       unlockApp();
     }
 
-    // ✅ GATE: clique fora NÃO fecha (sem handler de fechar)
+    // ✅ clique fora NÃO fecha
     authOverlay.addEventListener('pointerdown', (e)=>{
-      // não faz nada; mantém modal obrigatório
       e.stopPropagation();
     });
+
+    // ✅ ESC não sai do gate quando aberto
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && authOverlay.classList.contains('open')){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
 
     function validEmail(email){
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
-    function doLoginSession(email, provider='password'){
-      setSession({ email, provider, at: Date.now() });
-      setActiveProfileFromSession();
-
-      if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
-
-      migrateGuestToAccountIfNeeded();
-
-      loadTheme();
-      const em = localStorage.getItem(getEditKey());
-      setEditMode(em === '1');
-
-      defaultLayoutIfNeeded();
-      applyLayout();
-      normalizeAll();
-      updateClockTypography();
-      syncThemeThumb(null, true);
-
-      // ✅ destrava o app
-      authOverlay.classList.remove('open');
-      authOverlay.setAttribute('aria-hidden','true');
-      clearAuthError();
-      unlockApp();
-
+    async function loginAsGuest(){
+      currentUser = null;
+      setActiveProfile('guest');
+      closeAuth();
+      await loadFromCloudIfNeeded(); // no-op (guest)
+      bootApplyAfterProfileChange();
       refreshAccountUI();
     }
 
-    function createAccount(email, password){
-      const users = getUsers();
-      const key = String(email).trim().toLowerCase();
-      if(users[key]) return { ok:false, err:'Esse email já tem conta. Use “Entrar”.' };
-      if(password.length < 6) return { ok:false, err:'Senha muito curta. Use pelo menos 6 caracteres.' };
-      users[key] = { pw: pwHash(password), createdAt: Date.now() };
-      setUsers(users);
-      return { ok:true };
+    async function loginWithEmailPassword(email, pass, mode){
+      if(!firebaseReady) return showAuthError('Firebase não configurado. Cole seu firebaseConfig primeiro.');
+      if(!validEmail(email)) return showAuthError('Digite um email válido.');
+      if(!pass || pass.length < 6) return showAuthError('Senha inválida (mínimo 6).');
+
+      try{
+        if(mode === 'create'){
+          await fbAuth.createUserWithEmailAndPassword(email, pass);
+        }else{
+          await fbAuth.signInWithEmailAndPassword(email, pass);
+        }
+        // onAuthStateChanged cuidará do resto
+      }catch(err){
+        const m = (err && err.message) ? err.message : 'Erro ao autenticar.';
+        showAuthError(m);
+      }
     }
 
-    function loginWithPassword(email, password){
-      const users = getUsers();
-      const key = String(email).trim().toLowerCase();
-      const u = users[key];
-      if(!u) return { ok:false, err:'Conta não encontrada. Crie uma conta primeiro.' };
-      if(u.pw !== pwHash(password)) return { ok:false, err:'Senha incorreta.' };
-      return { ok:true };
+    async function loginWithGoogle(){
+      if(!firebaseReady) return showAuthError('Firebase não configurado. Cole seu firebaseConfig primeiro.');
+      try{
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await fbAuth.signInWithPopup(provider);
+        // onAuthStateChanged cuidará do resto
+      }catch(err){
+        const m = (err && err.message) ? err.message : 'Erro ao entrar com Google.';
+        showAuthError(m);
+      }
     }
 
     primaryAuthBtn.addEventListener('click', ()=>{
       clearAuthError();
       const email = String(authEmail.value || '').trim().toLowerCase();
       const pass  = String(authPass.value || '');
-
-      if(!validEmail(email)) return showAuthError('Digite um email válido.');
-
-      if(authTab === 'create'){
-        const r = createAccount(email, pass);
-        if(!r.ok) return showAuthError(r.err);
-        doLoginSession(email, 'password');
-      }else{
-        const r = loginWithPassword(email, pass);
-        if(!r.ok) return showAuthError(r.err);
-        doLoginSession(email, 'password');
-      }
+      loginWithEmailPassword(email, pass, authTab);
     });
 
     googleBtn.addEventListener('click', ()=>{
       clearAuthError();
-      const email = String(authEmail.value || '').trim().toLowerCase();
-      if(!validEmail(email)) return showAuthError('Digite seu email para simular login Google.');
-      doLoginSession(email, 'google');
+      loginWithGoogle();
+    });
+
+    guestBtn.addEventListener('click', ()=>{
+      clearAuthError();
+      loginAsGuest();
     });
 
     authPass.addEventListener('keydown', (e)=>{
       if(e.key === 'Enter') primaryAuthBtn.click();
     });
 
-    // ✅ GATE: bloqueia ESC se não estiver logado
-    window.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape' && !isLoggedIn()){
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
+    /* =========================================================
+       Profile Edit Modal
+       ========================================================= */
+    const profileOverlay = document.getElementById('profileOverlay');
+    const profileClose = document.getElementById('profileClose');
+    const profileCancel = document.getElementById('profileCancel');
+    const profileSave = document.getElementById('profileSave');
+    const profileName = document.getElementById('profileName');
+    const profilePhotoUrl = document.getElementById('profilePhotoUrl');
+    const profilePhotoFile = document.getElementById('profilePhotoFile');
+    const profileError = document.getElementById('profileError');
 
-    /* ===== Account page UI ===== */
-    const acctName = document.getElementById('acctName');
-    const acctEmailEl = document.getElementById('acctEmail');
-    const acctBadge = document.getElementById('acctBadge');
-    const syncToggle = document.getElementById('syncToggle');
-    const openAuthFromAccount = document.getElementById('openAuthFromAccount');
-    const forceSaveBtn = document.getElementById('forceSaveBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    function refreshAccountUI(){
-      const s = getSession();
-      const logged = !!(s && s.email);
-
-      const syncOn = getSyncEnabled();
-      if(syncToggle) syncToggle.classList.toggle('on', !!syncOn);
-
-      if(logged){
-        acctName.textContent = (s.provider === 'google') ? 'Conta Google' : 'Conta Terminal';
-        acctEmailEl.textContent = s.email;
-        acctBadge.textContent = (s.provider === 'google') ? 'Google' : 'Email';
-      }
+    function showProfileError(msg){
+      profileError.textContent = msg;
+      profileError.style.display = 'block';
+    }
+    function clearProfileError(){
+      profileError.style.display = 'none';
+      profileError.textContent = '—';
     }
 
-    syncToggle.addEventListener('click', ()=>{
+    function openProfileEditor(){
+      clearProfileError();
+      const p = getCurrentProfileView();
+      profileName.value = p.name || '';
+      profilePhotoUrl.value = p.photo || '';
+      profilePhotoFile.value = '';
+      profileOverlay.classList.add('open');
+      profileOverlay.setAttribute('aria-hidden','false');
+      setTimeout(()=>profileName.focus(), 60);
+    }
+    function closeProfileEditor(){
+      profileOverlay.classList.remove('open');
+      profileOverlay.setAttribute('aria-hidden','true');
+    }
+
+    profileClose.addEventListener('click', closeProfileEditor);
+    profileCancel.addEventListener('click', closeProfileEditor);
+    profileOverlay.addEventListener('pointerdown', (e)=>{
+      if(e.target === profileOverlay) closeProfileEditor();
+    });
+
+    function fileToDataUrl(file){
+      return new Promise((resolve, reject)=>{
+        const r = new FileReader();
+        r.onload = ()=> resolve(String(r.result || ''));
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    profileSave.addEventListener('click', async ()=>{
+      clearProfileError();
+      const name = String(profileName.value || '').trim();
+      let photo = String(profilePhotoUrl.value || '').trim();
+
+      try{
+        const f = profilePhotoFile.files && profilePhotoFile.files[0];
+        if(f){
+          photo = await fileToDataUrl(f);
+        }
+
+        if(!name) return showProfileError('Digite um nome.');
+
+        // Guest: salva local
+        if(activeProfileId === 'guest'){
+          saveGuestProfile({ name, photo });
+          requestCloudSyncDebounced(); // no-op
+          closeProfileEditor();
+          refreshAccountUI();
+          return;
+        }
+
+        // Firebase user: update profile + salvar no firestore (profile doc)
+        if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
+
+        await currentUser.updateProfile({
+          displayName: name,
+          photoURL: photo || ''
+        });
+
+        // persist in firestore too
+        await saveProfileToCloud({ name, photo: photo || '' });
+
+        // update used list
+        upsertUsedAccount({
+          key: 'uid:' + currentUser.uid,
+          uid: currentUser.uid,
+          email: currentUser.email || '',
+          name,
+          photo: photo || '',
+          provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
+          lastAt: Date.now()
+        });
+
+        closeProfileEditor();
+        refreshAccountUI();
+      }catch(err){
+        const m = (err && err.message) ? err.message : 'Erro ao salvar perfil.';
+        showProfileError(m);
+      }
+    });
+
+    /* =========================================================
+       Account Page UI + Switch + Logout
+       ========================================================= */
+    const acctNameEl = document.getElementById('acctName');
+    const acctEmailEl = document.getElementById('acctEmail');
+    const acctBadgeEl = document.getElementById('acctBadge');
+    const acctAvatarEl = document.getElementById('acctAvatar');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const syncToggle = document.getElementById('syncToggle');
+    const forceSaveBtn = document.getElementById('forceSaveBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutRow = document.getElementById('logoutRow');
+    const switchRow = document.getElementById('switchRow');
+    const openSwitcherBtn = document.getElementById('openSwitcherBtn');
+    const switcherBox = document.getElementById('switcherBox');
+    const acctSwitchList = document.getElementById('acctSwitchList');
+
+    editProfileBtn.addEventListener('click', openProfileEditor);
+
+    syncToggle.addEventListener('click', async ()=>{
       const next = !getSyncEnabled();
       setSyncEnabled(next);
 
-      loadTheme();
+      // se ligou e está logado: puxa cloud
+      if(next) await loadFromCloudIfNeeded();
+
+      // reaplica
+      bootApplyAfterProfileChange();
+      refreshAccountUI();
+    });
+
+    forceSaveBtn.addEventListener('click', async ()=>{
+      try{
+        localStorage.setItem(getEditKey(), isEditMode ? '1' : '0');
+      }catch(e){}
+      const layout = loadLayout();
+      saveLayout(layout);
+      await saveToCloudNow();
+      alert('Configs salvas ✅');
+    });
+
+    logoutBtn.addEventListener('click', async ()=>{
+      // se firebase user, sign out; se guest, só volta pro popup
+      try{
+        if(firebaseReady && currentUser){
+          await fbAuth.signOut();
+        }
+      }catch(e){}
+      currentUser = null;
+      setActiveProfile('guest'); // volta pro guest base
+      lockApp();
+      openAuth('login');
+      refreshAccountUI();
+    });
+
+    openSwitcherBtn.addEventListener('click', ()=>{
+      const open = switcherBox.style.display !== 'none';
+      switcherBox.style.display = open ? 'none' : '';
+    });
+
+    function setAvatarUI(photo){
+      acctAvatarEl.innerHTML = '';
+      if(photo){
+        const img = document.createElement('img');
+        img.src = photo;
+        img.alt = 'avatar';
+        acctAvatarEl.appendChild(img);
+      }else{
+        const d = document.createElement('div');
+        d.style.fontWeight = '900';
+        d.style.color = 'var(--muted)';
+        d.style.fontSize = '14px';
+        d.textContent = '⌁';
+        acctAvatarEl.appendChild(d);
+      }
+    }
+
+    function getCurrentProfileView(){
+      if(activeProfileId === 'guest'){
+        const g = loadGuestProfile();
+        return {
+          name: g.name || 'Convidado',
+          email: 'Sessão local',
+          photo: g.photo || '',
+          badge: 'Guest'
+        };
+      }
+      if(currentUser){
+        return {
+          name: currentUser.displayName || 'Usuário',
+          email: currentUser.email || '—',
+          photo: currentUser.photoURL || '',
+          badge: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) ? 'Online' : 'Online'
+        };
+      }
+      return { name:'Conta', email:'—', photo:'', badge:'—' };
+    }
+
+    function rebuildAccountSwitcher(){
+      const list = getUsedAccounts()
+        .filter(x => x && x.uid && ('uid:' + x.uid) !== (currentUser ? ('uid:' + currentUser.uid) : ''));
+
+      const shouldShow = list.length > 0;
+      switchRow.style.display = shouldShow ? '' : 'none';
+      if(!shouldShow){
+        switcherBox.style.display = 'none';
+        acctSwitchList.innerHTML = '';
+        return;
+      }
+
+      acctSwitchList.innerHTML = '';
+      list.forEach(acc=>{
+        const chip = document.createElement('div');
+        chip.className = 'acct-chip';
+
+        const left = document.createElement('div');
+        left.className = 'chip-left';
+
+        const ava = document.createElement('div');
+        ava.className = 'chip-ava';
+        if(acc.photo){
+          const img = document.createElement('img');
+          img.src = acc.photo;
+          ava.appendChild(img);
+        }else{
+          ava.textContent = (acc.name || acc.email || 'U').slice(0,1).toUpperCase();
+        }
+
+        const txt = document.createElement('div');
+        txt.className = 'chip-txt';
+        const b = document.createElement('b');
+        b.textContent = acc.name || 'Conta';
+        const s = document.createElement('span');
+        s.textContent = acc.email || '—';
+        txt.appendChild(b);
+        txt.appendChild(s);
+
+        left.appendChild(ava);
+        left.appendChild(txt);
+
+        const right = document.createElement('div');
+        right.className = 'chip-right';
+        right.textContent = 'Entrar ›';
+
+        chip.appendChild(left);
+        chip.appendChild(right);
+
+        chip.addEventListener('click', async ()=>{
+          // Troca rápida: abre auth já no modo login e preenche email
+          // (para Google, o popup permite escolher conta)
+          closeSidebar();
+          openAuth('login');
+          authEmail.value = acc.email || '';
+          authPass.value = '';
+          switcherBox.style.display = 'none';
+        });
+
+        acctSwitchList.appendChild(chip);
+      });
+    }
+
+    function refreshAccountUI(){
+      const syncOn = getSyncEnabled();
+      syncToggle.classList.toggle('on', !!syncOn);
+
+      const p = getCurrentProfileView();
+
+      acctNameEl.textContent = p.name || 'Conta';
+      acctEmailEl.textContent = p.email || '—';
+      acctBadgeEl.textContent = p.badge || '—';
+      setAvatarUI(p.photo || '');
+
+      // logout só aparece se estiver logado (firebase user)
+      logoutRow.style.display = (currentUser && firebaseReady) ? '' : 'none';
+
+      rebuildAccountSwitcher();
+    }
+
+    /* =========================================================
+       Cloud Sync (Firestore)
+       ========================================================= */
+    function userDocRef(){
+      if(!firebaseReady || !currentUser) return null;
+      return fbDb.collection('terminalUsers').doc(currentUser.uid);
+    }
+
+    async function saveProfileToCloud({name, photo}){
+      const ref = userDocRef();
+      if(!ref) return;
+      await ref.set({
+        profile: { name: name || '', photo: photo || '' },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function saveSettingsToCloud(payload){
+      const ref = userDocRef();
+      if(!ref) return;
+      await ref.set({
+        settings: payload,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function loadSettingsFromCloud(){
+      const ref = userDocRef();
+      if(!ref) return null;
+      const snap = await ref.get();
+      if(!snap.exists) return null;
+      const data = snap.data() || {};
+      return data;
+    }
+
+    async function loadFromCloudIfNeeded(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+
+      try{
+        const data = await loadSettingsFromCloud();
+        if(!data) return;
+
+        // profile
+        if(data.profile){
+          const pn = data.profile.name || '';
+          const pp = data.profile.photo || '';
+          // só atualiza auth profile se estiver vazio (evita sobrescrever google photo toda hora)
+          try{
+            if(pn && (!currentUser.displayName || currentUser.displayName !== pn)){
+              await currentUser.updateProfile({ displayName: pn });
+            }
+            if(pp && (!currentUser.photoURL || currentUser.photoURL !== pp)){
+              await currentUser.updateProfile({ photoURL: pp });
+            }
+          }catch(e){}
+        }
+
+        // settings
+        const s = data.settings || {};
+        if(s.themeMode != null) localStorage.setItem(getThemeKey(), String(s.themeMode));
+        if(s.editMode != null)  localStorage.setItem(getEditKey(),  s.editMode ? '1' : '0');
+        if(s.layoutJson != null) localStorage.setItem(getLayoutKey(), String(s.layoutJson));
+
+      }catch(e){
+        console.warn("Load cloud falhou:", e);
+      }
+    }
+
+    async function saveToCloudNow(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+
+      try{
+        const themeMode = localStorage.getItem(getThemeKey()) || 'auto';
+        const editMode = (localStorage.getItem(getEditKey()) || '0') === '1';
+        const layoutJson = localStorage.getItem(getLayoutKey()) || '{}';
+
+        await saveSettingsToCloud({ themeMode, editMode, layoutJson });
+
+        // também salva profile atual
+        const name = currentUser.displayName || '';
+        const photo = currentUser.photoURL || '';
+        await saveProfileToCloud({ name, photo });
+      }catch(e){
+        console.warn("Save cloud falhou:", e);
+      }
+    }
+
+    let cloudSyncTimer = 0;
+    function requestCloudSyncDebounced(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+      clearTimeout(cloudSyncTimer);
+      cloudSyncTimer = setTimeout(()=>saveToCloudNow(), 700);
+    }
+
+    /* =========================================================
+       After changing profile (reapply layout/theme/edit)
+       ========================================================= */
+    function bootApplyAfterProfileChange(){
+      // theme
+      const savedTheme = localStorage.getItem(getThemeKey()) || 'auto';
+      applyTheme(savedTheme);
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
+        opt.classList.toggle('active', opt.dataset.theme === savedTheme);
+      });
+      syncThemeThumb(savedTheme, true);
+
+      // edit mode
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
+
+      // sizes
+      document.querySelectorAll('.widget').forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+      });
 
       defaultLayoutIfNeeded();
       applyLayout();
@@ -2598,49 +3228,74 @@
 
       updateClockTypography();
       syncThemeThumb(null, true);
-      refreshAccountUI();
-    });
+    }
 
-    openAuthFromAccount.addEventListener('click', ()=>{
-      openAuth('login');
-    });
+    /* =========================================================
+       Firebase auth listener
+       ========================================================= */
+    function setupAuthListener(){
+      if(!firebaseReady) return;
 
-    forceSaveBtn.addEventListener('click', ()=>{
-      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
-      const layout = loadLayout();
-      saveLayout(layout);
-      alert('Configs salvas ✅');
-    });
+      fbAuth.onAuthStateChanged(async (user)=>{
+        currentUser = user || null;
 
-    logoutBtn.addEventListener('click', ()=>{
-      setSession(null);
-      setActiveProfileFromSession();
+        if(currentUser){
+          setActiveProfile('uid:' + currentUser.uid);
 
-      // ✅ volta a travar e exigir login
-      lockApp();
-      openAuth('login');
-    });
+          // registrar na lista de troca rápida
+          upsertUsedAccount({
+            key: 'uid:' + currentUser.uid,
+            uid: currentUser.uid,
+            email: currentUser.email || '',
+            name: currentUser.displayName || 'Usuário',
+            photo: currentUser.photoURL || '',
+            provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
+            lastAt: Date.now()
+          });
 
-    /* ===== Boot ===== */
+          // puxa do cloud se sync ligado
+          await loadFromCloudIfNeeded();
+
+          closeAuth();
+          bootApplyAfterProfileChange();
+          refreshAccountUI();
+        }else{
+          // sem user -> mantém profile anterior se era guest; e volta pro gate
+          if(activeProfileId !== 'guest'){
+            setActiveProfile('guest');
+          }
+          // abre popup de novo (como você pediu)
+          openAuth('login');
+          refreshAccountUI();
+        }
+      });
+    }
+
+    /* =========================================================
+       Boot
+       ========================================================= */
     function boot(){
       syncGridVars();
 
-      setActiveProfileFromSession();
-
+      // init base
+      loadActiveProfile();
       if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
       else setSyncEnabled(getSyncEnabled());
 
-      migrateGuestToAccountIfNeeded();
+      // firebase
+      initFirebase();
+      if(firebaseReady) setupAuthListener();
 
-      loadTheme();
-
-      const em = localStorage.getItem(getEditKey());
-      setEditMode(em === '1');
-
+      // init base widget px size
       document.querySelectorAll('.widget').forEach(w=>{
         const { wU, hU } = widgetUnits(w);
         setWidgetPixelSize(w, wU, hU);
       });
+
+      // apply current profile local settings first (guest/offline)
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+      loadTheme();
 
       defaultLayoutIfNeeded();
       applyLayout();
@@ -2665,12 +3320,15 @@
 
       refreshAccountUI();
 
-      // ✅ GATE: se não estiver logado, bloqueia e abre popup obrigatório
-      if(!isLoggedIn()){
+      // gate:
+      // - se firebase configurado: se não há user, abre popup (listener já fará)
+      // - se firebase NÃO configurado: ainda permite convidado (popup obrigatório)
+      if(!firebaseReady){
         openAuth('create');
       }else{
-        unlockApp();
-        closeAuth();
+        // se o listener não disparou ainda, garante gate até receber estado
+        lockApp();
+        openAuth('login');
       }
     }
 
