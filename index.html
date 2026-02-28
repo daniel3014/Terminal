@@ -618,6 +618,7 @@
       border-radius: 18px;
       padding: 10px;
       margin: 10px 0;
+      position: relative; /* ✅ para barra inferior do account */
     }
     html[data-theme="light"] .side-section{
       border: 1px solid rgba(10,20,40,0.08);
@@ -764,7 +765,7 @@
       pointer-events: none;
     }
 
-    /* ===== Auth Modal / Account UI ===== */
+    /* ===== Auth Modal ===== */
     .auth-overlay{
       position:fixed;
       inset:0;
@@ -973,7 +974,7 @@
       background: rgba(140,20,20,0.06);
     }
 
-    /* ===== Account page extras ===== */
+    /* ===== Account page ===== */
     .acct-top{
       display:flex;
       align-items:center;
@@ -1050,6 +1051,7 @@
     }
     html[data-theme="light"] .mini-pill{ background: rgba(255,255,255,0.35); }
 
+    /* ✅ pencil SVG button (centralizado) */
     .pencil-btn{
       width: 34px;
       height: 34px;
@@ -1062,8 +1064,14 @@
       align-items:center;
       justify-content:center;
       flex: 0 0 auto;
+      padding: 0;
+      line-height: 0;
     }
-    html[data-theme="light"] .pencil-btn{ background: rgba(255,255,255,0.35); }
+    html[data-theme="light"] .pencil-btn{
+      background: rgba(255,255,255,0.35);
+      color: rgba(10,18,34,0.88);
+    }
+    .pencil-btn svg{ width: 16px; height: 16px; display:block; opacity: 0.95; }
     .pencil-btn:active{ transform: scale(0.99); }
 
     .row{
@@ -1126,6 +1134,7 @@
       color: rgba(140,20,20,0.92);
     }
 
+    /* ✅ Toggle fix: thumb alinhado (box-sizing) */
     .toggle{
       width: 52px;
       height: 30px;
@@ -1146,6 +1155,7 @@
       left: 4px;
       width: 22px;
       height: 22px;
+      box-sizing: border-box; /* ✅ */
       border-radius: 999px;
       background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.14));
       border: 1px solid rgba(255,255,255,0.18);
@@ -1238,6 +1248,28 @@
       flex: 0 0 auto;
     }
 
+    /* ✅ Account action bar (Salvar esquerda / Sair direita) */
+    .acct-actions-bar{
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      pointer-events:auto;
+    }
+    .acct-actions-bar .tiny-btn{
+      height: 40px;
+      border-radius: 16px;
+      padding: 0 14px;
+    }
+    .acct-actions-bar .tiny-btn svg{
+      width: 16px; height: 16px; display:block; opacity: 0.95;
+    }
+
+    /* ===== Mini overlay (profile editor) ===== */
     .mini-overlay{
       position:fixed;
       inset:0;
@@ -1254,7 +1286,7 @@
     .mini-overlay.open{ display:flex; }
 
     .mini-modal{
-      width: min(430px, 100%);
+      width: min(460px, 100%);
       border-radius: 24px;
       border: 1px solid var(--stroke);
       background: linear-gradient(180deg, var(--glass), var(--glass2));
@@ -1285,10 +1317,10 @@
     }
     html[data-theme="light"] .mini-close{ background: rgba(255,255,255,0.35); }
     .mini-body{
-      padding: 12px 14px 14px;
+      padding: 14px 14px 14px;
       display:flex;
       flex-direction:column;
-      gap: 10px;
+      gap: 12px;
     }
     .mini-actions{
       display:flex;
@@ -1296,6 +1328,80 @@
       margin-top: 4px;
     }
     .mini-actions .auth-btn{ height: 42px; border-radius: 16px; }
+
+    /* ✅ WhatsApp/Facebook-like avatar editor */
+    .prof-top{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      padding: 4px 2px 2px;
+    }
+    .prof-ava-wrap{
+      width: 84px;
+      height: 84px;
+      border-radius: 28px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      position:relative;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    html[data-theme="light"] .prof-ava-wrap{ background: rgba(255,255,255,0.45); }
+    .prof-ava-wrap img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .prof-cam{
+      position:absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 12px 26px rgba(0,0,0,0.18);
+    }
+    html[data-theme="light"] .prof-cam{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.40),
+        0 12px 22px rgba(10,20,40,0.12);
+    }
+    .prof-cam svg{ width: 16px; height: 16px; opacity: 0.92; }
+    .prof-cam:active{ transform: scale(0.99); }
+
+    details.adv{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.06);
+      padding: 10px 10px;
+    }
+    html[data-theme="light"] details.adv{
+      border: 1px solid rgba(10,20,40,0.08);
+      background: rgba(255,255,255,0.22);
+    }
+    details.adv summary{
+      cursor:pointer;
+      user-select:none;
+      font-size: 12.5px;
+      color: var(--muted);
+      list-style: none;
+      outline:none;
+    }
+    details.adv summary::-webkit-details-marker{ display:none; }
+
   </style>
 
   <!-- Firebase (compat) -->
@@ -1464,7 +1570,7 @@
 
               <!-- ACCOUNT PAGE -->
               <div class="side-page" data-page="account" id="page-account">
-                <div class="side-section">
+                <div class="side-section" style="padding-bottom: 66px;">
                   <div class="acct-top">
                     <div class="acct-left">
                       <div class="avatar" id="acctAvatar">
@@ -1474,8 +1580,15 @@
                       <div class="acct-meta">
                         <div class="acct-name-row">
                           <div class="acct-name" id="acctName">Conta</div>
-                          <button class="pencil-btn" id="editProfileBtn" title="Editar perfil">✏️</button>
+
+                          <button class="pencil-btn" id="editProfileBtn" title="Editar perfil">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                              <path d="M4 20h4l10.8-10.8a1.6 1.6 0 0 0 0-2.3l-1.6-1.6a1.6 1.6 0 0 0-2.3 0L4 14.1V20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                              <path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                          </button>
                         </div>
+
                         <div class="acct-email" id="acctEmail">—</div>
                       </div>
                     </div>
@@ -1483,7 +1596,7 @@
                     <span class="mini-pill" id="acctBadge">—</span>
                   </div>
 
-                  <div class="row" style="padding-top: 8px;">
+                  <div class="row" style="padding-top: 10px;">
                     <div class="left">
                       <b>Sincronizar configurações</b>
                       <span>layout, tema e perfil via nuvem</span>
@@ -1491,36 +1604,36 @@
                     <div class="toggle on" id="syncToggle" title="Sync"></div>
                   </div>
 
-                  <div class="row">
-                    <div class="left">
-                      <b>Salvar agora</b>
-                      <span>força salvar no cloud (se logado)</span>
-                    </div>
-                    <button class="tiny-btn" id="forceSaveBtn">💾 Salvar</button>
-                  </div>
-
-                  <div class="row" id="switchRow" style="display:none;">
+                  <div class="row" id="switchRow" style="display:none; padding-bottom: 4px;">
                     <div class="left">
                       <b>Trocar conta</b>
                       <span>alternar rapidamente</span>
                     </div>
-                    <button class="tiny-btn" id="openSwitcherBtn">🔁 Trocar</button>
+                    <button class="tiny-btn" id="openSwitcherBtn">Trocar</button>
                   </div>
 
                   <div id="switcherBox" style="display:none;">
                     <div class="acct-switch-list" id="acctSwitchList"></div>
                   </div>
 
-                  <div class="row" id="logoutRow" style="display:none;">
-                    <div class="left">
-                      <b>Logout</b>
-                      <span>sair da conta atual</span>
-                    </div>
-                    <button class="tiny-btn danger" id="logoutBtn">⎋ Sair</button>
+                  <div class="side-note" id="acctNote" style="padding-bottom: 0;">
+                    Dica: use “Convidado” para testar rápido sem cloud. 🫧
                   </div>
 
-                  <div class="side-note" id="acctNote">
-                    Dica: use “Convidado” para testar rápido sem cloud. 🫧
+                  <!-- ✅ Bottom actions -->
+                  <div class="acct-actions-bar">
+                    <button class="tiny-btn" id="saveNowBtn" title="Salvar configurações">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M7 3h10l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M7 3v6h10V3" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M8 21v-7h8v7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                      </svg>
+                      Salvar
+                    </button>
+
+                    <button class="tiny-btn danger" id="logoutBtn" title="Sair da conta">
+                      Sair
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1700,19 +1813,37 @@
         <b>Editar perfil</b>
         <div class="mini-close" id="profileClose" title="Fechar">✕</div>
       </div>
+
       <div class="mini-body">
-        <div class="auth-field">
-          <label>Nome</label>
-          <input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/>
+        <div class="prof-top">
+          <div class="prof-ava-wrap" id="profileAvatarPrev">
+            <div style="font-weight:900; color: var(--muted); font-size: 16px;">⌁</div>
+
+            <div class="prof-cam" id="profilePickBtn" title="Alterar foto">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+          </div>
+
+          <div style="flex:1 1 auto; min-width:0;">
+            <div class="auth-field" style="margin:0;">
+              <label>Nome</label>
+              <input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/>
+            </div>
+          </div>
         </div>
-        <div class="auth-field">
-          <label>Foto (URL)</label>
-          <input class="auth-input" id="profilePhotoUrl" type="url" placeholder="https://..."/>
-        </div>
-        <div class="auth-field">
-          <label>ou Foto (arquivo)</label>
-          <input class="auth-input" id="profilePhotoFile" type="file" accept="image/*"/>
-        </div>
+
+        <input class="auth-input" id="profilePhotoFile" type="file" accept="image/*" style="display:none;"/>
+
+        <details class="adv">
+          <summary>Avançado: usar URL da foto</summary>
+          <div class="auth-field" style="margin-top:10px;">
+            <label>Foto (URL)</label>
+            <input class="auth-input" id="profilePhotoUrl" type="url" placeholder="https://..."/>
+          </div>
+        </details>
 
         <div class="auth-error" id="profileError">—</div>
 
@@ -1722,7 +1853,7 @@
         </div>
 
         <div class="auth-small" style="color: var(--muted);">
-          Obs: em produção o ideal é usar Storage + URL pública. 🧊
+          Dica: em produção o ideal é usar Storage + URL pública. 🧊
         </div>
       </div>
     </div>
@@ -2071,33 +2202,6 @@
         const free = findNearestFreeCellUnits(w, colU, rowU);
         commitWidgetCellUnits(w, free.colU, free.rowU);
       }
-    }
-
-    function hideWidget(id){
-      const w = document.querySelector(`.widget[data-id="${id}"]`);
-      if(!w) return false;
-      w.style.display = 'none';
-      const layout = loadLayout();
-      layout[id] = layout[id] || {};
-      layout[id].hidden = true;
-      saveLayout(layout);
-      return true;
-    }
-
-    function showWidget(id, desiredColU=0, desiredRowU=0){
-      const w = document.querySelector(`.widget[data-id="${id}"]`);
-      if(!w) return false;
-
-      w.style.display = '';
-
-      const layout = loadLayout();
-      layout[id] = layout[id] || {};
-      layout[id].hidden = false;
-      saveLayout(layout);
-
-      const free = findNearestFreeCellUnits(w, desiredColU, desiredRowU);
-      commitWidgetCellUnits(w, free.colU, free.rowU);
-      return true;
     }
 
     /* ===== Edit Mode ===== */
@@ -2492,7 +2596,7 @@
     window.addEventListener('pointerup', endResize);
 
     /* =========================================================
-       Sidebar Router ✅ CORRIGIDO (fromId -> toId)
+       Sidebar Router
        ========================================================= */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebar = document.getElementById('sidebar');
@@ -2515,7 +2619,7 @@
 
     let navStack = ['home'];
 
-    function getPageEl(id){ return document.querySelector(`.side-page[data-page="${id}"]`); }
+    function getPageEl(id){ return document.querySelector(\`.side-page[data-page="\${id}"]\`); }
 
     function updateHeader(){
       const current = navStack[navStack.length - 1] || 'home';
@@ -2537,7 +2641,6 @@
       const toEl = getPageEl(toId);
       if(!toEl) return;
 
-      // limpa estados em páginas fora do par
       document.querySelectorAll('.side-page').forEach(p=>{
         if(p !== fromEl && p !== toEl){
           p.classList.remove('active','left');
@@ -2545,7 +2648,6 @@
       });
 
       if(direction === 'back'){
-        // to começa levemente à esquerda (left) e entra
         toEl.classList.add('active','left');
         if(fromEl){
           fromEl.classList.remove('active');
@@ -2553,7 +2655,6 @@
         }
         requestAnimationFrame(()=> toEl.classList.remove('left'));
       }else{
-        // forward: to entra, from sai pra esquerda
         toEl.classList.add('active');
         toEl.classList.remove('left');
         if(fromEl){
@@ -2618,7 +2719,6 @@
       if(e.target === sidebarOverlay) closeSidebar();
     });
 
-    // delegation para qualquer item com data-nav dentro das páginas
     sidebarPages.addEventListener('click', (e)=>{
       const el = e.target.closest('[data-nav]');
       if(!el) return;
@@ -2627,7 +2727,6 @@
       navTo(id);
     });
 
-    // clique do dock (robusto)
     document.getElementById('dockConfigs').addEventListener('click', ()=>navTo('configs'));
     document.getElementById('dockAccount').addEventListener('click', ()=>navTo('account'));
 
@@ -2768,7 +2867,7 @@
       if(e.key === 'Enter') primaryAuthBtn.click();
     });
 
-    /* ===== Profile Edit ===== */
+    /* ===== Profile Edit (WhatsApp-like) ===== */
     const profileOverlay = document.getElementById('profileOverlay');
     const profileClose = document.getElementById('profileClose');
     const profileCancel = document.getElementById('profileCancel');
@@ -2777,6 +2876,8 @@
     const profilePhotoUrl = document.getElementById('profilePhotoUrl');
     const profilePhotoFile = document.getElementById('profilePhotoFile');
     const profileError = document.getElementById('profileError');
+    const profileAvatarPrev = document.getElementById('profileAvatarPrev');
+    const profilePickBtn = document.getElementById('profilePickBtn');
 
     function showProfileError(msg){
       profileError.textContent = msg;
@@ -2785,6 +2886,33 @@
     function clearProfileError(){
       profileError.style.display = 'none';
       profileError.textContent = '—';
+    }
+
+    function fileToDataUrl(file){
+      return new Promise((resolve, reject)=>{
+        const r = new FileReader();
+        r.onload = ()=> resolve(String(r.result || ''));
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function setProfileAvatarPreview(photo){
+      profileAvatarPrev.innerHTML = '';
+      if(photo){
+        const img = document.createElement('img');
+        img.src = photo;
+        img.alt = 'avatar';
+        profileAvatarPrev.appendChild(img);
+      }else{
+        const d = document.createElement('div');
+        d.style.fontWeight = '900';
+        d.style.color = 'var(--muted)';
+        d.style.fontSize = '16px';
+        d.textContent = '⌁';
+        profileAvatarPrev.appendChild(d);
+      }
+      profileAvatarPrev.appendChild(profilePickBtn);
     }
 
     function getCurrentProfileView(){
@@ -2802,7 +2930,7 @@
           name: currentUser.displayName || 'Usuário',
           email: currentUser.email || '—',
           photo: currentUser.photoURL || '',
-          badge: 'Online'
+          badge: 'Sync'
         };
       }
       return { name:'Conta', email:'—', photo:'', badge:'—' };
@@ -2814,6 +2942,7 @@
       profileName.value = p.name || '';
       profilePhotoUrl.value = p.photo || '';
       profilePhotoFile.value = '';
+      setProfileAvatarPreview(p.photo || '');
       profileOverlay.classList.add('open');
       profileOverlay.setAttribute('aria-hidden','false');
       setTimeout(()=>profileName.focus(), 60);
@@ -2829,14 +2958,18 @@
       if(e.target === profileOverlay) closeProfileEditor();
     });
 
-    function fileToDataUrl(file){
-      return new Promise((resolve, reject)=>{
-        const r = new FileReader();
-        r.onload = ()=> resolve(String(r.result || ''));
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
-    }
+    profilePickBtn.addEventListener('click', ()=>{
+      profilePhotoFile.click();
+    });
+
+    profilePhotoFile.addEventListener('change', async ()=>{
+      const f = profilePhotoFile.files && profilePhotoFile.files[0];
+      if(!f) return;
+      try{
+        const dataUrl = await fileToDataUrl(f);
+        setProfileAvatarPreview(dataUrl);
+      }catch(e){}
+    });
 
     async function saveProfileToCloud({name, photo}){
       const ref = userDocRef();
@@ -2850,15 +2983,17 @@
     profileSave.addEventListener('click', async ()=>{
       clearProfileError();
       const name = String(profileName.value || '').trim();
-      let photo = String(profilePhotoUrl.value || '').trim();
+      if(!name) return showProfileError('Digite um nome.');
 
       try{
         const f = profilePhotoFile.files && profilePhotoFile.files[0];
+        let photo = '';
+
         if(f){
           photo = await fileToDataUrl(f);
+        }else{
+          photo = String(profilePhotoUrl.value || '').trim();
         }
-
-        if(!name) return showProfileError('Digite um nome.');
 
         if(activeProfileId === 'guest'){
           saveGuestProfile({ name, photo });
@@ -2903,9 +3038,8 @@
     const acctBadgeEl = document.getElementById('acctBadge');
     const acctAvatarEl = document.getElementById('acctAvatar');
     const syncToggle = document.getElementById('syncToggle');
-    const forceSaveBtn = document.getElementById('forceSaveBtn');
+    const saveNowBtn = document.getElementById('saveNowBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const logoutRow = document.getElementById('logoutRow');
     const switchRow = document.getElementById('switchRow');
     const openSwitcherBtn = document.getElementById('openSwitcherBtn');
     const switcherBox = document.getElementById('switcherBox');
@@ -2921,7 +3055,7 @@
       refreshAccountUI();
     });
 
-    forceSaveBtn.addEventListener('click', async ()=>{
+    saveNowBtn.addEventListener('click', async ()=>{
       try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
       const layout = loadLayout();
       saveLayout(layout);
@@ -3033,10 +3167,17 @@
 
       acctNameEl.textContent = p.name || 'Conta';
       acctEmailEl.textContent = p.email || '—';
-      acctBadgeEl.textContent = p.badge || '—';
       setAvatarUI(p.photo || '');
 
-      logoutRow.style.display = (currentUser && firebaseReady) ? '' : 'none';
+      // ✅ Badge com utilidade (em vez de "Online")
+      if(activeProfileId === 'guest'){
+        acctBadgeEl.textContent = 'Guest';
+      }else{
+        acctBadgeEl.textContent = syncOn ? 'Sync on' : 'Sync off';
+      }
+
+      // ✅ Logout só faz sentido se estiver logado (não guest)
+      logoutBtn.style.display = (firebaseReady && currentUser) ? '' : 'none';
 
       rebuildAccountSwitcher();
     }
