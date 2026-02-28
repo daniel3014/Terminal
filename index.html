@@ -418,7 +418,7 @@
 
     /* ====== Menu button (FIX: keep square in 0.5x0.5) ====== */
     .menu-widget .pad{
-      padding: 8px; /* ✅ menor pra caber no 0.5x0.5 */
+      padding: 8px;
       width:100%;
       height:100%;
       display:flex;
@@ -428,10 +428,10 @@
     .menu-btn{
       width: 100%;
       height: 100%;
-      aspect-ratio: 1 / 1;            /* ✅ garante quadrado */
-      max-width: 64px;                /* ✅ evita ficar gigante se widget crescer */
+      aspect-ratio: 1 / 1;
+      max-width: 64px;
       max-height: 64px;
-      border-radius: 18px;            /* ✅ glass square */
+      border-radius: 18px;
       border: 1px solid var(--stroke2);
       background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
       box-shadow:
@@ -689,7 +689,7 @@
       padding: 8px 6px;
     }
 
-    /* Dock inferior: 2 botões quadrados (mantém do seu ajuste) */
+    /* Dock inferior: 2 botões quadrados */
     .side-dock{
       position:absolute;
       left: 16px;
@@ -759,6 +759,338 @@
     .stage.edit-mode #themePill{
       pointer-events: none;
     }
+
+    /* ===== Auth Modal (glass premium) ===== */
+    .auth-overlay{
+      position:fixed;
+      inset:0;
+      z-index: 999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    html[data-theme="light"] .auth-overlay{
+      background: rgba(0,0,0,0.16);
+    }
+    .auth-overlay.open{ display:flex; }
+
+    .auth-modal{
+      width: min(440px, 100%);
+      border-radius: 26px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      box-shadow: 0 28px 88px rgba(0,0,0,0.38);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      overflow:hidden;
+      position:relative;
+    }
+    .auth-top{
+      padding: 14px 16px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 10px;
+    }
+    html[data-theme="light"] .auth-top{
+      border-bottom: 1px solid rgba(10,20,40,0.08);
+    }
+    .auth-brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .auth-logo{
+      width: 38px;
+      height: 38px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+    }
+    html[data-theme="light"] .auth-logo{ background: rgba(255,255,255,0.45); }
+
+    .auth-title{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .auth-title b{
+      font-size: 14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .auth-title span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .auth-close{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .auth-close{ background: rgba(255,255,255,0.35); }
+
+    .auth-body{
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .auth-tabs{
+      display:flex;
+      gap: 10px;
+    }
+    .auth-tab{
+      flex:1 1 0;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 13px;
+      color: var(--muted);
+      cursor:pointer;
+      user-select:none;
+      transition: transform 160ms var(--ease), background 160ms var(--ease), color 160ms var(--ease);
+    }
+    html[data-theme="light"] .auth-tab{ background: rgba(255,255,255,0.35); }
+    .auth-tab.active{
+      color: var(--text);
+      background: rgba(var(--accent),0.12);
+      border-color: rgba(var(--accent),0.30);
+    }
+    .auth-fields{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .auth-field{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .auth-field label{
+      font-size: 12px;
+      color: var(--muted);
+      padding-left: 2px;
+    }
+    .auth-input{
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+      font-size: 14px;
+    }
+    html[data-theme="light"] .auth-input{ background: rgba(255,255,255,0.40); }
+    .auth-input:focus{
+      box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
+      border-color: rgba(var(--accent),0.45);
+    }
+
+    .auth-actions{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .auth-btn{
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      transition: transform 160ms var(--ease), filter 160ms var(--ease);
+    }
+    html[data-theme="light"] .auth-btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+    }
+    .auth-btn:active{ transform: scale(0.99); }
+    .auth-btn.secondary{
+      background: rgba(0,0,0,0.10);
+      font-weight: 700;
+      color: var(--muted);
+    }
+    html[data-theme="light"] .auth-btn.secondary{ background: rgba(255,255,255,0.35); color: rgba(10,18,34,0.62); }
+
+    .auth-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .auth-small{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3rem;
+    }
+    .auth-link{
+      font-size: 12px;
+      color: rgba(var(--accent),0.95);
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .auth-error{
+      display:none;
+      font-size: 12.5px;
+      color: rgba(255,160,160,0.95);
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,160,160,0.25);
+      background: rgba(255,80,80,0.08);
+    }
+    html[data-theme="light"] .auth-error{
+      color: rgba(140,20,20,0.92);
+      border: 1px solid rgba(140,20,20,0.18);
+      background: rgba(140,20,20,0.06);
+    }
+
+    /* ===== Account page extras ===== */
+    .mini-pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    html[data-theme="light"] .mini-pill{ background: rgba(255,255,255,0.35); }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 6px;
+    }
+    .row .left{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .row .left b{
+      font-size: 13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .row .left span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tiny-btn{
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      cursor:pointer;
+      user-select:none;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .tiny-btn{ background: rgba(255,255,255,0.35); }
+    .tiny-btn.danger{
+      border-color: rgba(255,120,120,0.25);
+      background: rgba(255,80,80,0.06);
+      color: rgba(255,170,170,0.95);
+    }
+    html[data-theme="light"] .tiny-btn.danger{
+      border-color: rgba(140,20,20,0.18);
+      background: rgba(140,20,20,0.05);
+      color: rgba(140,20,20,0.92);
+    }
+
+    .toggle{
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      position:relative;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+      transition: background 160ms var(--ease), border-color 160ms var(--ease);
+    }
+    html[data-theme="light"] .toggle{ background: rgba(255,255,255,0.35); }
+    .toggle::after{
+      content:"";
+      position:absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.14));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.14);
+      transition: transform 180ms var(--ease);
+    }
+    html[data-theme="light"] .toggle::after{
+      background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.35));
+      border: 1px solid rgba(10,20,40,0.12);
+      box-shadow: 0 10px 16px rgba(10,20,40,0.10);
+    }
+    .toggle.on{
+      background: rgba(var(--accent),0.18);
+      border-color: rgba(var(--accent),0.32);
+    }
+    .toggle.on::after{
+      transform: translateX(22px);
+    }
   </style>
 </head>
 
@@ -769,7 +1101,7 @@
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- MENU: 0.5 x 0.5 do grid (w=1,h=1 em half-units) -->
+      <!-- MENU -->
       <div class="widget menu-widget" data-id="menu" data-kind="menu" data-w="1" data-h="1" data-resizable="0">
         <div class="pad">
           <div class="menu-btn no-drag" id="menuBtn" title="Menu">
@@ -780,7 +1112,7 @@
         </div>
       </div>
 
-      <!-- CLOCK: 2x1 cells => 4x2 half-units -->
+      <!-- CLOCK -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock" data-w="4" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
           <div class="clock-inner">
@@ -797,7 +1129,7 @@
         <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <!-- CHAT: 3x1 cells => 6x2 half-units -->
+      <!-- CHAT -->
       <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
           <div class="chat-row">
@@ -808,7 +1140,7 @@
         <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <!-- THEME: 2x1 cells => 4x2 half-units -->
+      <!-- THEME -->
       <div class="widget theme-widget" data-id="theme" data-kind="theme" data-w="4" data-h="2" data-resizable="1">
         <div class="pad">
           <div class="theme-pill" id="themePill">
@@ -920,43 +1252,51 @@
                 </div>
               </div>
 
+              <!-- ✅ CONTA: agora com conteúdo real -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
-                  <div class="side-item" data-action="profile">
-                    <div class="side-left">
-                      <div class="side-ico">👤</div>
-                      <div class="side-label">
-                        <b>Perfil</b>
-                        <span>nome, foto, preferências</span>
-                      </div>
+                  <div class="row">
+                    <div class="left">
+                      <b id="acctName">Conta</b>
+                      <span id="acctEmail">—</span>
                     </div>
-                    <div class="side-right">›</div>
+                    <span class="mini-pill" id="acctBadge">Convidado</span>
                   </div>
 
-                  <div class="side-item" data-action="security">
-                    <div class="side-left">
-                      <div class="side-ico">🔒</div>
-                      <div class="side-label">
-                        <b>Segurança</b>
-                        <span>sessões e permissões</span>
-                      </div>
+                  <div class="row" style="padding-top: 6px;">
+                    <div class="left">
+                      <b>Sincronizar configurações</b>
+                      <span>tema, layout e modo de edição</span>
                     </div>
-                    <div class="side-right">›</div>
+                    <div class="toggle on" id="syncToggle" title="Sync"></div>
                   </div>
 
-                  <div class="side-item" data-action="sessions">
-                    <div class="side-left">
-                      <div class="side-ico">🛰️</div>
-                      <div class="side-label">
-                        <b>Sessões</b>
-                        <span>dispositivos conectados</span>
-                      </div>
+                  <div class="row">
+                    <div class="left">
+                      <b>Gerenciar conta</b>
+                      <span>entrar, trocar conta ou sair</span>
                     </div>
-                    <div class="side-right">›</div>
+                    <button class="tiny-btn" id="openAuthFromAccount">🔑 Entrar</button>
                   </div>
 
-                  <div class="side-note">
-                    Futuro: login, sync por dispositivo e permissões do microfone. 🧠
+                  <div class="row">
+                    <div class="left">
+                      <b>Salvar agora</b>
+                      <span>força salvar layout e tema na conta</span>
+                    </div>
+                    <button class="tiny-btn" id="forceSaveBtn">💾 Salvar</button>
+                  </div>
+
+                  <div class="row">
+                    <div class="left">
+                      <b>Sair</b>
+                      <span>volta para convidado</span>
+                    </div>
+                    <button class="tiny-btn danger" id="logoutBtn">⎋ Sair</button>
+                  </div>
+
+                  <div class="side-note" id="acctNote">
+                    Dica: quando você entrar, o Terminal passa a carregar e salvar suas configs nessa conta. ✨
                   </div>
                 </div>
               </div>
@@ -1078,6 +1418,54 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ✅ AUTH POPUP -->
+  <div class="auth-overlay" id="authOverlay" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
+      <div class="auth-top">
+        <div class="auth-brand">
+          <div class="auth-logo">⌁</div>
+          <div class="auth-title">
+            <b>Terminal • Conta</b>
+            <span>salve e sincronize suas configurações</span>
+          </div>
+        </div>
+        <div class="auth-close" id="authClose" title="Fechar">✕</div>
+      </div>
+
+      <div class="auth-body">
+        <div class="auth-error" id="authError">—</div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="create" id="tabCreate">Criar conta</div>
+          <div class="auth-tab" data-tab="login" id="tabLogin">Entrar</div>
+        </div>
+
+        <div class="auth-fields">
+          <div class="auth-field">
+            <label>Email</label>
+            <input class="auth-input" id="authEmail" type="email" autocomplete="email" placeholder="voce@email.com"/>
+          </div>
+          <div class="auth-field" id="pwWrap">
+            <label>Senha</label>
+            <input class="auth-input" id="authPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
+          </div>
+        </div>
+
+        <div class="auth-actions">
+          <button class="auth-btn" id="primaryAuthBtn">✨ Criar e entrar</button>
+          <button class="auth-btn secondary" id="googleBtn">🟦 Entrar com Google</button>
+        </div>
+
+        <div class="auth-meta">
+          <div class="auth-small" id="authHint">
+            Ao entrar, o Terminal passa a salvar seu layout e tema na sua conta.
+          </div>
+          <div class="auth-link" id="guestLink">Continuar como convidado</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1218,17 +1606,131 @@
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    const STORAGE_KEY = 'terminal.layout.v9';
-    const EDIT_KEY    = 'terminal.editmode.v1';
+    /* =========================
+       ✅ Account-aware storage
+       ========================= */
+    const AUTH_SESSION_KEY = 'terminal.auth.session.v1';
+    const USERS_KEY        = 'terminal.users.v1';            // demo registry (local)
+    const SYNC_KEY         = 'terminal.account.sync.v1';     // per device toggle
 
+    const LEGACY_LAYOUT_KEY = 'terminal.layout.v9';
+    const LEGACY_THEME_KEY  = 'terminal.theme.mode.v4';
+    const LEGACY_EDIT_KEY   = 'terminal.editmode.v1';
+
+    let activeProfileId = 'guest'; // guest | u:<base64>
+
+    const safeB64 = (s) => {
+      try{ return btoa(unescape(encodeURIComponent(s))).replace(/=+$/,''); }
+      catch(e){ return 'u'; }
+    };
+
+    function profileKeyBase(){
+      return activeProfileId === 'guest' ? 'guest' : activeProfileId;
+    }
+    function k(name){
+      return `terminal.${name}.${profileKeyBase()}`;
+    }
+
+    function getSyncEnabled(){
+      try{
+        const raw = localStorage.getItem(SYNC_KEY);
+        if(raw == null) return true;
+        return raw === '1';
+      }catch(e){ return true; }
+    }
+    function setSyncEnabled(on){
+      try{ localStorage.setItem(SYNC_KEY, on ? '1' : '0'); }catch(e){}
+      const t = document.getElementById('syncToggle');
+      if(t) t.classList.toggle('on', !!on);
+    }
+
+    function getSession(){
+      try{
+        const raw = localStorage.getItem(AUTH_SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){ return null; }
+    }
+    function setSession(sess){
+      try{
+        if(!sess) localStorage.removeItem(AUTH_SESSION_KEY);
+        else localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sess));
+      }catch(e){}
+    }
+
+    function isLoggedIn(){
+      const s = getSession();
+      return !!(s && s.email);
+    }
+
+    function setActiveProfileFromSession(){
+      const s = getSession();
+      if(s && s.email){
+        activeProfileId = 'u:' + safeB64(String(s.email).trim().toLowerCase());
+      }else{
+        activeProfileId = 'guest';
+      }
+    }
+
+    function getUsers(){
+      try{
+        return JSON.parse(localStorage.getItem(USERS_KEY) || '{}') || {};
+      }catch(e){ return {}; }
+    }
+    function setUsers(obj){
+      try{ localStorage.setItem(USERS_KEY, JSON.stringify(obj)); }catch(e){}
+    }
+
+    // SUPER simples (demo): hash leve para não salvar senha em claro
+    function pwHash(pw){
+      let h = 2166136261;
+      for(let i=0;i<pw.length;i++){
+        h ^= pw.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h>>>0).toString(16);
+    }
+
+    function getLayoutKey(){ return getSyncEnabled() ? k('layout.v9') : LEGACY_LAYOUT_KEY; }
+    function getThemeKey(){  return getSyncEnabled() ? k('theme.mode.v4') : LEGACY_THEME_KEY; }
+    function getEditKey(){   return getSyncEnabled() ? k('editmode.v1') : LEGACY_EDIT_KEY; }
+
+    function migrateGuestToAccountIfNeeded(){
+      if(!isLoggedIn()) return;
+
+      // Se a conta ainda não tem layout/tema, copia do legado (guest)
+      const accLayoutKey = k('layout.v9');
+      const accThemeKey  = k('theme.mode.v4');
+      const accEditKey   = k('editmode.v1');
+
+      try{
+        const hasLayout = localStorage.getItem(accLayoutKey) != null;
+        const hasTheme  = localStorage.getItem(accThemeKey) != null;
+        const hasEdit   = localStorage.getItem(accEditKey)  != null;
+
+        if(!hasLayout){
+          const legacy = localStorage.getItem(LEGACY_LAYOUT_KEY);
+          if(legacy) localStorage.setItem(accLayoutKey, legacy);
+        }
+        if(!hasTheme){
+          const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+          if(legacy) localStorage.setItem(accThemeKey, legacy);
+        }
+        if(!hasEdit){
+          const legacy = localStorage.getItem(LEGACY_EDIT_KEY);
+          if(legacy) localStorage.setItem(accEditKey, legacy);
+        }
+      }catch(e){}
+    }
+
+    /* ===== Layout persistence (profile-aware) ===== */
     function loadLayout(){
       try{
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(getLayoutKey());
         return raw ? (JSON.parse(raw) || {}) : {};
       }catch(e){ return {}; }
     }
     function saveLayout(layout){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(layout)); }catch(e){}
+      try{ localStorage.setItem(getLayoutKey(), JSON.stringify(layout)); }catch(e){}
     }
 
     function commitWidgetCellUnits(w, colU, rowU){
@@ -1352,7 +1854,7 @@
     function setEditMode(on){
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
-      try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
+      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
       if(isEditMode) closeSidebar();
       if(!isEditMode) hideGhost();
     }
@@ -1476,7 +1978,6 @@
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
-    const THEME_KEY = 'terminal.theme.mode.v4';
 
     function applyTheme(mode){
       let applied = mode;
@@ -1496,13 +1997,13 @@
     }
 
     function syncThemeThumb(mode, immediate=false){
-      if(!mode) mode = localStorage.getItem(THEME_KEY) || 'auto';
+      if(!mode) mode = localStorage.getItem(getThemeKey()) || 'auto';
       themeThumb.style.transition = immediate ? 'none' : 'transform 240ms var(--ease)';
       themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
     }
 
     function setTheme(mode){
-      localStorage.setItem(THEME_KEY, mode);
+      localStorage.setItem(getThemeKey(), mode);
       applyTheme(mode);
 
       [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
@@ -1513,7 +2014,7 @@
     }
 
     function loadTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || 'auto';
+      const saved = localStorage.getItem(getThemeKey()) || 'auto';
       setTheme(saved);
     }
 
@@ -1522,6 +2023,7 @@
       const opt = e.target.closest('.theme-opt');
       if(!opt) return;
       setTheme(opt.dataset.theme);
+      refreshAccountUI();
     });
 
     let pillDrag = null;
@@ -1579,10 +2081,11 @@
 
       const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
       setTheme(mode);
+      refreshAccountUI();
     });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
-      const saved = localStorage.getItem(THEME_KEY) || 'auto';
+      const saved = localStorage.getItem(getThemeKey()) || 'auto';
       if(saved === 'auto') applyTheme('auto');
     });
 
@@ -1612,11 +2115,8 @@
 
       const { wU, hU } = widgetUnits(w);
 
-      // base do clock: 4x2 units (equivalente ao 2x1 original)
       const sx = wU / 4;
       const sy = hU / 2;
-
-      // mantém proporção e evita exagero
       const scale = clamp(Math.min(sx, sy), 0.85, 1.85);
 
       w.style.setProperty('--clockScale', scale.toFixed(3));
@@ -1700,12 +2200,9 @@
 
       setGhost(w, colU, rowU);
 
-      // ✅ FIX: ao redimensionar THEME, recalcula o thumb (imediato)
       if(w.dataset.id === 'theme'){
         syncThemeThumb(null, true);
       }
-
-      // ✅ Clock typography live
       if(w.dataset.id === 'clock'){
         updateClockTypography();
       }
@@ -1724,7 +2221,6 @@
       commitWidgetCellUnits(w, colU, rowU);
       hideGhost();
 
-      // ✅ final sync
       if(w.dataset.id === 'theme'){
         syncThemeThumb(null, false);
       }
@@ -1733,6 +2229,7 @@
       }
 
       resize = null;
+      refreshAccountUI();
     }
 
     document.querySelectorAll('.resize-handle').forEach(h=>{
@@ -1754,7 +2251,7 @@
     const pages = {
       home:        { title: 'Menu',            sub: 'Config • Conta • Personalização • Automação • Dispositivos' },
       configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
-      account:     { title: 'Conta',           sub: 'Perfil e segurança' },
+      account:     { title: 'Conta',           sub: 'Login e sincronização' },
       personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
       automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
       devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
@@ -1772,6 +2269,10 @@
 
       sidebar.classList.toggle('has-back', current !== 'home');
       sideDock.classList.toggle('hidden', current !== 'home');
+
+      if(current === 'account'){
+        refreshAccountUI();
+      }
     }
 
     function showPage(nextId, direction){
@@ -1906,6 +2407,8 @@
 
       if(input === 'menu' || input === 'abrir menu') openSidebar();
       if(input === 'fechar menu') closeSidebar();
+
+      if(input === 'entrar' || input === 'login' || input === 'conta') openAuth('login');
     }
 
     cmd.addEventListener('keydown', (e)=>{
@@ -1915,12 +2418,282 @@
       }
     });
 
+    /* =========================
+       ✅ Auth modal logic
+       ========================= */
+    const authOverlay = document.getElementById('authOverlay');
+    const authClose   = document.getElementById('authClose');
+    const tabCreate   = document.getElementById('tabCreate');
+    const tabLogin    = document.getElementById('tabLogin');
+    const primaryAuthBtn = document.getElementById('primaryAuthBtn');
+    const googleBtn   = document.getElementById('googleBtn');
+    const authEmail   = document.getElementById('authEmail');
+    const authPass    = document.getElementById('authPass');
+    const pwWrap      = document.getElementById('pwWrap');
+    const authError   = document.getElementById('authError');
+    const guestLink   = document.getElementById('guestLink');
+    const authHint    = document.getElementById('authHint');
+
+    let authTab = 'create';
+
+    function showAuthError(msg){
+      authError.textContent = msg;
+      authError.style.display = 'block';
+    }
+    function clearAuthError(){
+      authError.style.display = 'none';
+      authError.textContent = '—';
+    }
+
+    function setAuthTab(tab){
+      authTab = tab;
+      tabCreate.classList.toggle('active', tab === 'create');
+      tabLogin.classList.toggle('active', tab === 'login');
+
+      clearAuthError();
+
+      if(tab === 'create'){
+        primaryAuthBtn.textContent = '✨ Criar e entrar';
+        authHint.textContent = 'Crie sua conta para sincronizar layout e tema entre dispositivos.';
+      }else{
+        primaryAuthBtn.textContent = '🔓 Entrar';
+        authHint.textContent = 'Entre para carregar as configurações que já estão salvas na sua conta.';
+      }
+    }
+
+    tabCreate.addEventListener('click', ()=>setAuthTab('create'));
+    tabLogin.addEventListener('click', ()=>setAuthTab('login'));
+
+    function openAuth(tab='create'){
+      setAuthTab(tab);
+      authOverlay.classList.add('open');
+      authOverlay.setAttribute('aria-hidden','false');
+      // foco suave
+      setTimeout(()=>authEmail.focus(), 60);
+    }
+    function closeAuth(){
+      authOverlay.classList.remove('open');
+      authOverlay.setAttribute('aria-hidden','true');
+      clearAuthError();
+    }
+    authClose.addEventListener('click', closeAuth);
+    authOverlay.addEventListener('pointerdown', (e)=>{
+      if(e.target === authOverlay) closeAuth();
+    });
+
+    guestLink.addEventListener('click', ()=>{
+      // só fecha; continua guest
+      closeAuth();
+      markWelcomeSeen();
+      refreshAccountUI();
+    });
+
+    function validEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function doLoginSession(email, provider='password'){
+      setSession({ email, provider, at: Date.now() });
+      setActiveProfileFromSession();
+
+      // por padrão, sync ligado
+      if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
+
+      migrateGuestToAccountIfNeeded();
+
+      // recarrega state usando chaves da conta
+      loadTheme();
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+
+      defaultLayoutIfNeeded();
+      applyLayout();
+      normalizeAll();
+      updateClockTypography();
+      syncThemeThumb(null, true);
+
+      closeAuth();
+      markWelcomeSeen();
+      refreshAccountUI();
+    }
+
+    function createAccount(email, password){
+      const users = getUsers();
+      const key = String(email).trim().toLowerCase();
+      if(users[key]) return { ok:false, err:'Esse email já tem conta. Use “Entrar”.' };
+      if(password.length < 6) return { ok:false, err:'Senha muito curta. Use pelo menos 6 caracteres.' };
+      users[key] = { pw: pwHash(password), createdAt: Date.now() };
+      setUsers(users);
+      return { ok:true };
+    }
+
+    function loginWithPassword(email, password){
+      const users = getUsers();
+      const key = String(email).trim().toLowerCase();
+      const u = users[key];
+      if(!u) return { ok:false, err:'Conta não encontrada. Crie uma conta primeiro.' };
+      if(u.pw !== pwHash(password)) return { ok:false, err:'Senha incorreta.' };
+      return { ok:true };
+    }
+
+    primaryAuthBtn.addEventListener('click', ()=>{
+      clearAuthError();
+
+      const email = String(authEmail.value || '').trim().toLowerCase();
+      const pass  = String(authPass.value || '');
+
+      if(!validEmail(email)) return showAuthError('Digite um email válido.');
+
+      if(authTab === 'create'){
+        const r = createAccount(email, pass);
+        if(!r.ok) return showAuthError(r.err);
+        doLoginSession(email, 'password');
+      }else{
+        const r = loginWithPassword(email, pass);
+        if(!r.ok) return showAuthError(r.err);
+        doLoginSession(email, 'password');
+      }
+    });
+
+    // “Google” simulado (sem backend). Depois dá pra plugar Google Identity Services.
+    googleBtn.addEventListener('click', ()=>{
+      clearAuthError();
+      const email = String(authEmail.value || '').trim().toLowerCase();
+      if(!validEmail(email)) return showAuthError('Digite seu email (ex: voce@gmail.com) para simular o login Google.');
+      doLoginSession(email, 'google');
+    });
+
+    // Enter no campo senha aciona
+    authPass.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') primaryAuthBtn.click();
+    });
+
+    /* ===== “Primeira entrada”: popup ===== */
+    const WELCOME_KEY = 'terminal.welcome.seen.v1';
+    function hasWelcomeSeen(){
+      try{ return localStorage.getItem(WELCOME_KEY) === '1'; }catch(e){ return false; }
+    }
+    function markWelcomeSeen(){
+      try{ localStorage.setItem(WELCOME_KEY,'1'); }catch(e){}
+    }
+
+    function maybeShowFirstVisitAuth(){
+      // requisito: ao entrar pela primeira vez, mostra popup
+      if(!hasWelcomeSeen()){
+        openAuth('create');
+      }
+    }
+
+    /* ===== Account page UI ===== */
+    const acctName = document.getElementById('acctName');
+    const acctEmail = document.getElementById('acctEmail');
+    const acctBadge = document.getElementById('acctBadge');
+    const syncToggle = document.getElementById('syncToggle');
+    const openAuthFromAccount = document.getElementById('openAuthFromAccount');
+    const forceSaveBtn = document.getElementById('forceSaveBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const acctNote = document.getElementById('acctNote');
+
+    function refreshAccountUI(){
+      const s = getSession();
+      const logged = !!(s && s.email);
+
+      const syncOn = getSyncEnabled();
+      if(syncToggle) syncToggle.classList.toggle('on', !!syncOn);
+
+      if(logged){
+        acctName.textContent = (s.provider === 'google') ? 'Conta Google' : 'Conta Terminal';
+        acctEmail.textContent = s.email;
+        acctBadge.textContent = (s.provider === 'google') ? 'Google' : 'Email';
+        acctNote.textContent = 'Sua conta está ativa. Tema e layout ficam salvos e carregam automaticamente. ✅✨';
+
+        openAuthFromAccount.textContent = '🔁 Trocar';
+        logoutBtn.style.display = '';
+        forceSaveBtn.style.display = '';
+      }else{
+        acctName.textContent = 'Convidado';
+        acctEmail.textContent = 'Sem login (configs locais neste device)';
+        acctBadge.textContent = 'Convidado';
+        acctNote.textContent = 'Entre para salvar suas configurações na conta e usar em outros dispositivos. ✨';
+
+        openAuthFromAccount.textContent = '🔑 Entrar';
+        logoutBtn.style.display = 'none';
+        forceSaveBtn.style.display = 'none';
+      }
+    }
+
+    syncToggle.addEventListener('click', ()=>{
+      const next = !getSyncEnabled();
+      setSyncEnabled(next);
+
+      // recarrega theme/edit/layout da fonte correta
+      loadTheme();
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+
+      defaultLayoutIfNeeded();
+      applyLayout();
+      normalizeAll();
+
+      updateClockTypography();
+      syncThemeThumb(null, true);
+      refreshAccountUI();
+    });
+
+    openAuthFromAccount.addEventListener('click', ()=>{
+      openAuth(isLoggedIn() ? 'login' : 'create');
+    });
+
+    forceSaveBtn.addEventListener('click', ()=>{
+      // commit rápido: apenas re-salva o layout corrente e modo
+      try{
+        // edit
+        localStorage.setItem(getEditKey(), isEditMode ? '1' : '0');
+      }catch(e){}
+      // theme já salva no setTheme
+      // layout já salva em commitWidgetCellUnits — mas garantimos um flush:
+      const layout = loadLayout();
+      saveLayout(layout);
+      refreshAccountUI();
+      alert('Configs salvas ✅');
+    });
+
+    logoutBtn.addEventListener('click', ()=>{
+      setSession(null);
+      setActiveProfileFromSession();
+
+      // volta para guest + carrega legado
+      loadTheme();
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+
+      defaultLayoutIfNeeded();
+      applyLayout();
+      normalizeAll();
+
+      updateClockTypography();
+      syncThemeThumb(null, true);
+      refreshAccountUI();
+      alert('Você saiu. Agora está como convidado. 👤');
+    });
+
     /* ===== Boot ===== */
     function boot(){
       syncGridVars();
+
+      // profile from session
+      setActiveProfileFromSession();
+
+      // sync default ON (device preference)
+      if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
+      else setSyncEnabled(getSyncEnabled());
+
+      // migrate guest → account if needed
+      migrateGuestToAccountIfNeeded();
+
       loadTheme();
 
-      const em = localStorage.getItem(EDIT_KEY);
+      const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
 
       // ensure base pixel sizes from dataset before layout placement
@@ -1933,7 +2706,6 @@
       applyLayout();
       normalizeAll();
 
-      // ✅ initial typography & theme thumb align
       updateClockTypography();
       syncThemeThumb(null, true);
 
@@ -1952,6 +2724,9 @@
         updateClockTypography();
         syncThemeThumb(null, true);
       });
+
+      refreshAccountUI();
+      maybeShowFirstVisitAuth();
     }
 
     boot();
