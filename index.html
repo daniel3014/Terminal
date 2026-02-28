@@ -764,11 +764,7 @@
       pointer-events: none;
     }
 
-    /* ===== Auth Modal / Account UI / mini overlay (mantidos) ===== */
-    /* (mantive TODO o CSS que você já tinha no arquivo anterior) */
-    /* --- Para não poluir: CSS extra do auth/account/profile editor permanece igual --- */
-
-    /* ===== Auth Modal (glass premium) ===== */
+    /* ===== Auth Modal / Account UI ===== */
     .auth-overlay{
       position:fixed;
       inset:0;
@@ -1242,7 +1238,6 @@
       flex: 0 0 auto;
     }
 
-    /* ===== Simple modal for profile edit ===== */
     .mini-overlay{
       position:fixed;
       inset:0;
@@ -1303,7 +1298,7 @@
     .mini-actions .auth-btn{ height: 42px; border-radius: 16px; }
   </style>
 
-  <!-- ✅ Firebase (Auth + Firestore) -->
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -1391,19 +1386,6 @@
 
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
-
-                  <!-- ✅ EXTRA: atalho "Conta" (não altera dock, só ajuda UX) -->
-                  <div class="side-item" data-nav="account">
-                    <div class="side-left">
-                      <div class="side-ico">👤</div>
-                      <div class="side-label">
-                        <b>Conta</b>
-                        <span>perfil, sync, logout, troca</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
                   <div class="side-item" data-nav="personalize">
                     <div class="side-left">
                       <div class="side-ico">🎨</div>
@@ -1480,10 +1462,9 @@
                 </div>
               </div>
 
-              <!-- ✅ ACCOUNT PAGE -->
+              <!-- ACCOUNT PAGE -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
-
                   <div class="acct-top">
                     <div class="acct-left">
                       <div class="avatar" id="acctAvatar">
@@ -1648,11 +1629,11 @@
             </div>
 
             <div class="side-dock" id="sideDock">
-              <div class="dock-btn" data-nav="configs" title="Configurações">
+              <div class="dock-btn" id="dockConfigs" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
               </div>
 
-              <div class="dock-btn" data-nav="account" title="Conta">
+              <div class="dock-btn" id="dockAccount" data-nav="account" title="Conta">
                 <div class="dock-ico">👤</div>
               </div>
             </div>
@@ -1664,7 +1645,7 @@
     </div>
   </div>
 
-  <!-- ✅ AUTH POPUP -->
+  <!-- AUTH POPUP -->
   <div class="auth-overlay" id="authOverlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
       <div class="auth-top">
@@ -1712,7 +1693,7 @@
     </div>
   </div>
 
-  <!-- ✅ EDIT PROFILE POPUP -->
+  <!-- EDIT PROFILE POPUP -->
   <div class="mini-overlay" id="profileOverlay" aria-hidden="true">
     <div class="mini-modal" role="dialog" aria-modal="true" aria-label="Editar perfil">
       <div class="mini-head">
@@ -1741,7 +1722,7 @@
         </div>
 
         <div class="auth-small" style="color: var(--muted);">
-          Obs: para conta Google/Email, a foto usa URL (ou dataURL). Em produção, o ideal é Storage + URL pública. 🧊
+          Obs: em produção o ideal é usar Storage + URL pública. 🧊
         </div>
       </div>
     </div>
@@ -1918,7 +1899,7 @@
     function hideGhost(){ ghost.classList.remove('visible'); }
 
     /* =========================================================
-       Profiles, storage & account switch (mantido igual)
+       Profiles, storage & account switch
        ========================================================= */
     const SYNC_KEY = 'terminal.account.sync.v2';
     const ACCOUNTS_USED_KEY = 'terminal.accounts.used.v1';
@@ -2393,7 +2374,7 @@
     }
 
     /* =========================================================
-       Resize (Edit Mode) - mantido
+       Resize (Edit Mode)
        ========================================================= */
     let resize = null;
 
@@ -2511,7 +2492,7 @@
     window.addEventListener('pointerup', endResize);
 
     /* =========================================================
-       Sidebar Router ✅ FIXADO (aqui está o bug resolvido)
+       Sidebar Router ✅ CORRIGIDO (fromId -> toId)
        ========================================================= */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebar = document.getElementById('sidebar');
@@ -2546,41 +2527,38 @@
       sidebar.classList.toggle('has-back', current !== 'home');
       sideDock.classList.toggle('hidden', current !== 'home');
 
-      if(current === 'account'){
-        refreshAccountUI();
-      }
+      if(current === 'account') refreshAccountUI();
     }
 
-    function showPage(nextId, direction){
-      const currentId = navStack[navStack.length - 1] || 'home';
-      if(nextId === currentId) return;
+    function showPage(fromId, toId, direction){
+      if(!toId || fromId === toId) return;
 
-      const currentEl = getPageEl(currentId);
-      const nextEl = getPageEl(nextId);
-      if(!nextEl) return;
+      const fromEl = getPageEl(fromId);
+      const toEl = getPageEl(toId);
+      if(!toEl) return;
 
-      // limpa estados
+      // limpa estados em páginas fora do par
       document.querySelectorAll('.side-page').forEach(p=>{
-        if(p !== currentEl && p !== nextEl){
+        if(p !== fromEl && p !== toEl){
           p.classList.remove('active','left');
         }
       });
 
       if(direction === 'back'){
-        // volta: próximo começa vindo da esquerda e vai para o centro
-        nextEl.classList.add('active','left');
-        if(currentEl){
-          currentEl.classList.remove('left');
-          currentEl.classList.remove('active');
+        // to começa levemente à esquerda (left) e entra
+        toEl.classList.add('active','left');
+        if(fromEl){
+          fromEl.classList.remove('active');
+          fromEl.classList.remove('left');
         }
-        requestAnimationFrame(()=> nextEl.classList.remove('left'));
+        requestAnimationFrame(()=> toEl.classList.remove('left'));
       }else{
-        // forward: current sai para esquerda, next entra do lado direito
-        nextEl.classList.add('active');
-        nextEl.classList.remove('left');
-        if(currentEl){
-          currentEl.classList.add('left');
-          currentEl.classList.remove('active');
+        // forward: to entra, from sai pra esquerda
+        toEl.classList.add('active');
+        toEl.classList.remove('left');
+        if(fromEl){
+          fromEl.classList.add('left');
+          fromEl.classList.remove('active');
         }
       }
 
@@ -2589,24 +2567,18 @@
 
     function navTo(id){
       if(!pages[id]) return;
-      const current = navStack[navStack.length - 1] || 'home';
-      if(id === current) return;
+      const from = navStack[navStack.length - 1] || 'home';
+      if(id === from) return;
+
       navStack.push(id);
-      showPage(id, 'forward');
+      showPage(from, id, 'forward');
     }
 
     function navBack(){
       if(navStack.length <= 1) return;
-      const current = navStack.pop();
-      const prev = navStack[navStack.length - 1] || 'home';
-
-      // show previous as back direction
-      showPage(prev, 'back');
-
-      const currentEl = getPageEl(current);
-      if(currentEl){
-        currentEl.classList.remove('active','left');
-      }
+      const from = navStack.pop();
+      const to = navStack[navStack.length - 1] || 'home';
+      showPage(from, to, 'back');
     }
 
     function resetMenuNav(){
@@ -2646,7 +2618,7 @@
       if(e.target === sidebarOverlay) closeSidebar();
     });
 
-    /* ✅ FIX: event delegation para qualquer [data-nav] dentro do sidebar */
+    // delegation para qualquer item com data-nav dentro das páginas
     sidebarPages.addEventListener('click', (e)=>{
       const el = e.target.closest('[data-nav]');
       if(!el) return;
@@ -2655,14 +2627,9 @@
       navTo(id);
     });
 
-    /* ✅ FIX: dock também usa delegation (e garante clique) */
-    sideDock.addEventListener('click', (e)=>{
-      const el = e.target.closest('[data-nav]');
-      if(!el) return;
-      const id = el.dataset.nav;
-      if(!id) return;
-      navTo(id);
-    });
+    // clique do dock (robusto)
+    document.getElementById('dockConfigs').addEventListener('click', ()=>navTo('configs'));
+    document.getElementById('dockAccount').addEventListener('click', ()=>navTo('account'));
 
     document.querySelectorAll('[data-action]').forEach(el=>{
       el.addEventListener('click', ()=>{
@@ -2673,9 +2640,8 @@
     });
 
     /* =========================================================
-       Auth / Account / Cloud (mantidos iguais ao seu arquivo)
+       Auth / Account / Cloud
        ========================================================= */
-
     const authOverlay = document.getElementById('authOverlay');
     const tabCreate   = document.getElementById('tabCreate');
     const tabLogin    = document.getElementById('tabLogin');
@@ -2929,8 +2895,7 @@
       }
     });
 
-    const editProfileBtn = document.getElementById('editProfileBtn');
-    editProfileBtn.addEventListener('click', openProfileEditor);
+    document.getElementById('editProfileBtn').addEventListener('click', openProfileEditor);
 
     /* ===== Account Page ===== */
     const acctNameEl = document.getElementById('acctName');
