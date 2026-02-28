@@ -248,7 +248,7 @@
       height: 12px;
       border-right: 2px solid rgba(255,255,255,0.55);
       border-bottom: 2px solid rgba(255,255,255,0.55);
-      transform: translate(1px,1px) rotate(0deg);
+      transform: translate(1px,1px);
       border-radius: 1px;
       opacity: 0.9;
     }
@@ -261,51 +261,58 @@
       display:flex;
     }
 
-    /* ====== Clock content (keeps visual) ====== */
+    /* ====== Clock content (auto scale) ====== */
+    .clock-widget{
+      --clockScale: 1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
     .clock-inner{
       width:100%;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap: 6px;
+      gap: calc(6px * var(--clockScale));
       text-align:center;
     }
     .time-row{
       display:flex;
       align-items:baseline;
       justify-content:center;
-      gap: 6px;
+      gap: calc(6px * var(--clockScale));
       width:100%;
     }
     .big-time{
-      font-size: 34px;
+      font-size: calc(34px * var(--clockScale));
       font-weight: 800;
       letter-spacing: 0.2px;
       line-height: 1.0;
     }
     .seconds{
-      font-size: 13px;
+      font-size: calc(13px * (0.92 * var(--clockScale)));
       font-weight: 700;
       color: var(--muted);
       letter-spacing: 0.2px;
-      transform: translateY(-2px);
-      min-width: 18px;
+      transform: translateY(calc(-2px * var(--clockScale)));
+      min-width: calc(18px * var(--clockScale));
       text-align:left;
     }
     .date-line{
-      font-size: 13px;
+      font-size: calc(13px * (0.92 * var(--clockScale)));
       color: var(--muted);
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 8px;
+      gap: calc(8px * var(--clockScale));
       width:100%;
     }
     .subline{
-      font-size: 12.5px;
+      font-size: calc(12.5px * (0.92 * var(--clockScale)));
       color: var(--muted);
-      line-height: 1.2rem;
+      line-height: calc(1.2rem * var(--clockScale));
     }
 
     /* ====== Chat content ====== */
@@ -339,7 +346,7 @@
     }
 
     /* ====== Theme pill content (keeps visual) ====== */
-    .theme-widget .pad{ padding: 12px; width: 100%; }
+    .theme-widget .pad{ padding: 12px; width: 100%; height: 100%; display:flex; align-items:center; justify-content:center; }
     .theme-pill{
       position:relative;
       width: 100%;
@@ -409,9 +416,9 @@
         0 10px 20px rgba(10,20,40,0.12);
     }
 
-    /* ====== Menu button (visual) ====== */
+    /* ====== Menu button (FIX: keep square in 0.5x0.5) ====== */
     .menu-widget .pad{
-      padding: 10px;
+      padding: 8px; /* ✅ menor pra caber no 0.5x0.5 */
       width:100%;
       height:100%;
       display:flex;
@@ -419,9 +426,12 @@
       justify-content:center;
     }
     .menu-btn{
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1 / 1;            /* ✅ garante quadrado */
+      max-width: 64px;                /* ✅ evita ficar gigante se widget crescer */
+      max-height: 64px;
+      border-radius: 18px;            /* ✅ glass square */
       border: 1px solid var(--stroke2);
       background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
       box-shadow:
@@ -831,6 +841,7 @@
 
           <div class="sidebar-body">
             <div class="sidebar-pages" id="sidebarPages">
+
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
                   <div class="side-item" data-nav="personalize">
@@ -880,6 +891,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="preferences">
                     <div class="side-left">
                       <div class="side-ico">⚡</div>
@@ -890,6 +902,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="about">
                     <div class="side-left">
                       <div class="side-ico">ℹ️</div>
@@ -900,6 +913,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-note">
                     Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨
                   </div>
@@ -918,6 +932,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="security">
                     <div class="side-left">
                       <div class="side-ico">🔒</div>
@@ -928,6 +943,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="sessions">
                     <div class="side-left">
                       <div class="side-ico">🛰️</div>
@@ -938,6 +954,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-note">
                     Futuro: login, sync por dispositivo e permissões do microfone. 🧠
                   </div>
@@ -956,6 +973,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="grid">
                     <div class="side-left">
                       <div class="side-ico">•</div>
@@ -966,6 +984,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="motion">
                     <div class="side-left">
                       <div class="side-ico">🫧</div>
@@ -976,6 +995,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-note">
                     Aqui a gente evolui o “liquid glass” mantendo leve pra devices antigos. 🫶
                   </div>
@@ -994,6 +1014,7 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
+
                   <div class="side-item" data-action="calendar">
                     <div class="side-left">
                       <div class="side-ico">📅</div>
@@ -1004,6 +1025,7 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
+
                   <div class="side-note">
                     Futuro: wake word + automações + notificações. 🎙️⏰
                   </div>
@@ -1022,6 +1044,7 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
+
                   <div class="side-item" data-action="manage">
                     <div class="side-left">
                       <div class="side-ico">📱</div>
@@ -1032,17 +1055,20 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
+
                   <div class="side-note">
                     Ideia: cada device com widgets/layout próprios, sincronizados. 🔁
                   </div>
                 </div>
               </div>
+
             </div>
 
             <div class="side-dock" id="sideDock">
               <div class="dock-btn" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
               </div>
+
               <div class="dock-btn" data-nav="account" title="Conta">
                 <div class="dock-ico">👤</div>
               </div>
@@ -1192,7 +1218,7 @@
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    const STORAGE_KEY = 'terminal.layout.v9';  // bump for units+size
+    const STORAGE_KEY = 'terminal.layout.v9';
     const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
@@ -1240,7 +1266,6 @@
           w.style.display = '';
         }
 
-        // size first (so placement bounds are correct)
         const wU = (layout[id] && typeof layout[id].wU === 'number') ? layout[id].wU : parseInt(w.dataset.w || '2', 10);
         const hU = (layout[id] && typeof layout[id].hU === 'number') ? layout[id].hU : parseInt(w.dataset.h || '2', 10);
         setWidgetPixelSize(w, wU, hU);
@@ -1286,16 +1311,15 @@
       if(Object.keys(layout).length) return;
 
       const menu  = document.querySelector('.widget[data-id="menu"]');
-      const clock = document.querySelector('.widget[data-id="clock"]');
+      const clockW = document.querySelector('.widget[data-id="clock"]');
       const chat  = document.querySelector('.widget[data-id="chat"]');
-      const theme = document.querySelector('.widget[data-id="theme"]');
+      const themeW = document.querySelector('.widget[data-id="theme"]');
 
-      // desired positions in HALF-UNITS
       const desired = [
-        { w: menu,  colU: 0,  rowU: 0 },  // 0.5 x 0.5
-        { w: chat,  colU: 2,  rowU: 0 },  // starts at 1 cell (2 half units)
-        { w: clock, colU: 8,  rowU: 0 },  // 4 cells
-        { w: theme, colU: 14, rowU: 0 },  // 7 cells
+        { w: menu,   colU: 0,  rowU: 0 },
+        { w: chat,   colU: 2,  rowU: 0 },
+        { w: clockW, colU: 8,  rowU: 0 },
+        { w: themeW, colU: 14, rowU: 0 },
       ];
 
       desired.forEach(({w,colU,rowU})=>{
@@ -1308,7 +1332,6 @@
     function normalizeAll(){
       const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
 
-      // ensure size applied
       widgets.forEach(w=>{
         const { wU, hU } = widgetUnits(w);
         setWidgetPixelSize(w, wU, hU);
@@ -1449,116 +1472,6 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
-    /* ===== Resize (Edit Mode) ===== */
-    let resize = null;
-
-    function startResize(e){
-      const w = e.target.closest('.widget');
-      if(!w) return;
-      if(!isEditMode) return;
-      if(w.dataset.resizable !== '1') return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      clearHold();
-
-      const rect = w.getBoundingClientRect();
-      const startW = parseInt(w.dataset.w || '2', 10);
-      const startH = parseInt(w.dataset.h || '2', 10);
-
-      resize = {
-        w,
-        pointerId: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        startW,
-        startH,
-        startRect: rect,
-        originColU: parseInt(w.dataset.colU || '0', 10),
-        originRowU: parseInt(w.dataset.rowU || '0', 10),
-      };
-
-      w.classList.add('resizing');
-      w.style.animation = 'none';
-      w.setPointerCapture(e.pointerId);
-    }
-
-    function moveResize(e){
-      if(!resize) return;
-
-      const w = resize.w;
-      const { subStep } = getVars();
-
-      const dx = e.clientX - resize.startX;
-      const dy = e.clientY - resize.startY;
-
-      const addWU = Math.round(dx / subStep);
-      const addHU = Math.round(dy / subStep);
-
-      // minimum sizes:
-      const minWU = (w.dataset.id === 'menu') ? 1 : 2; // menu fixed anyway
-      const minHU = (w.dataset.id === 'menu') ? 1 : 2;
-
-      let nextWU = clamp(resize.startW + addWU, minWU, 60);
-      let nextHU = clamp(resize.startH + addHU, minHU, 60);
-
-      // apply temp size
-      setWidgetPixelSize(w, nextWU, nextHU);
-
-      // ensure still fits without collisions; if collides, shrink down gracefully
-      const occ = buildOccupancy(w.dataset.id);
-      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
-      const colU = clamp(resize.originColU, 0, maxColU);
-      const rowU = clamp(resize.originRowU, 0, maxRowU);
-
-      w.dataset.colU = String(colU);
-      w.dataset.rowU = String(rowU);
-
-      // if cannot place at current size, try reduce
-      if(!canPlaceUnits(w, colU, rowU, occ)){
-        // try reduce W then H
-        let ok = false;
-        let tryWU = nextWU;
-        let tryHU = nextHU;
-
-        for(let tries=0; tries<80 && !ok; tries++){
-          if(tryWU > minWU) tryWU--;
-          else if(tryHU > minHU) tryHU--;
-          else break;
-
-          setWidgetPixelSize(w, tryWU, tryHU);
-          if(canPlaceUnits(w, colU, rowU, occ)) ok = true;
-        }
-      }
-
-      // show ghost at current origin to match resize
-      setGhost(w, colU, rowU);
-    }
-
-    function endResize(){
-      if(!resize) return;
-      const w = resize.w;
-
-      w.classList.remove('resizing');
-      w.style.animation = '';
-
-      const colU = parseInt(w.dataset.colU || '0', 10);
-      const rowU = parseInt(w.dataset.rowU || '0', 10);
-
-      commitWidgetCellUnits(w, colU, rowU);
-      hideGhost();
-
-      resize = null;
-    }
-
-    // attach resize handlers
-    document.querySelectorAll('.resize-handle').forEach(h=>{
-      h.addEventListener('pointerdown', startResize);
-    });
-    window.addEventListener('pointermove', moveResize);
-    window.addEventListener('pointerup', endResize);
-
     /* ===== Theme ===== */
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
@@ -1582,6 +1495,12 @@
       return range * (idx / 2);
     }
 
+    function syncThemeThumb(mode, immediate=false){
+      if(!mode) mode = localStorage.getItem(THEME_KEY) || 'auto';
+      themeThumb.style.transition = immediate ? 'none' : 'transform 240ms var(--ease)';
+      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
+    }
+
     function setTheme(mode){
       localStorage.setItem(THEME_KEY, mode);
       applyTheme(mode);
@@ -1590,8 +1509,7 @@
         opt.classList.toggle('active', opt.dataset.theme === mode);
       });
 
-      themeThumb.style.transition = 'transform 240ms var(--ease)';
-      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
+      syncThemeThumb(mode, false);
     }
 
     function loadTheme(){
@@ -1687,6 +1605,141 @@
       const mo = String(now.getMonth()+1).padStart(2,'0');
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
+
+    function updateClockTypography(){
+      const w = document.querySelector('.widget[data-id="clock"]');
+      if(!w || w.style.display === 'none') return;
+
+      const { wU, hU } = widgetUnits(w);
+
+      // base do clock: 4x2 units (equivalente ao 2x1 original)
+      const sx = wU / 4;
+      const sy = hU / 2;
+
+      // mantém proporção e evita exagero
+      const scale = clamp(Math.min(sx, sy), 0.85, 1.85);
+
+      w.style.setProperty('--clockScale', scale.toFixed(3));
+    }
+
+    /* ===== Resize (Edit Mode) ===== */
+    let resize = null;
+
+    function startResize(e){
+      const w = e.target.closest('.widget');
+      if(!w) return;
+      if(!isEditMode) return;
+      if(w.dataset.resizable !== '1') return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      clearHold();
+
+      const startW = parseInt(w.dataset.w || '2', 10);
+      const startH = parseInt(w.dataset.h || '2', 10);
+
+      resize = {
+        w,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW,
+        startH,
+        originColU: parseInt(w.dataset.colU || '0', 10),
+        originRowU: parseInt(w.dataset.rowU || '0', 10),
+      };
+
+      w.classList.add('resizing');
+      w.style.animation = 'none';
+      w.setPointerCapture(e.pointerId);
+    }
+
+    function moveResize(e){
+      if(!resize) return;
+
+      const w = resize.w;
+      const { subStep } = getVars();
+
+      const dx = e.clientX - resize.startX;
+      const dy = e.clientY - resize.startY;
+
+      const addWU = Math.round(dx / subStep);
+      const addHU = Math.round(dy / subStep);
+
+      const minWU = 2;
+      const minHU = 2;
+
+      let nextWU = clamp(resize.startW + addWU, minWU, 60);
+      let nextHU = clamp(resize.startH + addHU, minHU, 60);
+
+      setWidgetPixelSize(w, nextWU, nextHU);
+
+      const occ = buildOccupancy(w.dataset.id);
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      const colU = clamp(resize.originColU, 0, maxColU);
+      const rowU = clamp(resize.originRowU, 0, maxRowU);
+
+      w.dataset.colU = String(colU);
+      w.dataset.rowU = String(rowU);
+
+      if(!canPlaceUnits(w, colU, rowU, occ)){
+        let ok = false;
+        let tryWU = nextWU;
+        let tryHU = nextHU;
+
+        for(let tries=0; tries<80 && !ok; tries++){
+          if(tryWU > minWU) tryWU--;
+          else if(tryHU > minHU) tryHU--;
+          else break;
+
+          setWidgetPixelSize(w, tryWU, tryHU);
+          if(canPlaceUnits(w, colU, rowU, occ)) ok = true;
+        }
+      }
+
+      setGhost(w, colU, rowU);
+
+      // ✅ FIX: ao redimensionar THEME, recalcula o thumb (imediato)
+      if(w.dataset.id === 'theme'){
+        syncThemeThumb(null, true);
+      }
+
+      // ✅ Clock typography live
+      if(w.dataset.id === 'clock'){
+        updateClockTypography();
+      }
+    }
+
+    function endResize(){
+      if(!resize) return;
+      const w = resize.w;
+
+      w.classList.remove('resizing');
+      w.style.animation = '';
+
+      const colU = parseInt(w.dataset.colU || '0', 10);
+      const rowU = parseInt(w.dataset.rowU || '0', 10);
+
+      commitWidgetCellUnits(w, colU, rowU);
+      hideGhost();
+
+      // ✅ final sync
+      if(w.dataset.id === 'theme'){
+        syncThemeThumb(null, false);
+      }
+      if(w.dataset.id === 'clock'){
+        updateClockTypography();
+      }
+
+      resize = null;
+    }
+
+    document.querySelectorAll('.resize-handle').forEach(h=>{
+      h.addEventListener('pointerdown', startResize);
+    });
+    window.addEventListener('pointermove', moveResize);
+    window.addEventListener('pointerup', endResize);
 
     /* ===== Sidebar Router ===== */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -1880,23 +1933,24 @@
       applyLayout();
       normalizeAll();
 
+      // ✅ initial typography & theme thumb align
+      updateClockTypography();
+      syncThemeThumb(null, true);
+
       tick();
       setInterval(tick, 1000);
 
       window.addEventListener('resize', ()=>{
         syncGridVars();
 
-        // recompute pixel sizes based on units
         document.querySelectorAll('.widget').forEach(w=>{
           const { wU, hU } = widgetUnits(w);
           setWidgetPixelSize(w, wU, hU);
         });
 
         normalizeAll();
-
-        const saved = localStorage.getItem(THEME_KEY) || 'auto';
-        themeThumb.style.transition = '';
-        themeThumb.style.transform = `translate3d(${slotXForMode(saved)}px,0,0)`;
+        updateClockTypography();
+        syncThemeThumb(null, true);
       });
     }
 
