@@ -27,7 +27,9 @@
       --cell: 120px;
       --gap: 14px;
       --pad: 16px;
-      --step: 134px; /* synced by JS = cell+gap */
+      --step: 134px; /* JS sync = cell+gap */
+      --subStep: 67px; /* JS sync = step/2 */
+      --subGap: 7px;   /* JS sync = gap/2 */
 
       /* Border thickness compensation */
       --b: 1px;
@@ -38,7 +40,7 @@
       /* Grid dots */
       --gridDot: rgba(255,255,255,0.14);
       --gridMajorDot: rgba(255,255,255,0.22);
-      --microStep: 33.5px; /* synced by JS = step/4 */
+      --microStep: 33.5px; /* JS sync = step/4 */
 
       --ease: cubic-bezier(.2,.9,.2,1);
     }
@@ -152,7 +154,7 @@
       user-select:none;
       touch-action:none;
       transform: translate3d(0,0,0);
-      will-change: transform, left, top;
+      will-change: transform, left, top, width, height;
       z-index: 2;
       transition: transform 220ms var(--ease), filter 220ms var(--ease);
     }
@@ -179,22 +181,23 @@
     }
 
     .widget.dragging{ cursor: grabbing; z-index: 50; }
+    .widget.resizing{ z-index: 55; }
 
     @keyframes floaty {
       0%, 100% { transform: translate3d(0,0,0); }
       50%      { transform: translate3d(0,-4px,0); }
     }
-    .stage.edit-mode .widget:not(.dragging){
+    .stage.edit-mode .widget:not(.dragging):not(.resizing){
       animation: floaty 2.8s ease-in-out infinite;
       filter: saturate(1.02);
     }
-    .stage.edit-mode .widget:not(.dragging)::before{
+    .stage.edit-mode .widget:not(.dragging):not(.resizing)::before{
       box-shadow:
         0 18px 46px rgba(0,0,0,0.34),
         0 6px 18px rgba(0,0,0,0.22);
       opacity: 0.98;
     }
-    html[data-theme="light"] .stage.edit-mode .widget:not(.dragging)::before{
+    html[data-theme="light"] .stage.edit-mode .widget:not(.dragging):not(.resizing)::before{
       box-shadow:
         0 18px 40px rgba(10,20,40,0.22),
         0 6px 16px rgba(10,20,40,0.14);
@@ -216,14 +219,49 @@
     }
     .snap-ghost.visible{ opacity: 1; }
 
-    .clock-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      display:flex;
+    /* ====== Resize Handle (Edit Mode) ====== */
+    .resize-handle{
+      position:absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.10);
+      backdrop-filter: blur(10px) saturate(140%);
+      -webkit-backdrop-filter: blur(10px) saturate(140%);
+      display:none;
       align-items:center;
       justify-content:center;
-      text-align:center;
+      cursor: nwse-resize;
+      user-select:none;
+      z-index: 5;
     }
+    html[data-theme="light"] .resize-handle{
+      border: 1px solid rgba(10,20,40,0.12);
+      background: rgba(255,255,255,0.35);
+    }
+    .resize-handle::before{
+      content:"";
+      width: 12px;
+      height: 12px;
+      border-right: 2px solid rgba(255,255,255,0.55);
+      border-bottom: 2px solid rgba(255,255,255,0.55);
+      transform: translate(1px,1px) rotate(0deg);
+      border-radius: 1px;
+      opacity: 0.9;
+    }
+    html[data-theme="light"] .resize-handle::before{
+      border-right: 2px solid rgba(10,20,40,0.45);
+      border-bottom: 2px solid rgba(10,20,40,0.45);
+    }
+
+    .stage.edit-mode .widget[data-resizable="1"] .resize-handle{
+      display:flex;
+    }
+
+    /* ====== Clock content (keeps visual) ====== */
     .clock-inner{
       width:100%;
       display:flex;
@@ -231,6 +269,7 @@
       align-items:center;
       justify-content:center;
       gap: 6px;
+      text-align:center;
     }
     .time-row{
       display:flex;
@@ -269,12 +308,7 @@
       line-height: 1.2rem;
     }
 
-    .chat-widget{
-      width:  calc(var(--step) * 3 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      display:flex;
-      align-items:center;
-    }
+    /* ====== Chat content ====== */
     .chat-row{
       width:100%;
       display:flex;
@@ -304,17 +338,8 @@
       white-space:nowrap;
     }
 
-    .theme-widget{
-      width:  calc(var(--step) * 2 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .theme-widget .pad{
-      padding: 12px;
-      width: 100%;
-    }
+    /* ====== Theme pill content (keeps visual) ====== */
+    .theme-widget .pad{ padding: 12px; width: 100%; }
     .theme-pill{
       position:relative;
       width: 100%;
@@ -330,7 +355,6 @@
       touch-action:none;
     }
     html[data-theme="light"] .theme-pill{ background: rgba(255,255,255,0.35); }
-
     .theme-options{
       position:relative;
       width: 100%;
@@ -350,7 +374,6 @@
       cursor:pointer;
     }
     .theme-opt.active{ color: var(--text); }
-
     .ico{
       width: 18px;
       height: 18px;
@@ -359,7 +382,6 @@
       justify-content:center;
       opacity: 0.92;
     }
-
     .theme-thumb{
       position:absolute;
       top: 7px;
@@ -387,28 +409,15 @@
         0 10px 20px rgba(10,20,40,0.12);
     }
 
-    /* =========================
-       MENU WIDGET + SIDEBAR (PÁGINAS INTERNAS)
-    ========================== */
-
-    /* ✅ menu widget agora ocupa 1 célula do grid (resolve o "gap" grande) */
-    .menu-widget{
-      width:  calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      height: calc(var(--step) * 1 - var(--gap) - (var(--b) * 2) - var(--seamFix));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+    /* ====== Menu button (visual) ====== */
     .menu-widget .pad{
-      padding: 12px;
+      padding: 10px;
       width:100%;
       height:100%;
       display:flex;
       align-items:center;
       justify-content:center;
     }
-
-    /* ✅ botão do menu quadrado glass (sem retângulo feio) */
     .menu-btn{
       width: 56px;
       height: 56px;
@@ -437,6 +446,7 @@
     .menu-btn:active{ transform: scale(0.98); }
     .menu-btn svg{ opacity: 0.92; }
 
+    /* ====== Sidebar (unchanged visual) ====== */
     .sidebar-overlay{
       position:absolute;
       inset: var(--pad);
@@ -575,7 +585,7 @@
       opacity: 0;
       pointer-events:none;
       transition: transform 260ms var(--ease), opacity 220ms var(--ease);
-      padding-bottom: 96px; /* ✅ menor porque dock agora é pequeno */
+      padding-bottom: 96px;
     }
     .side-page.active{
       transform: translateX(0);
@@ -669,7 +679,7 @@
       padding: 8px 6px;
     }
 
-    /* ✅ Dock inferior: sem barra, só 2 botões quadrados */
+    /* Dock inferior: 2 botões quadrados (mantém do seu ajuste) */
     .side-dock{
       position:absolute;
       left: 16px;
@@ -680,7 +690,6 @@
       justify-content:space-between;
       gap: 14px;
 
-      /* remove a barra */
       background: transparent;
       border: none;
       padding: 0;
@@ -750,7 +759,8 @@
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <div class="widget menu-widget" data-id="menu" data-kind="menu">
+      <!-- MENU: 0.5 x 0.5 do grid (w=1,h=1 em half-units) -->
+      <div class="widget menu-widget" data-id="menu" data-kind="menu" data-w="1" data-h="1" data-resizable="0">
         <div class="pad">
           <div class="menu-btn no-drag" id="menuBtn" title="Menu">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -760,8 +770,9 @@
         </div>
       </div>
 
-      <div class="widget clock-widget" data-id="clock" data-kind="clock">
-        <div class="pad" style="width:100%;">
+      <!-- CLOCK: 2x1 cells => 4x2 half-units -->
+      <div class="widget clock-widget" data-id="clock" data-kind="clock" data-w="4" data-h="2" data-resizable="1">
+        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
           <div class="clock-inner">
             <div class="time-row">
               <div class="big-time" id="clock">--:--</div>
@@ -773,22 +784,25 @@
             <div class="subline">Lisboa</div>
           </div>
         </div>
+        <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <div class="widget chat-widget" data-id="chat" data-kind="chat">
-        <div class="pad" style="width:100%;">
+      <!-- CHAT: 3x1 cells => 6x2 half-units -->
+      <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
+        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
           <div class="chat-row">
             <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando…'/>
             <div class="hint">Enter ↵</div>
           </div>
         </div>
+        <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <div class="widget theme-widget" data-id="theme" data-kind="theme">
+      <!-- THEME: 2x1 cells => 4x2 half-units -->
+      <div class="widget theme-widget" data-id="theme" data-kind="theme" data-w="4" data-h="2" data-resizable="1">
         <div class="pad">
           <div class="theme-pill" id="themePill">
             <div class="theme-thumb" id="themeThumb"></div>
-
             <div class="theme-options" id="themeOptions">
               <div class="theme-opt" data-theme="light" title="Light"><span class="ico">☀️</span></div>
               <div class="theme-opt" data-theme="dark"  title="Dark"><span class="ico">🌙</span></div>
@@ -796,6 +810,7 @@
             </div>
           </div>
         </div>
+        <div class="resize-handle" data-handle="resize"></div>
       </div>
 
       <!-- Sidebar -->
@@ -816,8 +831,6 @@
 
           <div class="sidebar-body">
             <div class="sidebar-pages" id="sidebarPages">
-
-              <!-- HOME -->
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
                   <div class="side-item" data-nav="personalize">
@@ -855,7 +868,6 @@
                 </div>
               </div>
 
-              <!-- CONFIGS -->
               <div class="side-page" data-page="configs" id="page-configs">
                 <div class="side-section">
                   <div class="side-item" data-action="layout">
@@ -868,7 +880,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="preferences">
                     <div class="side-left">
                       <div class="side-ico">⚡</div>
@@ -879,7 +890,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="about">
                     <div class="side-left">
                       <div class="side-ico">ℹ️</div>
@@ -890,14 +900,12 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-note">
                     Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨
                   </div>
                 </div>
               </div>
 
-              <!-- CONTA -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
                   <div class="side-item" data-action="profile">
@@ -910,7 +918,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="security">
                     <div class="side-left">
                       <div class="side-ico">🔒</div>
@@ -921,7 +928,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="sessions">
                     <div class="side-left">
                       <div class="side-ico">🛰️</div>
@@ -932,14 +938,12 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-note">
                     Futuro: login, sync por dispositivo e permissões do microfone. 🧠
                   </div>
                 </div>
               </div>
 
-              <!-- PERSONALIZAÇÃO -->
               <div class="side-page" data-page="personalize" id="page-personalize">
                 <div class="side-section">
                   <div class="side-item" data-action="themes">
@@ -952,7 +956,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="grid">
                     <div class="side-left">
                       <div class="side-ico">•</div>
@@ -963,7 +966,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="motion">
                     <div class="side-left">
                       <div class="side-ico">🫧</div>
@@ -974,14 +976,12 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-note">
                     Aqui a gente evolui o “liquid glass” mantendo leve pra devices antigos. 🫶
                   </div>
                 </div>
               </div>
 
-              <!-- AUTOMAÇÃO -->
               <div class="side-page" data-page="automation" id="page-automation">
                 <div class="side-section">
                   <div class="side-item" data-action="routines">
@@ -994,7 +994,6 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
-
                   <div class="side-item" data-action="calendar">
                     <div class="side-left">
                       <div class="side-ico">📅</div>
@@ -1005,14 +1004,12 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
-
                   <div class="side-note">
                     Futuro: wake word + automações + notificações. 🎙️⏰
                   </div>
                 </div>
               </div>
 
-              <!-- DISPOSITIVOS -->
               <div class="side-page" data-page="devices" id="page-devices">
                 <div class="side-section">
                   <div class="side-item" data-action="current">
@@ -1025,7 +1022,6 @@
                     </div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-action="manage">
                     <div class="side-left">
                       <div class="side-ico">📱</div>
@@ -1036,21 +1032,17 @@
                     </div>
                     <div class="side-right">Soon</div>
                   </div>
-
                   <div class="side-note">
                     Ideia: cada device com widgets/layout próprios, sincronizados. 🔁
                   </div>
                 </div>
               </div>
-
             </div>
 
-            <!-- Dock (HOME) — agora só 2 botões quadrados -->
             <div class="side-dock" id="sideDock">
               <div class="dock-btn" data-nav="configs" title="Configurações">
                 <div class="dock-ico">⚙️</div>
               </div>
-
               <div class="dock-btn" data-nav="account" title="Conta">
                 <div class="dock-ico">👤</div>
               </div>
@@ -1077,43 +1069,61 @@
       const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
       const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
       const step = cell + gap;
-      return { cell, gap, step };
+      const subStep = step / 2;
+      const subGap = gap / 2;
+      const b = parseFloat(cs.getPropertyValue('--b')) || 1;
+      const seamFix = parseFloat(cs.getPropertyValue('--seamFix')) || 0;
+      return { cell, gap, step, subStep, subGap, b, seamFix };
     }
 
     function syncGridVars(){
-      const { step } = getVars();
+      const { step, subStep } = getVars();
       document.documentElement.style.setProperty('--step', step + 'px');
+      document.documentElement.style.setProperty('--subStep', (subStep) + 'px');
+      document.documentElement.style.setProperty('--subGap', (getVars().gap / 2) + 'px');
       document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
     }
 
     function areaRect(){ return area.getBoundingClientRect(); }
 
-    function colRowToPx(col, row){
-      const { step } = getVars();
-      return { left: col * step, top: row * step };
+    // Half-grid coords are INTEGERS: 1 unit = 0.5 cell
+    function colRowToPx(colU, rowU){
+      const { subStep } = getVars();
+      return { left: colU * subStep, top: rowU * subStep };
     }
 
     function pxToColRow(absX, absY){
-      const { step } = getVars();
+      const { subStep } = getVars();
       const r = areaRect();
       const rx = (absX - r.left);
       const ry = (absY - r.top);
-      return { col: Math.round(rx / step), row: Math.round(ry / step) };
+      return { colU: Math.round(rx / subStep), rowU: Math.round(ry / subStep) };
     }
 
-    function getSpan(w){
-      const { step } = getVars();
-      const spanX = Math.max(1, Math.ceil(w.offsetWidth  / step));
-      const spanY = Math.max(1, Math.ceil(w.offsetHeight / step));
-      return { spanX, spanY };
+    function widgetUnits(w){
+      const wU = Math.max(1, parseInt(w.dataset.w || '2', 10));
+      const hU = Math.max(1, parseInt(w.dataset.h || '2', 10));
+      return { wU, hU };
     }
 
-    function maxColsRowsFor(w){
-      const { step } = getVars();
+    function setWidgetPixelSize(w, wU, hU){
+      const { subStep, subGap, b, seamFix } = getVars();
+      const widthPx  = Math.max(12, (wU * subStep) - subGap - (b * 2) - seamFix);
+      const heightPx = Math.max(12, (hU * subStep) - subGap - (b * 2) - seamFix);
+      w.style.width  = Math.round(widthPx) + 'px';
+      w.style.height = Math.round(heightPx) + 'px';
+      w.dataset.w = String(wU);
+      w.dataset.h = String(hU);
+    }
+
+    function maxColsRowsForUnits(w){
+      const { subStep } = getVars();
       const r = areaRect();
-      const maxCol = Math.max(0, Math.floor((r.width  - w.offsetWidth)  / step));
-      const maxRow = Math.max(0, Math.floor((r.height - w.offsetHeight) / step));
-      return { maxCol, maxRow };
+      const wPx = w.offsetWidth;
+      const hPx = w.offsetHeight;
+      const maxColU = Math.max(0, Math.floor((r.width  - wPx) / subStep));
+      const maxRowU = Math.max(0, Math.floor((r.height - hPx) / subStep));
+      return { maxColU, maxRowU };
     }
 
     function buildOccupancy(exceptId=null){
@@ -1123,66 +1133,66 @@
         const id = w.dataset.id;
         if(exceptId && id === exceptId) return;
 
-        const col = parseInt(w.dataset.col || '0', 10);
-        const row = parseInt(w.dataset.row || '0', 10);
-        const { spanX, spanY } = getSpan(w);
+        const colU = parseInt(w.dataset.colU || '0', 10);
+        const rowU = parseInt(w.dataset.rowU || '0', 10);
+        const { wU, hU } = widgetUnits(w);
 
-        for(let y=0; y<spanY; y++){
-          for(let x=0; x<spanX; x++){
-            occ.add(`${col+x},${row+y}`);
+        for(let y=0; y<hU; y++){
+          for(let x=0; x<wU; x++){
+            occ.add(`${colU+x},${rowU+y}`);
           }
         }
       });
       return occ;
     }
 
-    function canPlace(w, col, row, occ){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      col = clamp(col, 0, maxCol);
-      row = clamp(row, 0, maxRow);
+    function canPlaceUnits(w, colU, rowU, occ){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      colU = clamp(colU, 0, maxColU);
+      rowU = clamp(rowU, 0, maxRowU);
 
-      const { spanX, spanY } = getSpan(w);
-      for(let y=0; y<spanY; y++){
-        for(let x=0; x<spanX; x++){
-          if(occ.has(`${col+x},${row+y}`)) return false;
+      const { wU, hU } = widgetUnits(w);
+      for(let y=0; y<hU; y++){
+        for(let x=0; x<wU; x++){
+          if(occ.has(`${colU+x},${rowU+y}`)) return false;
         }
       }
       return true;
     }
 
-    function findNearestFreeCell(w, desiredCol, desiredRow){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      desiredCol = clamp(desiredCol, 0, maxCol);
-      desiredRow = clamp(desiredRow, 0, maxRow);
+    function findNearestFreeCellUnits(w, desiredColU, desiredRowU){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      desiredColU = clamp(desiredColU, 0, maxColU);
+      desiredRowU = clamp(desiredRowU, 0, maxRowU);
 
       const occ = buildOccupancy(w.dataset.id);
-      const maxRadius = Math.max(maxCol, maxRow) + 6;
+      const maxRadius = Math.max(maxColU, maxRowU) + 12;
 
       for(let rad=0; rad<=maxRadius; rad++){
         for(let dr=-rad; dr<=rad; dr++){
           for(let dc=-rad; dc<=rad; dc++){
             if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue;
-            const col = desiredCol + dc;
-            const row = desiredRow + dr;
-            if(col < 0 || row < 0 || col > maxCol || row > maxRow) continue;
-            if(canPlace(w, col, row, occ)) return { col, row };
+            const colU = desiredColU + dc;
+            const rowU = desiredRowU + dr;
+            if(colU < 0 || rowU < 0 || colU > maxColU || rowU > maxRowU) continue;
+            if(canPlaceUnits(w, colU, rowU, occ)) return { colU, rowU };
           }
         }
       }
-      return { col: desiredCol, row: desiredRow };
+      return { colU: desiredColU, rowU: desiredRowU };
     }
 
-    function setGhost(w, col, row){
-      const { left, top } = colRowToPx(col, row);
+    function setGhost(w, colU, rowU){
+      const { left, top } = colRowToPx(colU, rowU);
       ghost.style.width  = w.offsetWidth + 'px';
       ghost.style.height = w.offsetHeight + 'px';
-      ghost.style.left   = left + 'px';
-      ghost.style.top    = top  + 'px';
+      ghost.style.left   = Math.round(left) + 'px';
+      ghost.style.top    = Math.round(top)  + 'px';
       ghost.classList.add('visible');
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    const STORAGE_KEY = 'terminal.layout.v8';
+    const STORAGE_KEY = 'terminal.layout.v9';  // bump for units+size
     const EDIT_KEY    = 'terminal.editmode.v1';
 
     function loadLayout(){
@@ -1195,23 +1205,25 @@
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(layout)); }catch(e){}
     }
 
-    function commitWidgetCell(w, col, row){
-      const { maxCol, maxRow } = maxColsRowsFor(w);
-      col = clamp(col, 0, maxCol);
-      row = clamp(row, 0, maxRow);
+    function commitWidgetCellUnits(w, colU, rowU){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      colU = clamp(colU, 0, maxColU);
+      rowU = clamp(rowU, 0, maxRowU);
 
-      w.dataset.col = String(col);
-      w.dataset.row = String(row);
+      w.dataset.colU = String(colU);
+      w.dataset.rowU = String(rowU);
 
-      const p = colRowToPx(col, row);
+      const p = colRowToPx(colU, rowU);
       w.style.left = Math.round(p.left) + 'px';
       w.style.top  = Math.round(p.top)  + 'px';
 
       const layout = loadLayout();
       const id = w.dataset.id;
       layout[id] = layout[id] || {};
-      layout[id].col = col;
-      layout[id].row = row;
+      layout[id].colU = colU;
+      layout[id].rowU = rowU;
+      layout[id].wU = parseInt(w.dataset.w || '2', 10);
+      layout[id].hU = parseInt(w.dataset.h || '2', 10);
       layout[id].hidden = false;
       saveLayout(layout);
     }
@@ -1228,11 +1240,16 @@
           w.style.display = '';
         }
 
-        const col = (layout[id] && typeof layout[id].col === 'number') ? layout[id].col : null;
-        const row = (layout[id] && typeof layout[id].row === 'number') ? layout[id].row : null;
+        // size first (so placement bounds are correct)
+        const wU = (layout[id] && typeof layout[id].wU === 'number') ? layout[id].wU : parseInt(w.dataset.w || '2', 10);
+        const hU = (layout[id] && typeof layout[id].hU === 'number') ? layout[id].hU : parseInt(w.dataset.h || '2', 10);
+        setWidgetPixelSize(w, wU, hU);
 
-        if(col !== null && row !== null){
-          commitWidgetCell(w, col, row);
+        const colU = (layout[id] && typeof layout[id].colU === 'number') ? layout[id].colU : null;
+        const rowU = (layout[id] && typeof layout[id].rowU === 'number') ? layout[id].rowU : null;
+
+        if(colU !== null && rowU !== null){
+          commitWidgetCellUnits(w, colU, rowU);
         }
       });
     }
@@ -1248,7 +1265,7 @@
       return true;
     }
 
-    function showWidget(id, desiredCol=0, desiredRow=0){
+    function showWidget(id, desiredColU=0, desiredRowU=0){
       const w = document.querySelector(`.widget[data-id="${id}"]`);
       if(!w) return false;
 
@@ -1259,8 +1276,8 @@
       layout[id].hidden = false;
       saveLayout(layout);
 
-      const free = findNearestFreeCell(w, desiredCol, desiredRow);
-      commitWidgetCell(w, free.col, free.row);
+      const free = findNearestFreeCellUnits(w, desiredColU, desiredRowU);
+      commitWidgetCellUnits(w, free.colU, free.rowU);
       return true;
     }
 
@@ -1273,41 +1290,46 @@
       const chat  = document.querySelector('.widget[data-id="chat"]');
       const theme = document.querySelector('.widget[data-id="theme"]');
 
+      // desired positions in HALF-UNITS
       const desired = [
-        { w: menu,  col: 0, row: 0 },
-        { w: chat,  col: 1, row: 0 },
-        { w: clock, col: 4, row: 0 },
-        { w: theme, col: 6, row: 0 },
+        { w: menu,  colU: 0,  rowU: 0 },  // 0.5 x 0.5
+        { w: chat,  colU: 2,  rowU: 0 },  // starts at 1 cell (2 half units)
+        { w: clock, colU: 8,  rowU: 0 },  // 4 cells
+        { w: theme, colU: 14, rowU: 0 },  // 7 cells
       ];
 
-      desired.forEach(({w,col,row})=>{
+      desired.forEach(({w,colU,rowU})=>{
         if(!w) return;
-        const free = findNearestFreeCell(w, col, row);
-        commitWidgetCell(w, free.col, free.row);
+        const free = findNearestFreeCellUnits(w, colU, rowU);
+        commitWidgetCellUnits(w, free.colU, free.rowU);
       });
     }
 
-    function placeMenuIfMissing(){
-      const layout = loadLayout();
-      const menu = document.querySelector('.widget[data-id="menu"]');
-      if(!menu) return;
+    function normalizeAll(){
+      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
 
-      if(layout.menu && typeof layout.menu.col === 'number' && typeof layout.menu.row === 'number' && !layout.menu.hidden){
-        return;
+      // ensure size applied
+      widgets.forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+        if(w.dataset.colU == null) w.dataset.colU = '0';
+        if(w.dataset.rowU == null) w.dataset.rowU = '0';
+      });
+
+      for(const w of widgets){
+        const colU = parseInt(w.dataset.colU || '0', 10);
+        const rowU = parseInt(w.dataset.rowU || '0', 10);
+        const free = findNearestFreeCellUnits(w, colU, rowU);
+        commitWidgetCellUnits(w, free.colU, free.rowU);
       }
-      if(layout.menu && layout.menu.hidden) {
-        menu.style.display = 'none';
-        return;
-      }
-      showWidget('menu', 0, 0);
     }
 
+    /* ===== Edit Mode ===== */
     let isEditMode = false;
     function setEditMode(on){
       isEditMode = !!on;
       stage.classList.toggle('edit-mode', isEditMode);
       try{ localStorage.setItem(EDIT_KEY, isEditMode ? '1' : '0'); }catch(e){}
-
       if(isEditMode) closeSidebar();
       if(!isEditMode) hideGhost();
     }
@@ -1338,11 +1360,13 @@
       setEditMode(false);
     }, true);
 
+    /* ===== Drag ===== */
     let drag = null;
 
     function canStartDragFromTarget(target){
       if(target.closest('#themePill')) return false;
       if(target.closest('.no-drag')) return false;
+      if(target.closest('[data-handle="resize"]')) return false;
       if(target.closest('input, textarea, button, select')) return false;
       return true;
     }
@@ -1362,8 +1386,8 @@
         w,
         startX: e.clientX,
         startY: e.clientY,
-        originCol: parseInt(w.dataset.col || '0', 10),
-        originRow: parseInt(w.dataset.row || '0', 10),
+        originColU: parseInt(w.dataset.colU || '0', 10),
+        originRowU: parseInt(w.dataset.rowU || '0', 10),
         dx: 0,
         dy: 0
       };
@@ -1386,15 +1410,15 @@
 
       w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
 
-      const originPx = colRowToPx(drag.originCol, drag.originRow);
+      const originPx = colRowToPx(drag.originColU, drag.originRowU);
       const r = areaRect();
       const absX = (r.left + originPx.left) + drag.dx;
       const absY = (r.top  + originPx.top ) + drag.dy;
 
-      const { col, row } = pxToColRow(absX, absY);
-      const free = findNearestFreeCell(w, col, row);
+      const { colU, rowU } = pxToColRow(absX, absY);
+      const free = findNearestFreeCellUnits(w, colU, rowU);
 
-      setGhost(w, free.col, free.row);
+      setGhost(w, free.colU, free.rowU);
     }
 
     function onPointerUp(){
@@ -1403,19 +1427,19 @@
 
       const w = drag.w;
 
-      const originPx = colRowToPx(drag.originCol, drag.originRow);
+      const originPx = colRowToPx(drag.originColU, drag.originRowU);
       const r = areaRect();
       const absX = (r.left + originPx.left) + drag.dx;
       const absY = (r.top  + originPx.top ) + drag.dy;
 
-      const { col, row } = pxToColRow(absX, absY);
-      const free = findNearestFreeCell(w, col, row);
+      const { colU, rowU } = pxToColRow(absX, absY);
+      const free = findNearestFreeCellUnits(w, colU, rowU);
 
       w.style.transform = 'translate3d(0,0,0)';
       w.classList.remove('dragging');
       w.style.animation = '';
 
-      commitWidgetCell(w, free.col, free.row);
+      commitWidgetCellUnits(w, free.colU, free.rowU);
 
       hideGhost();
       drag = null;
@@ -1425,10 +1449,120 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
+    /* ===== Resize (Edit Mode) ===== */
+    let resize = null;
+
+    function startResize(e){
+      const w = e.target.closest('.widget');
+      if(!w) return;
+      if(!isEditMode) return;
+      if(w.dataset.resizable !== '1') return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      clearHold();
+
+      const rect = w.getBoundingClientRect();
+      const startW = parseInt(w.dataset.w || '2', 10);
+      const startH = parseInt(w.dataset.h || '2', 10);
+
+      resize = {
+        w,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW,
+        startH,
+        startRect: rect,
+        originColU: parseInt(w.dataset.colU || '0', 10),
+        originRowU: parseInt(w.dataset.rowU || '0', 10),
+      };
+
+      w.classList.add('resizing');
+      w.style.animation = 'none';
+      w.setPointerCapture(e.pointerId);
+    }
+
+    function moveResize(e){
+      if(!resize) return;
+
+      const w = resize.w;
+      const { subStep } = getVars();
+
+      const dx = e.clientX - resize.startX;
+      const dy = e.clientY - resize.startY;
+
+      const addWU = Math.round(dx / subStep);
+      const addHU = Math.round(dy / subStep);
+
+      // minimum sizes:
+      const minWU = (w.dataset.id === 'menu') ? 1 : 2; // menu fixed anyway
+      const minHU = (w.dataset.id === 'menu') ? 1 : 2;
+
+      let nextWU = clamp(resize.startW + addWU, minWU, 60);
+      let nextHU = clamp(resize.startH + addHU, minHU, 60);
+
+      // apply temp size
+      setWidgetPixelSize(w, nextWU, nextHU);
+
+      // ensure still fits without collisions; if collides, shrink down gracefully
+      const occ = buildOccupancy(w.dataset.id);
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      const colU = clamp(resize.originColU, 0, maxColU);
+      const rowU = clamp(resize.originRowU, 0, maxRowU);
+
+      w.dataset.colU = String(colU);
+      w.dataset.rowU = String(rowU);
+
+      // if cannot place at current size, try reduce
+      if(!canPlaceUnits(w, colU, rowU, occ)){
+        // try reduce W then H
+        let ok = false;
+        let tryWU = nextWU;
+        let tryHU = nextHU;
+
+        for(let tries=0; tries<80 && !ok; tries++){
+          if(tryWU > minWU) tryWU--;
+          else if(tryHU > minHU) tryHU--;
+          else break;
+
+          setWidgetPixelSize(w, tryWU, tryHU);
+          if(canPlaceUnits(w, colU, rowU, occ)) ok = true;
+        }
+      }
+
+      // show ghost at current origin to match resize
+      setGhost(w, colU, rowU);
+    }
+
+    function endResize(){
+      if(!resize) return;
+      const w = resize.w;
+
+      w.classList.remove('resizing');
+      w.style.animation = '';
+
+      const colU = parseInt(w.dataset.colU || '0', 10);
+      const rowU = parseInt(w.dataset.rowU || '0', 10);
+
+      commitWidgetCellUnits(w, colU, rowU);
+      hideGhost();
+
+      resize = null;
+    }
+
+    // attach resize handlers
+    document.querySelectorAll('.resize-handle').forEach(h=>{
+      h.addEventListener('pointerdown', startResize);
+    });
+    window.addEventListener('pointermove', moveResize);
+    window.addEventListener('pointerup', endResize);
+
+    /* ===== Theme ===== */
     const themeThumb   = document.getElementById('themeThumb');
     const themeOptions = document.getElementById('themeOptions');
     const themePill    = document.getElementById('themePill');
-
     const THEME_KEY = 'terminal.theme.mode.v4';
 
     function applyTheme(mode){
@@ -1534,6 +1668,7 @@
       if(saved === 'auto') applyTheme('auto');
     });
 
+    /* ===== Clock ===== */
     const clockEl = document.getElementById('clock');
     const dateLabel = document.getElementById('dateLabel');
     const secondsLabel = document.getElementById('secondsLabel');
@@ -1553,7 +1688,7 @@
       dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
     }
 
-    /* Sidebar controls + Pages Router */
+    /* ===== Sidebar Router ===== */
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebarClose');
@@ -1571,7 +1706,6 @@
       automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
       devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
     };
-
     let navStack = ['home'];
 
     function getPageEl(id){ return document.querySelector(`.side-page[data-page="${id}"]`); }
@@ -1700,6 +1834,7 @@
       });
     });
 
+    /* ===== Commands ===== */
     function runCommand(raw){
       const input = raw.trim().toLowerCase();
       if(!input) return;
@@ -1727,65 +1862,22 @@
       }
     });
 
-    function normalizeAll(){
-      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
-      widgets.forEach(w=>{
-        if(w.dataset.col == null) w.dataset.col = '0';
-        if(w.dataset.row == null) w.dataset.row = '0';
-      });
-
-      for(const w of widgets){
-        const col = parseInt(w.dataset.col || '0', 10);
-        const row = parseInt(w.dataset.row || '0', 10);
-        const free = findNearestFreeCell(w, col, row);
-        commitWidgetCell(w, free.col, free.row);
-      }
-    }
-
+    /* ===== Boot ===== */
     function boot(){
       syncGridVars();
+      loadTheme();
 
-      // theme
-      const THEME_KEY = 'terminal.theme.mode.v4';
-      const saved = localStorage.getItem(THEME_KEY) || 'auto';
-      (function loadTheme(){
-        function applyTheme(mode){
-          let applied = mode;
-          if(mode === 'auto'){
-            applied = prefersDark() ? 'dark' : 'light';
-          }
-          document.documentElement.setAttribute('data-theme', applied);
-        }
-        function slotXForMode(mode){
-          const rect = themePill.getBoundingClientRect();
-          const thumbW = themeThumb.getBoundingClientRect().width || 0;
-          const innerW = rect.width - 14;
-          const range = Math.max(0, innerW - thumbW);
-          const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
-          return range * (idx / 2);
-        }
-        function setTheme(mode){
-          localStorage.setItem(THEME_KEY, mode);
-          applyTheme(mode);
-
-          [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
-            opt.classList.toggle('active', opt.dataset.theme === mode);
-          });
-
-          themeThumb.style.transition = 'transform 240ms var(--ease)';
-          themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
-        }
-        window.__setTheme = setTheme;
-        window.__slotXForMode = slotXForMode;
-        setTheme(saved);
-      })();
-
-      const em = localStorage.getItem('terminal.editmode.v1');
+      const em = localStorage.getItem(EDIT_KEY);
       setEditMode(em === '1');
+
+      // ensure base pixel sizes from dataset before layout placement
+      document.querySelectorAll('.widget').forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+      });
 
       defaultLayoutIfNeeded();
       applyLayout();
-      placeMenuIfMissing();
       normalizeAll();
 
       tick();
@@ -1793,11 +1885,18 @@
 
       window.addEventListener('resize', ()=>{
         syncGridVars();
+
+        // recompute pixel sizes based on units
+        document.querySelectorAll('.widget').forEach(w=>{
+          const { wU, hU } = widgetUnits(w);
+          setWidgetPixelSize(w, wU, hU);
+        });
+
         normalizeAll();
 
-        const savedMode = localStorage.getItem('terminal.theme.mode.v4') || 'auto';
+        const saved = localStorage.getItem(THEME_KEY) || 'auto';
         themeThumb.style.transition = '';
-        themeThumb.style.transform = `translate3d(${window.__slotXForMode(savedMode)}px,0,0)`;
+        themeThumb.style.transform = `translate3d(${slotXForMode(saved)}px,0,0)`;
       });
     }
 
