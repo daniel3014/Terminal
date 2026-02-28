@@ -115,6 +115,12 @@
       isolation:isolate;
     }
 
+    /* ✅ GATE: trava tudo por baixo até logar */
+    body.auth-locked .stage{
+      pointer-events: none;
+      user-select: none;
+    }
+
     .grid-overlay{
       position:absolute;
       inset: var(--pad);
@@ -416,7 +422,7 @@
         0 10px 20px rgba(10,20,40,0.12);
     }
 
-    /* ====== Menu button (FIX: keep square in 0.5x0.5) ====== */
+    /* ====== Menu button ====== */
     .menu-widget .pad{
       padding: 8px;
       width:100%;
@@ -456,7 +462,7 @@
     .menu-btn:active{ transform: scale(0.98); }
     .menu-btn svg{ opacity: 0.92; }
 
-    /* ====== Sidebar (unchanged visual) ====== */
+    /* ====== Sidebar ====== */
     .sidebar-overlay{
       position:absolute;
       inset: var(--pad);
@@ -689,7 +695,6 @@
       padding: 8px 6px;
     }
 
-    /* Dock inferior: 2 botões quadrados */
     .side-dock{
       position:absolute;
       left: 16px;
@@ -754,7 +759,6 @@
       opacity: 0.95;
     }
 
-    /* ✅ Edit Mode: desativar interação do menu e theme slider (mas manter arrastável) */
     .stage.edit-mode #menuBtn,
     .stage.edit-mode #themePill{
       pointer-events: none;
@@ -776,7 +780,10 @@
     html[data-theme="light"] .auth-overlay{
       background: rgba(0,0,0,0.16);
     }
-    .auth-overlay.open{ display:flex; }
+    .auth-overlay.open{
+      display:flex;
+      pointer-events: auto; /* ✅ garante captura de input */
+    }
 
     .auth-modal{
       width: min(440px, 100%);
@@ -839,20 +846,9 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .auth-close{
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,0.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-      flex: 0 0 auto;
-    }
-    html[data-theme="light"] .auth-close{ background: rgba(255,255,255,0.35); }
+
+    /* ✅ sem botão fechar no gate (mantém layout clean) */
+    .auth-close{ display:none; }
 
     .auth-body{
       padding: 14px 16px 16px;
@@ -962,13 +958,8 @@
       color: var(--muted);
       line-height: 1.3rem;
     }
-    .auth-link{
-      font-size: 12px;
-      color: rgba(var(--accent),0.95);
-      cursor:pointer;
-      user-select:none;
-      white-space:nowrap;
-    }
+    .auth-link{ display:none; } /* ✅ remove “convidado” */
+
     .auth-error{
       display:none;
       font-size: 12.5px;
@@ -1252,7 +1243,6 @@
                 </div>
               </div>
 
-              <!-- ✅ CONTA: agora com conteúdo real -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section">
                   <div class="row">
@@ -1260,7 +1250,7 @@
                       <b id="acctName">Conta</b>
                       <span id="acctEmail">—</span>
                     </div>
-                    <span class="mini-pill" id="acctBadge">Convidado</span>
+                    <span class="mini-pill" id="acctBadge">—</span>
                   </div>
 
                   <div class="row" style="padding-top: 6px;">
@@ -1274,9 +1264,9 @@
                   <div class="row">
                     <div class="left">
                       <b>Gerenciar conta</b>
-                      <span>entrar, trocar conta ou sair</span>
+                      <span>trocar conta</span>
                     </div>
-                    <button class="tiny-btn" id="openAuthFromAccount">🔑 Entrar</button>
+                    <button class="tiny-btn" id="openAuthFromAccount">🔁 Trocar</button>
                   </div>
 
                   <div class="row">
@@ -1290,13 +1280,13 @@
                   <div class="row">
                     <div class="left">
                       <b>Sair</b>
-                      <span>volta para convidado</span>
+                      <span>encerra a sessão</span>
                     </div>
                     <button class="tiny-btn danger" id="logoutBtn">⎋ Sair</button>
                   </div>
 
                   <div class="side-note" id="acctNote">
-                    Dica: quando você entrar, o Terminal passa a carregar e salvar suas configs nessa conta. ✨
+                    Ao sair, o Terminal volta a exigir login para acesso. 🔒
                   </div>
                 </div>
               </div>
@@ -1421,7 +1411,7 @@
     </div>
   </div>
 
-  <!-- ✅ AUTH POPUP -->
+  <!-- ✅ AUTH POPUP (obrigatório) -->
   <div class="auth-overlay" id="authOverlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
       <div class="auth-top">
@@ -1429,7 +1419,7 @@
           <div class="auth-logo">⌁</div>
           <div class="auth-title">
             <b>Terminal • Conta</b>
-            <span>salve e sincronize suas configurações</span>
+            <span>crie/entre para acessar o Terminal</span>
           </div>
         </div>
         <div class="auth-close" id="authClose" title="Fechar">✕</div>
@@ -1461,7 +1451,7 @@
 
         <div class="auth-meta">
           <div class="auth-small" id="authHint">
-            Ao entrar, o Terminal passa a salvar seu layout e tema na sua conta.
+            Acesso ao Terminal só após login. 🔒
           </div>
           <div class="auth-link" id="guestLink">Continuar como convidado</div>
         </div>
@@ -1500,7 +1490,6 @@
 
     function areaRect(){ return area.getBoundingClientRect(); }
 
-    // Half-grid coords are INTEGERS: 1 unit = 0.5 cell
     function colRowToPx(colU, rowU){
       const { subStep } = getVars();
       return { left: colU * subStep, top: rowU * subStep };
@@ -1607,17 +1596,17 @@
     function hideGhost(){ ghost.classList.remove('visible'); }
 
     /* =========================
-       ✅ Account-aware storage
+       Account-aware storage
        ========================= */
     const AUTH_SESSION_KEY = 'terminal.auth.session.v1';
-    const USERS_KEY        = 'terminal.users.v1';            // demo registry (local)
-    const SYNC_KEY         = 'terminal.account.sync.v1';     // per device toggle
+    const USERS_KEY        = 'terminal.users.v1';
+    const SYNC_KEY         = 'terminal.account.sync.v1';
 
     const LEGACY_LAYOUT_KEY = 'terminal.layout.v9';
     const LEGACY_THEME_KEY  = 'terminal.theme.mode.v4';
     const LEGACY_EDIT_KEY   = 'terminal.editmode.v1';
 
-    let activeProfileId = 'guest'; // guest | u:<base64>
+    let activeProfileId = 'guest';
 
     const safeB64 = (s) => {
       try{ return btoa(unescape(encodeURIComponent(s))).replace(/=+$/,''); }
@@ -1680,7 +1669,6 @@
       try{ localStorage.setItem(USERS_KEY, JSON.stringify(obj)); }catch(e){}
     }
 
-    // SUPER simples (demo): hash leve para não salvar senha em claro
     function pwHash(pw){
       let h = 2166136261;
       for(let i=0;i<pw.length;i++){
@@ -1696,8 +1684,6 @@
 
     function migrateGuestToAccountIfNeeded(){
       if(!isLoggedIn()) return;
-
-      // Se a conta ainda não tem layout/tema, copia do legado (guest)
       const accLayoutKey = k('layout.v9');
       const accThemeKey  = k('theme.mode.v4');
       const accEditKey   = k('editmode.v1');
@@ -1722,7 +1708,6 @@
       }catch(e){}
     }
 
-    /* ===== Layout persistence (profile-aware) ===== */
     function loadLayout(){
       try{
         const raw = localStorage.getItem(getLayoutKey());
@@ -1968,6 +1953,7 @@
 
       hideGhost();
       drag = null;
+      refreshAccountUI();
     }
 
     area.addEventListener('pointerdown', onPointerDown);
@@ -2114,11 +2100,9 @@
       if(!w || w.style.display === 'none') return;
 
       const { wU, hU } = widgetUnits(w);
-
       const sx = wU / 4;
       const sy = hU / 2;
       const scale = clamp(Math.min(sx, sy), 0.85, 1.85);
-
       w.style.setProperty('--clockScale', scale.toFixed(3));
     }
 
@@ -2419,22 +2403,26 @@
     });
 
     /* =========================
-       ✅ Auth modal logic
+       ✅ Auth modal logic (GATED)
        ========================= */
     const authOverlay = document.getElementById('authOverlay');
-    const authClose   = document.getElementById('authClose');
     const tabCreate   = document.getElementById('tabCreate');
     const tabLogin    = document.getElementById('tabLogin');
     const primaryAuthBtn = document.getElementById('primaryAuthBtn');
     const googleBtn   = document.getElementById('googleBtn');
     const authEmail   = document.getElementById('authEmail');
     const authPass    = document.getElementById('authPass');
-    const pwWrap      = document.getElementById('pwWrap');
     const authError   = document.getElementById('authError');
-    const guestLink   = document.getElementById('guestLink');
     const authHint    = document.getElementById('authHint');
 
     let authTab = 'create';
+
+    function lockApp(){
+      document.body.classList.add('auth-locked');
+    }
+    function unlockApp(){
+      document.body.classList.remove('auth-locked');
+    }
 
     function showAuthError(msg){
       authError.textContent = msg;
@@ -2449,15 +2437,14 @@
       authTab = tab;
       tabCreate.classList.toggle('active', tab === 'create');
       tabLogin.classList.toggle('active', tab === 'login');
-
       clearAuthError();
 
       if(tab === 'create'){
         primaryAuthBtn.textContent = '✨ Criar e entrar';
-        authHint.textContent = 'Crie sua conta para sincronizar layout e tema entre dispositivos.';
+        authHint.textContent = 'Crie sua conta para acessar o Terminal e sincronizar suas configs. 🔒';
       }else{
         primaryAuthBtn.textContent = '🔓 Entrar';
-        authHint.textContent = 'Entre para carregar as configurações que já estão salvas na sua conta.';
+        authHint.textContent = 'Entre para acessar o Terminal e carregar suas configs. 🔒';
       }
     }
 
@@ -2468,24 +2455,23 @@
       setAuthTab(tab);
       authOverlay.classList.add('open');
       authOverlay.setAttribute('aria-hidden','false');
-      // foco suave
+      lockApp();
       setTimeout(()=>authEmail.focus(), 60);
     }
+
     function closeAuth(){
+      // ✅ GATE: não fecha enquanto não logar
+      if(!isLoggedIn()) return;
       authOverlay.classList.remove('open');
       authOverlay.setAttribute('aria-hidden','true');
       clearAuthError();
+      unlockApp();
     }
-    authClose.addEventListener('click', closeAuth);
-    authOverlay.addEventListener('pointerdown', (e)=>{
-      if(e.target === authOverlay) closeAuth();
-    });
 
-    guestLink.addEventListener('click', ()=>{
-      // só fecha; continua guest
-      closeAuth();
-      markWelcomeSeen();
-      refreshAccountUI();
+    // ✅ GATE: clique fora NÃO fecha (sem handler de fechar)
+    authOverlay.addEventListener('pointerdown', (e)=>{
+      // não faz nada; mantém modal obrigatório
+      e.stopPropagation();
     });
 
     function validEmail(email){
@@ -2496,12 +2482,10 @@
       setSession({ email, provider, at: Date.now() });
       setActiveProfileFromSession();
 
-      // por padrão, sync ligado
       if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
 
       migrateGuestToAccountIfNeeded();
 
-      // recarrega state usando chaves da conta
       loadTheme();
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
@@ -2512,8 +2496,12 @@
       updateClockTypography();
       syncThemeThumb(null, true);
 
-      closeAuth();
-      markWelcomeSeen();
+      // ✅ destrava o app
+      authOverlay.classList.remove('open');
+      authOverlay.setAttribute('aria-hidden','true');
+      clearAuthError();
+      unlockApp();
+
       refreshAccountUI();
     }
 
@@ -2538,7 +2526,6 @@
 
     primaryAuthBtn.addEventListener('click', ()=>{
       clearAuthError();
-
       const email = String(authEmail.value || '').trim().toLowerCase();
       const pass  = String(authPass.value || '');
 
@@ -2555,44 +2542,33 @@
       }
     });
 
-    // “Google” simulado (sem backend). Depois dá pra plugar Google Identity Services.
     googleBtn.addEventListener('click', ()=>{
       clearAuthError();
       const email = String(authEmail.value || '').trim().toLowerCase();
-      if(!validEmail(email)) return showAuthError('Digite seu email (ex: voce@gmail.com) para simular o login Google.');
+      if(!validEmail(email)) return showAuthError('Digite seu email para simular login Google.');
       doLoginSession(email, 'google');
     });
 
-    // Enter no campo senha aciona
     authPass.addEventListener('keydown', (e)=>{
       if(e.key === 'Enter') primaryAuthBtn.click();
     });
 
-    /* ===== “Primeira entrada”: popup ===== */
-    const WELCOME_KEY = 'terminal.welcome.seen.v1';
-    function hasWelcomeSeen(){
-      try{ return localStorage.getItem(WELCOME_KEY) === '1'; }catch(e){ return false; }
-    }
-    function markWelcomeSeen(){
-      try{ localStorage.setItem(WELCOME_KEY,'1'); }catch(e){}
-    }
-
-    function maybeShowFirstVisitAuth(){
-      // requisito: ao entrar pela primeira vez, mostra popup
-      if(!hasWelcomeSeen()){
-        openAuth('create');
+    // ✅ GATE: bloqueia ESC se não estiver logado
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && !isLoggedIn()){
+        e.preventDefault();
+        e.stopPropagation();
       }
-    }
+    }, true);
 
     /* ===== Account page UI ===== */
     const acctName = document.getElementById('acctName');
-    const acctEmail = document.getElementById('acctEmail');
+    const acctEmailEl = document.getElementById('acctEmail');
     const acctBadge = document.getElementById('acctBadge');
     const syncToggle = document.getElementById('syncToggle');
     const openAuthFromAccount = document.getElementById('openAuthFromAccount');
     const forceSaveBtn = document.getElementById('forceSaveBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const acctNote = document.getElementById('acctNote');
 
     function refreshAccountUI(){
       const s = getSession();
@@ -2603,22 +2579,8 @@
 
       if(logged){
         acctName.textContent = (s.provider === 'google') ? 'Conta Google' : 'Conta Terminal';
-        acctEmail.textContent = s.email;
+        acctEmailEl.textContent = s.email;
         acctBadge.textContent = (s.provider === 'google') ? 'Google' : 'Email';
-        acctNote.textContent = 'Sua conta está ativa. Tema e layout ficam salvos e carregam automaticamente. ✅✨';
-
-        openAuthFromAccount.textContent = '🔁 Trocar';
-        logoutBtn.style.display = '';
-        forceSaveBtn.style.display = '';
-      }else{
-        acctName.textContent = 'Convidado';
-        acctEmail.textContent = 'Sem login (configs locais neste device)';
-        acctBadge.textContent = 'Convidado';
-        acctNote.textContent = 'Entre para salvar suas configurações na conta e usar em outros dispositivos. ✨';
-
-        openAuthFromAccount.textContent = '🔑 Entrar';
-        logoutBtn.style.display = 'none';
-        forceSaveBtn.style.display = 'none';
       }
     }
 
@@ -2626,7 +2588,6 @@
       const next = !getSyncEnabled();
       setSyncEnabled(next);
 
-      // recarrega theme/edit/layout da fonte correta
       loadTheme();
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
@@ -2641,20 +2602,13 @@
     });
 
     openAuthFromAccount.addEventListener('click', ()=>{
-      openAuth(isLoggedIn() ? 'login' : 'create');
+      openAuth('login');
     });
 
     forceSaveBtn.addEventListener('click', ()=>{
-      // commit rápido: apenas re-salva o layout corrente e modo
-      try{
-        // edit
-        localStorage.setItem(getEditKey(), isEditMode ? '1' : '0');
-      }catch(e){}
-      // theme já salva no setTheme
-      // layout já salva em commitWidgetCellUnits — mas garantimos um flush:
+      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
       const layout = loadLayout();
       saveLayout(layout);
-      refreshAccountUI();
       alert('Configs salvas ✅');
     });
 
@@ -2662,33 +2616,20 @@
       setSession(null);
       setActiveProfileFromSession();
 
-      // volta para guest + carrega legado
-      loadTheme();
-      const em = localStorage.getItem(getEditKey());
-      setEditMode(em === '1');
-
-      defaultLayoutIfNeeded();
-      applyLayout();
-      normalizeAll();
-
-      updateClockTypography();
-      syncThemeThumb(null, true);
-      refreshAccountUI();
-      alert('Você saiu. Agora está como convidado. 👤');
+      // ✅ volta a travar e exigir login
+      lockApp();
+      openAuth('login');
     });
 
     /* ===== Boot ===== */
     function boot(){
       syncGridVars();
 
-      // profile from session
       setActiveProfileFromSession();
 
-      // sync default ON (device preference)
       if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
       else setSyncEnabled(getSyncEnabled());
 
-      // migrate guest → account if needed
       migrateGuestToAccountIfNeeded();
 
       loadTheme();
@@ -2696,7 +2637,6 @@
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
 
-      // ensure base pixel sizes from dataset before layout placement
       document.querySelectorAll('.widget').forEach(w=>{
         const { wU, hU } = widgetUnits(w);
         setWidgetPixelSize(w, wU, hU);
@@ -2714,19 +2654,24 @@
 
       window.addEventListener('resize', ()=>{
         syncGridVars();
-
         document.querySelectorAll('.widget').forEach(w=>{
           const { wU, hU } = widgetUnits(w);
           setWidgetPixelSize(w, wU, hU);
         });
-
         normalizeAll();
         updateClockTypography();
         syncThemeThumb(null, true);
       });
 
       refreshAccountUI();
-      maybeShowFirstVisitAuth();
+
+      // ✅ GATE: se não estiver logado, bloqueia e abre popup obrigatório
+      if(!isLoggedIn()){
+        openAuth('create');
+      }else{
+        unlockApp();
+        closeAuth();
+      }
     }
 
     boot();
