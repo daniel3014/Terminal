@@ -1298,7 +1298,6 @@
       margin-top: 4px;
     }
     .mini-actions .auth-btn{ height: 42px; border-radius: 16px; }
-
   </style>
 
   <!-- ✅ Firebase (Auth + Firestore) - CDN -->
@@ -1734,15 +1733,17 @@
 
   <script>
     /* =========================================================
-       Firebase Setup (✅ COLE SUA CONFIG AQUI)
+       Firebase Setup (✅ SEU CONFIG AQUI)
        ========================================================= */
     const firebaseConfig = {
-      apiKey: "COLE_AQUI",
-      authDomain: "COLE_AQUI",
-      projectId: "COLE_AQUI",
-      storageBucket: "COLE_AQUI",
-      messagingSenderId: "COLE_AQUI",
-      appId: "COLE_AQUI"
+      apiKey: "AIzaSyCcHOUTlxQ2_cMLPq00mBDuGRpFR3ykOo8",
+      authDomain: "terminal-d2e2d.firebaseapp.com",
+      databaseURL: "https://terminal-d2e2d-default-rtdb.firebaseio.com",
+      projectId: "terminal-d2e2d",
+      storageBucket: "terminal-d2e2d.firebasestorage.app",
+      messagingSenderId: "1087373684240",
+      appId: "1:1087373684240:web:3cf44a46b5e44e5f892495",
+      measurementId: "G-V410E6KHMV"
     };
 
     let fbApp = null, fbAuth = null, fbDb = null;
@@ -1750,7 +1751,6 @@
 
     function initFirebase(){
       try{
-        // Só inicializa se o usuário colou algo real (evita quebrar demo offline)
         const hasReal = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_AQUI";
         if(!hasReal) return false;
 
@@ -2766,13 +2766,13 @@
       currentUser = null;
       setActiveProfile('guest');
       closeAuth();
-      await loadFromCloudIfNeeded(); // no-op (guest)
+      await loadFromCloudIfNeeded();
       bootApplyAfterProfileChange();
       refreshAccountUI();
     }
 
     async function loginWithEmailPassword(email, pass, mode){
-      if(!firebaseReady) return showAuthError('Firebase não configurado. Cole seu firebaseConfig primeiro.');
+      if(!firebaseReady) return showAuthError('Firebase não configurado.');
       if(!validEmail(email)) return showAuthError('Digite um email válido.');
       if(!pass || pass.length < 6) return showAuthError('Senha inválida (mínimo 6).');
 
@@ -2782,7 +2782,6 @@
         }else{
           await fbAuth.signInWithEmailAndPassword(email, pass);
         }
-        // onAuthStateChanged cuidará do resto
       }catch(err){
         const m = (err && err.message) ? err.message : 'Erro ao autenticar.';
         showAuthError(m);
@@ -2790,11 +2789,10 @@
     }
 
     async function loginWithGoogle(){
-      if(!firebaseReady) return showAuthError('Firebase não configurado. Cole seu firebaseConfig primeiro.');
+      if(!firebaseReady) return showAuthError('Firebase não configurado.');
       try{
         const provider = new firebase.auth.GoogleAuthProvider();
         await fbAuth.signInWithPopup(provider);
-        // onAuthStateChanged cuidará do resto
       }catch(err){
         const m = (err && err.message) ? err.message : 'Erro ao entrar com Google.';
         showAuthError(m);
@@ -2843,6 +2841,27 @@
       profileError.textContent = '—';
     }
 
+    function getCurrentProfileView(){
+      if(activeProfileId === 'guest'){
+        const g = loadGuestProfile();
+        return {
+          name: g.name || 'Convidado',
+          email: 'Sessão local',
+          photo: g.photo || '',
+          badge: 'Guest'
+        };
+      }
+      if(currentUser){
+        return {
+          name: currentUser.displayName || 'Usuário',
+          email: currentUser.email || '—',
+          photo: currentUser.photoURL || '',
+          badge: 'Online'
+        };
+      }
+      return { name:'Conta', email:'—', photo:'', badge:'—' };
+    }
+
     function openProfileEditor(){
       clearProfileError();
       const p = getCurrentProfileView();
@@ -2873,6 +2892,15 @@
       });
     }
 
+    async function saveProfileToCloud({name, photo}){
+      const ref = userDocRef();
+      if(!ref) return;
+      await ref.set({
+        profile: { name: name || '', photo: photo || '' },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
     profileSave.addEventListener('click', async ()=>{
       clearProfileError();
       const name = String(profileName.value || '').trim();
@@ -2886,16 +2914,14 @@
 
         if(!name) return showProfileError('Digite um nome.');
 
-        // Guest: salva local
         if(activeProfileId === 'guest'){
           saveGuestProfile({ name, photo });
-          requestCloudSyncDebounced(); // no-op
+          requestCloudSyncDebounced();
           closeProfileEditor();
           refreshAccountUI();
           return;
         }
 
-        // Firebase user: update profile + salvar no firestore (profile doc)
         if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
 
         await currentUser.updateProfile({
@@ -2903,10 +2929,8 @@
           photoURL: photo || ''
         });
 
-        // persist in firestore too
         await saveProfileToCloud({ name, photo: photo || '' });
 
-        // update used list
         upsertUsedAccount({
           key: 'uid:' + currentUser.uid,
           uid: currentUser.uid,
@@ -2925,6 +2949,9 @@
       }
     });
 
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    editProfileBtn.addEventListener('click', openProfileEditor);
+
     /* =========================================================
        Account Page UI + Switch + Logout
        ========================================================= */
@@ -2932,7 +2959,6 @@
     const acctEmailEl = document.getElementById('acctEmail');
     const acctBadgeEl = document.getElementById('acctBadge');
     const acctAvatarEl = document.getElementById('acctAvatar');
-    const editProfileBtn = document.getElementById('editProfileBtn');
     const syncToggle = document.getElementById('syncToggle');
     const forceSaveBtn = document.getElementById('forceSaveBtn');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -2942,24 +2968,18 @@
     const switcherBox = document.getElementById('switcherBox');
     const acctSwitchList = document.getElementById('acctSwitchList');
 
-    editProfileBtn.addEventListener('click', openProfileEditor);
-
     syncToggle.addEventListener('click', async ()=>{
       const next = !getSyncEnabled();
       setSyncEnabled(next);
 
-      // se ligou e está logado: puxa cloud
       if(next) await loadFromCloudIfNeeded();
 
-      // reaplica
       bootApplyAfterProfileChange();
       refreshAccountUI();
     });
 
     forceSaveBtn.addEventListener('click', async ()=>{
-      try{
-        localStorage.setItem(getEditKey(), isEditMode ? '1' : '0');
-      }catch(e){}
+      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
       const layout = loadLayout();
       saveLayout(layout);
       await saveToCloudNow();
@@ -2967,14 +2987,13 @@
     });
 
     logoutBtn.addEventListener('click', async ()=>{
-      // se firebase user, sign out; se guest, só volta pro popup
       try{
         if(firebaseReady && currentUser){
           await fbAuth.signOut();
         }
       }catch(e){}
       currentUser = null;
-      setActiveProfile('guest'); // volta pro guest base
+      setActiveProfile('guest');
       lockApp();
       openAuth('login');
       refreshAccountUI();
@@ -3000,27 +3019,6 @@
         d.textContent = '⌁';
         acctAvatarEl.appendChild(d);
       }
-    }
-
-    function getCurrentProfileView(){
-      if(activeProfileId === 'guest'){
-        const g = loadGuestProfile();
-        return {
-          name: g.name || 'Convidado',
-          email: 'Sessão local',
-          photo: g.photo || '',
-          badge: 'Guest'
-        };
-      }
-      if(currentUser){
-        return {
-          name: currentUser.displayName || 'Usuário',
-          email: currentUser.email || '—',
-          photo: currentUser.photoURL || '',
-          badge: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) ? 'Online' : 'Online'
-        };
-      }
-      return { name:'Conta', email:'—', photo:'', badge:'—' };
     }
 
     function rebuildAccountSwitcher(){
@@ -3073,8 +3071,6 @@
         chip.appendChild(right);
 
         chip.addEventListener('click', async ()=>{
-          // Troca rápida: abre auth já no modo login e preenche email
-          // (para Google, o popup permite escolher conta)
           closeSidebar();
           openAuth('login');
           authEmail.value = acc.email || '';
@@ -3097,7 +3093,6 @@
       acctBadgeEl.textContent = p.badge || '—';
       setAvatarUI(p.photo || '');
 
-      // logout só aparece se estiver logado (firebase user)
       logoutRow.style.display = (currentUser && firebaseReady) ? '' : 'none';
 
       rebuildAccountSwitcher();
@@ -3109,15 +3104,6 @@
     function userDocRef(){
       if(!firebaseReady || !currentUser) return null;
       return fbDb.collection('terminalUsers').doc(currentUser.uid);
-    }
-
-    async function saveProfileToCloud({name, photo}){
-      const ref = userDocRef();
-      if(!ref) return;
-      await ref.set({
-        profile: { name: name || '', photo: photo || '' },
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
     }
 
     async function saveSettingsToCloud(payload){
@@ -3146,11 +3132,9 @@
         const data = await loadSettingsFromCloud();
         if(!data) return;
 
-        // profile
         if(data.profile){
           const pn = data.profile.name || '';
           const pp = data.profile.photo || '';
-          // só atualiza auth profile se estiver vazio (evita sobrescrever google photo toda hora)
           try{
             if(pn && (!currentUser.displayName || currentUser.displayName !== pn)){
               await currentUser.updateProfile({ displayName: pn });
@@ -3161,7 +3145,6 @@
           }catch(e){}
         }
 
-        // settings
         const s = data.settings || {};
         if(s.themeMode != null) localStorage.setItem(getThemeKey(), String(s.themeMode));
         if(s.editMode != null)  localStorage.setItem(getEditKey(),  s.editMode ? '1' : '0');
@@ -3183,7 +3166,6 @@
 
         await saveSettingsToCloud({ themeMode, editMode, layoutJson });
 
-        // também salva profile atual
         const name = currentUser.displayName || '';
         const photo = currentUser.photoURL || '';
         await saveProfileToCloud({ name, photo });
@@ -3204,7 +3186,6 @@
        After changing profile (reapply layout/theme/edit)
        ========================================================= */
     function bootApplyAfterProfileChange(){
-      // theme
       const savedTheme = localStorage.getItem(getThemeKey()) || 'auto';
       applyTheme(savedTheme);
       [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
@@ -3212,11 +3193,9 @@
       });
       syncThemeThumb(savedTheme, true);
 
-      // edit mode
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
 
-      // sizes
       document.querySelectorAll('.widget').forEach(w=>{
         const { wU, hU } = widgetUnits(w);
         setWidgetPixelSize(w, wU, hU);
@@ -3242,7 +3221,6 @@
         if(currentUser){
           setActiveProfile('uid:' + currentUser.uid);
 
-          // registrar na lista de troca rápida
           upsertUsedAccount({
             key: 'uid:' + currentUser.uid,
             uid: currentUser.uid,
@@ -3253,18 +3231,15 @@
             lastAt: Date.now()
           });
 
-          // puxa do cloud se sync ligado
           await loadFromCloudIfNeeded();
 
           closeAuth();
           bootApplyAfterProfileChange();
           refreshAccountUI();
         }else{
-          // sem user -> mantém profile anterior se era guest; e volta pro gate
           if(activeProfileId !== 'guest'){
             setActiveProfile('guest');
           }
-          // abre popup de novo (como você pediu)
           openAuth('login');
           refreshAccountUI();
         }
@@ -3277,22 +3252,18 @@
     function boot(){
       syncGridVars();
 
-      // init base
       loadActiveProfile();
       if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
       else setSyncEnabled(getSyncEnabled());
 
-      // firebase
       initFirebase();
       if(firebaseReady) setupAuthListener();
 
-      // init base widget px size
       document.querySelectorAll('.widget').forEach(w=>{
         const { wU, hU } = widgetUnits(w);
         setWidgetPixelSize(w, wU, hU);
       });
 
-      // apply current profile local settings first (guest/offline)
       const em = localStorage.getItem(getEditKey());
       setEditMode(em === '1');
       loadTheme();
@@ -3320,13 +3291,9 @@
 
       refreshAccountUI();
 
-      // gate:
-      // - se firebase configurado: se não há user, abre popup (listener já fará)
-      // - se firebase NÃO configurado: ainda permite convidado (popup obrigatório)
       if(!firebaseReady){
         openAuth('create');
       }else{
-        // se o listener não disparou ainda, garante gate até receber estado
         lockApp();
         openAuth('login');
       }
