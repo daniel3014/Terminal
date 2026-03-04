@@ -462,10 +462,7 @@
     .menu-btn:active{ transform: scale(0.98); }
     .menu-btn svg{ opacity: 0.92; }
 
-    /* ====== Sidebar, Auth, Account, Profile Editor ... ====== */
-    /* (CSS original continua igual daqui pra baixo — sem mudanças estruturais) */
-
-    /* ===== Sidebar ====== */
+    /* ====== Sidebar ====== */
     .sidebar-overlay{
       position:absolute;
       inset: var(--pad);
@@ -504,22 +501,1362 @@
     }
     .sidebar-overlay.open .sidebar{ transform: translateX(0); }
 
-    /* ... (SEU CSS segue igual — mantive tudo da sua versão) ... */
+    .sidebar-header{
+      padding: 14px 14px 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 10px;
+    }
+    html[data-theme="light"] .sidebar-header{ border-bottom: 1px solid rgba(10,20,40,0.08); }
 
+    .sidebar-head-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .sidebar-back{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+      opacity: 0;
+      pointer-events:none;
+      transform: translateX(-6px);
+      transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+    }
+    html[data-theme="light"] .sidebar-back{ background: rgba(255,255,255,0.35); }
+    .sidebar.has-back .sidebar-back{
+      opacity: 1;
+      pointer-events:auto;
+      transform: translateX(0);
+    }
+
+    .sidebar-title-wrap{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+    }
+    .sidebar-title{
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: 14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sidebar-sub{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sidebar-close{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .sidebar-close{ background: rgba(255,255,255,0.35); }
+
+    .sidebar-body{
+      position:relative;
+      height: calc(100% - 66px);
+      overflow:hidden;
+    }
+    .sidebar-pages{
+      position:absolute;
+      inset: 0;
+      overflow:hidden;
+    }
+
+    .side-page{
+      position:absolute;
+      inset: 0;
+      padding: 12px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      transform: translateX(110%);
+      opacity: 0;
+      pointer-events:none;
+      transition: transform 260ms var(--ease), opacity 220ms var(--ease);
+      padding-bottom: 96px;
+    }
+    .side-page.active{
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events:auto;
+    }
+    .side-page.left{
+      transform: translateX(-18%);
+    }
+
+    .side-section{
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.06);
+      border-radius: 18px;
+      padding: 10px;
+      margin: 10px 0;
+      position: relative; /* ✅ para barra inferior do account */
+    }
+    html[data-theme="light"] .side-section{
+      border: 1px solid rgba(10,20,40,0.08);
+      background: rgba(255,255,255,0.28);
+    }
+
+    .side-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 10px;
+      border-radius: 14px;
+      cursor:pointer;
+      border: 1px solid transparent;
+      transition: background 160ms var(--ease), border-color 160ms var(--ease);
+    }
+    .side-item:hover{
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.10);
+    }
+    html[data-theme="light"] .side-item:hover{
+      background: rgba(255,255,255,0.55);
+      border-color: rgba(10,20,40,0.10);
+    }
+
+    .side-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
+    .side-ico{
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .side-ico{ background: rgba(255,255,255,0.45); }
+
+    .side-label{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+    }
+    .side-label b{
+      font-size: 13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .side-label span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .side-right{
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    .side-note{
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.35rem;
+      padding: 8px 6px;
+    }
+
+    .side-dock{
+      position:absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 14px;
+      z-index: 5;
+      display:flex;
+      justify-content:space-between;
+      gap: 14px;
+
+      background: transparent;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+    }
+    .side-dock.hidden{
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events:none;
+    }
+
+    .dock-btn{
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 14px 34px rgba(0,0,0,0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      transition: transform 160ms var(--ease);
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .dock-btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.40),
+        0 12px 22px rgba(10,20,40,0.12);
+    }
+    .dock-btn:active{ transform: scale(0.98); }
+    .dock-ico{
+      width: 44px;
+      height: 44px;
+      border-radius: 18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
+      opacity: 0.95;
+    }
+
+    .stage.edit-mode #menuBtn,
+    .stage.edit-mode #themePill{
+      pointer-events: none;
+    }
+
+    /* ===== Auth Modal ===== */
+    .auth-overlay{
+      position:fixed;
+      inset:0;
+      z-index: 999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    html[data-theme="light"] .auth-overlay{
+      background: rgba(0,0,0,0.16);
+    }
+    .auth-overlay.open{
+      display:flex;
+      pointer-events: auto;
+    }
+
+    .auth-modal{
+      width: min(460px, 100%);
+      border-radius: 26px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      box-shadow: 0 28px 88px rgba(0,0,0,0.38);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      overflow:hidden;
+      position:relative;
+    }
+    .auth-top{
+      padding: 14px 16px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 10px;
+    }
+    html[data-theme="light"] .auth-top{
+      border-bottom: 1px solid rgba(10,20,40,0.08);
+    }
+    .auth-brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .auth-logo{
+      width: 38px;
+      height: 38px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+    }
+    html[data-theme="light"] .auth-logo{ background: rgba(255,255,255,0.45); }
+
+    .auth-title{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .auth-title b{
+      font-size: 14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .auth-title span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .auth-close{ display:none; }
+
+    .auth-body{
+      padding: 14px 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .auth-tabs{
+      display:flex;
+      gap: 10px;
+    }
+    .auth-tab{
+      flex:1 1 0;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 13px;
+      color: var(--muted);
+      cursor:pointer;
+      user-select:none;
+      transition: transform 160ms var(--ease), background 160ms var(--ease), color 160ms var(--ease);
+    }
+    html[data-theme="light"] .auth-tab{ background: rgba(255,255,255,0.35); }
+    .auth-tab.active{
+      color: var(--text);
+      background: rgba(var(--accent),0.12);
+      border-color: rgba(var(--accent),0.30);
+    }
+    .auth-fields{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .auth-field{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+    }
+    .auth-field label{
+      font-size: 12px;
+      color: var(--muted);
+      padding-left: 2px;
+    }
+    .auth-input{
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+      font-size: 14px;
+    }
+    html[data-theme="light"] .auth-input{ background: rgba(255,255,255,0.40); }
+    .auth-input:focus{
+      box-shadow: 0 0 0 6px rgba(var(--accent),0.18);
+      border-color: rgba(var(--accent),0.45);
+    }
+
+    .auth-actions{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .auth-btn{
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      transition: transform 160ms var(--ease), filter 160ms var(--ease);
+    }
+    html[data-theme="light"] .auth-btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+    }
+    .auth-btn:active{ transform: scale(0.99); }
+    .auth-btn.secondary{
+      background: rgba(0,0,0,0.10);
+      font-weight: 700;
+      color: var(--muted);
+    }
+    html[data-theme="light"] .auth-btn.secondary{ background: rgba(255,255,255,0.35); color: rgba(10,18,34,0.62); }
+
+    .auth-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .auth-small{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3rem;
+    }
+
+    .auth-error{
+      display:none;
+      font-size: 12.5px;
+      color: rgba(255,160,160,0.95);
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,160,160,0.25);
+      background: rgba(255,80,80,0.08);
+    }
+    html[data-theme="light"] .auth-error{
+      color: rgba(140,20,20,0.92);
+      border: 1px solid rgba(140,20,20,0.18);
+      background: rgba(140,20,20,0.06);
+    }
+
+    /* ===== Account page ===== */
+    .acct-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 6px 6px 2px;
+    }
+    .acct-left{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .avatar{
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .avatar{ background: rgba(255,255,255,0.45); }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .acct-meta{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .acct-name-row{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .acct-name{
+      font-size: 13px;
+      font-weight: 900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 210px;
+    }
+    .acct-email{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 250px;
+    }
+
+    .mini-pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+    html[data-theme="light"] .mini-pill{ background: rgba(255,255,255,0.35); }
+
+    /* ✅ pencil SVG button (centralizado) */
+    .pencil-btn{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex: 0 0 auto;
+      padding: 0;
+      line-height: 0;
+    }
+    html[data-theme="light"] .pencil-btn{
+      background: rgba(255,255,255,0.35);
+      color: rgba(10,18,34,0.88);
+    }
+    .pencil-btn svg{ width: 16px; height: 16px; display:block; opacity: 0.95; }
+    .pencil-btn:active{ transform: scale(0.99); }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 6px;
+    }
+    .row .left{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .row .left b{
+      font-size: 13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .row .left span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tiny-btn{
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      color: var(--text);
+      cursor:pointer;
+      user-select:none;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      flex: 0 0 auto;
+      transition: transform 160ms var(--ease);
+    }
+    html[data-theme="light"] .tiny-btn{ background: rgba(255,255,255,0.35); }
+    .tiny-btn:active{ transform: scale(0.99); }
+
+    .tiny-btn.danger{
+      border-color: rgba(255,120,120,0.25);
+      background: rgba(255,80,80,0.06);
+      color: rgba(255,170,170,0.95);
+    }
+    html[data-theme="light"] .tiny-btn.danger{
+      border-color: rgba(140,20,20,0.18);
+      background: rgba(140,20,20,0.05);
+      color: rgba(140,20,20,0.92);
+    }
+
+    /* ✅ Toggle fix: thumb alinhado (box-sizing) */
+    .toggle{
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      position:relative;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+      transition: background 160ms var(--ease), border-color 160ms var(--ease);
+    }
+    html[data-theme="light"] .toggle{ background: rgba(255,255,255,0.35); }
+    .toggle::after{
+      content:"";
+      position:absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      box-sizing: border-box; /* ✅ */
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.14));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.14);
+      transition: transform 180ms var(--ease);
+    }
+    html[data-theme="light"] .toggle::after{
+      background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.35));
+      border: 1px solid rgba(10,20,40,0.12);
+      box-shadow: 0 10px 16px rgba(10,20,40,0.10);
+    }
+    .toggle.on{
+      background: rgba(var(--accent),0.18);
+      border-color: rgba(var(--accent),0.32);
+    }
+    .toggle.on::after{
+      transform: translateX(22px);
+    }
+
+    .acct-switch-list{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      padding: 8px 6px 0;
+    }
+    .acct-chip{
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 0 10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    html[data-theme="light"] .acct-chip{ background: rgba(255,255,255,0.35); }
+    .acct-chip:active{ transform: scale(0.995); }
+
+    .chip-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .chip-ava{
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      overflow:hidden;
+      background: rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--muted);
+    }
+    html[data-theme="light"] .chip-ava{ background: rgba(255,255,255,0.45); }
+    .chip-ava img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .chip-txt{
+      display:flex;
+      flex-direction:column;
+      min-width: 0;
+      gap: 1px;
+    }
+    .chip-txt b{
+      font-size: 12.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 230px;
+    }
+    .chip-txt span{
+      font-size: 11.5px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 240px;
+    }
+    .chip-right{
+      font-size: 12px;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    /* ✅ Account action bar (Salvar esquerda / Sair direita) */
+    .acct-actions-bar{
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      pointer-events:auto;
+    }
+    .acct-actions-bar .tiny-btn{
+      height: 40px;
+      border-radius: 16px;
+      padding: 0 14px;
+    }
+    .acct-actions-bar .tiny-btn svg{
+      width: 16px; height: 16px; display:block; opacity: 0.95;
+    }
+
+    /* ===== Mini overlay (profile editor) ===== */
+    .mini-overlay{
+      position:fixed;
+      inset:0;
+      z-index: 1000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    html[data-theme="light"] .mini-overlay{ background: rgba(0,0,0,0.16); }
+    .mini-overlay.open{ display:flex; }
+
+    .mini-modal{
+      width: min(460px, 100%);
+      border-radius: 24px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
+      box-shadow: 0 28px 88px rgba(0,0,0,0.38);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      overflow:hidden;
+    }
+    .mini-head{
+      padding: 12px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    html[data-theme="light"] .mini-head{ border-bottom: 1px solid rgba(10,20,40,0.08); }
+    .mini-head b{ font-size: 13px; letter-spacing: 0.2px; }
+    .mini-close{
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: rgba(0,0,0,0.10);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    html[data-theme="light"] .mini-close{ background: rgba(255,255,255,0.35); }
+    .mini-body{
+      padding: 14px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .mini-actions{
+      display:flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .mini-actions .auth-btn{ height: 42px; border-radius: 16px; }
+
+    /* ✅ WhatsApp/Facebook-like avatar editor */
+    .prof-top{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      padding: 4px 2px 2px;
+    }
+    .prof-ava-wrap{
+      width: 84px;
+      height: 84px;
+      border-radius: 28px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      position:relative;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    html[data-theme="light"] .prof-ava-wrap{ background: rgba(255,255,255,0.45); }
+    .prof-ava-wrap img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .prof-cam{
+      position:absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 12px 26px rgba(0,0,0,0.18);
+    }
+    html[data-theme="light"] .prof-cam{
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.40));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.40),
+        0 12px 22px rgba(10,20,40,0.12);
+    }
+    .prof-cam svg{ width: 16px; height: 16px; opacity: 0.92; }
+    .prof-cam:active{ transform: scale(0.99); }
+
+    details.adv{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.06);
+      padding: 10px 10px;
+    }
+    html[data-theme="light"] details.adv{
+      border: 1px solid rgba(10,20,40,0.08);
+      background: rgba(255,255,255,0.22);
+    }
+    details.adv summary{
+      cursor:pointer;
+      user-select:none;
+      font-size: 12.5px;
+      color: var(--muted);
+      list-style: none;
+      outline:none;
+    }
+    details.adv summary::-webkit-details-marker{ display:none; }
   </style>
 
   <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-  <!-- ✅ ADD: Firebase Storage (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 </head>
 
 <body>
-  <!-- ✅ (HTML igual ao seu — sem mudanças no layout) -->
-  <!-- ... SEU HTML COMPLETO AQUI, SEM ALTERAR ... -->
+  <div class="stage" id="stage">
+    <div class="grid-overlay" id="grid"></div>
+
+    <div class="widget-area" id="area">
+      <div class="snap-ghost" id="ghost"></div>
+
+      <!-- MENU -->
+      <div class="widget menu-widget" data-id="menu" data-kind="menu" data-w="1" data-h="1" data-resizable="0">
+        <div class="pad">
+          <div class="menu-btn no-drag" id="menuBtn" title="Menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLOCK -->
+      <div class="widget clock-widget" data-id="clock" data-kind="clock" data-w="4" data-h="2" data-resizable="1">
+        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+          <div class="clock-inner">
+            <div class="time-row">
+              <div class="big-time" id="clock">--:--</div>
+              <div class="seconds" id="secondsLabel">--</div>
+            </div>
+            <div class="date-line">
+              <div id="dateLabel">—</div>
+            </div>
+            <div class="subline">Lisboa</div>
+          </div>
+        </div>
+        <div class="resize-handle" data-handle="resize"></div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
+        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
+          <div class="chat-row">
+            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder='Digite um comando…'/>
+            <div class="hint">Enter ↵</div>
+          </div>
+        </div>
+        <div class="resize-handle" data-handle="resize"></div>
+      </div>
+
+      <!-- THEME -->
+      <div class="widget theme-widget" data-id="theme" data-kind="theme" data-w="4" data-h="2" data-resizable="1">
+        <div class="pad">
+          <div class="theme-pill" id="themePill">
+            <div class="theme-thumb" id="themeThumb"></div>
+            <div class="theme-options" id="themeOptions">
+              <div class="theme-opt" data-theme="light" title="Light"><span class="ico">☀️</span></div>
+              <div class="theme-opt" data-theme="dark"  title="Dark"><span class="ico">🌙</span></div>
+              <div class="theme-opt" data-theme="auto"  title="Auto"><span class="ico">✨</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="resize-handle" data-handle="resize"></div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
+        <div class="sidebar" id="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
+          <div class="sidebar-header">
+            <div class="sidebar-head-left">
+              <div class="sidebar-back" id="sidebarBack" title="Voltar">←</div>
+
+              <div class="sidebar-title-wrap">
+                <div class="sidebar-title" id="sidebarTitle">Menu</div>
+                <div class="sidebar-sub" id="sidebarSub">Config • Conta • Personalização • Automação • Dispositivos</div>
+              </div>
+            </div>
+
+            <div class="sidebar-close" id="sidebarClose" title="Fechar">✕</div>
+          </div>
+
+          <div class="sidebar-body">
+            <div class="sidebar-pages" id="sidebarPages">
+
+              <div class="side-page active" data-page="home" id="page-home">
+                <div class="side-section">
+                  <div class="side-item" data-nav="personalize">
+                    <div class="side-left">
+                      <div class="side-ico">🎨</div>
+                      <div class="side-label">
+                        <b>Personalização</b>
+                        <span>tema, grid, vidro, animações</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-nav="automation">
+                    <div class="side-left">
+                      <div class="side-ico">🗓️</div>
+                      <div class="side-label">
+                        <b>Automação & Agendamento</b>
+                        <span>rotinas e lembretes (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-item" data-nav="devices">
+                    <div class="side-left">
+                      <div class="side-ico">📱</div>
+                      <div class="side-label">
+                        <b>Dispositivos</b>
+                        <span>layouts por dispositivo (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-page" data-page="configs" id="page-configs">
+                <div class="side-section">
+                  <div class="side-item" data-action="layout">
+                    <div class="side-left">
+                      <div class="side-ico">🧩</div>
+                      <div class="side-label">
+                        <b>Layout</b>
+                        <span>grid, snap, organização</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="preferences">
+                    <div class="side-left">
+                      <div class="side-ico">⚡</div>
+                      <div class="side-label">
+                        <b>Preferências</b>
+                        <span>atalhos, acessibilidade</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="about">
+                    <div class="side-left">
+                      <div class="side-ico">ℹ️</div>
+                      <div class="side-label">
+                        <b>Sobre</b>
+                        <span>versão e informações</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-note">
+                    Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACCOUNT PAGE -->
+              <div class="side-page" data-page="account" id="page-account">
+                <div class="side-section" style="padding-bottom: 66px;">
+                  <div class="acct-top">
+                    <div class="acct-left">
+                      <div class="avatar" id="acctAvatar">
+                        <div style="font-weight:900; color: var(--muted); font-size: 14px;">⌁</div>
+                      </div>
+
+                      <div class="acct-meta">
+                        <div class="acct-name-row">
+                          <div class="acct-name" id="acctName">Conta</div>
+
+                          <button class="pencil-btn" id="editProfileBtn" title="Editar perfil">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                              <path d="M4 20h4l10.8-10.8a1.6 1.6 0 0 0 0-2.3l-1.6-1.6a1.6 1.6 0 0 0-2.3 0L4 14.1V20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                              <path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div class="acct-email" id="acctEmail">—</div>
+                      </div>
+                    </div>
+
+                    <span class="mini-pill" id="acctBadge">—</span>
+                  </div>
+
+                  <div class="row" style="padding-top: 10px;">
+                    <div class="left">
+                      <b>Sincronizar configurações</b>
+                      <span>layout, tema e perfil via nuvem</span>
+                    </div>
+                    <div class="toggle on" id="syncToggle" title="Sync"></div>
+                  </div>
+
+                  <div class="row" id="switchRow" style="display:none; padding-bottom: 4px;">
+                    <div class="left">
+                      <b>Trocar conta</b>
+                      <span>alternar rapidamente</span>
+                    </div>
+                    <button class="tiny-btn" id="openSwitcherBtn">Trocar</button>
+                  </div>
+
+                  <div id="switcherBox" style="display:none;">
+                    <div class="acct-switch-list" id="acctSwitchList"></div>
+                  </div>
+
+                  <div class="side-note" id="acctNote" style="padding-bottom: 0;">
+                    Dica: use “Convidado” para testar rápido sem cloud. 🫧
+                  </div>
+
+                  <!-- ✅ Bottom actions -->
+                  <div class="acct-actions-bar">
+                    <button class="tiny-btn" id="saveNowBtn" title="Salvar configurações">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M7 3h10l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M7 3v6h10V3" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M8 21v-7h8v7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                      </svg>
+                      Salvar
+                    </button>
+
+                    <button class="tiny-btn danger" id="logoutBtn" title="Sair da conta">
+                      Sair
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-page" data-page="personalize" id="page-personalize">
+                <div class="side-section">
+                  <div class="side-item" data-action="themes">
+                    <div class="side-left">
+                      <div class="side-ico">✨</div>
+                      <div class="side-label">
+                        <b>Temas</b>
+                        <span>light, dark, auto</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="grid">
+                    <div class="side-left">
+                      <div class="side-ico">•</div>
+                      <div class="side-label">
+                        <b>Grid</b>
+                        <span>opacidade e estilo</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="motion">
+                    <div class="side-left">
+                      <div class="side-ico">🫧</div>
+                      <div class="side-label">
+                        <b>Animações</b>
+                        <span>float no edit mode</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-note">
+                    Aqui a gente evolui o “liquid glass” mantendo leve pra devices antigos. 🫶
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-page" data-page="automation" id="page-automation">
+                <div class="side-section">
+                  <div class="side-item" data-action="routines">
+                    <div class="side-left">
+                      <div class="side-ico">🧷</div>
+                      <div class="side-label">
+                        <b>Rotinas</b>
+                        <span>gatilhos e ações (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-item" data-action="calendar">
+                    <div class="side-left">
+                      <div class="side-ico">📅</div>
+                      <div class="side-label">
+                        <b>Agenda</b>
+                        <span>tarefas e lembretes (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-note">
+                    Futuro: wake word + automações + notificações. 🎙️⏰
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-page" data-page="devices" id="page-devices">
+                <div class="side-section">
+                  <div class="side-item" data-action="current">
+                    <div class="side-left">
+                      <div class="side-ico">💻</div>
+                      <div class="side-label">
+                        <b>Este dispositivo</b>
+                        <span>layout atual</span>
+                      </div>
+                    </div>
+                    <div class="side-right">›</div>
+                  </div>
+
+                  <div class="side-item" data-action="manage">
+                    <div class="side-left">
+                      <div class="side-ico">📱</div>
+                      <div class="side-label">
+                        <b>Gerenciar</b>
+                        <span>layouts por dispositivo (em breve)</span>
+                      </div>
+                    </div>
+                    <div class="side-right">Soon</div>
+                  </div>
+
+                  <div class="side-note">
+                    Ideia: cada device com widgets/layout próprios, sincronizados. 🔁
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="side-dock" id="sideDock">
+              <div class="dock-btn" id="dockConfigs" data-nav="configs" title="Configurações">
+                <div class="dock-ico">⚙️</div>
+              </div>
+
+              <div class="dock-btn" id="dockAccount" data-nav="account" title="Conta">
+                <div class="dock-ico">👤</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AUTH POPUP -->
+  <div class="auth-overlay" id="authOverlay" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
+      <div class="auth-top">
+        <div class="auth-brand">
+          <div class="auth-logo">⌁</div>
+          <div class="auth-title">
+            <b>Terminal • Conta</b>
+            <span>entre/crie ou use convidado</span>
+          </div>
+        </div>
+        <div class="auth-close" id="authClose" title="Fechar">✕</div>
+      </div>
+
+      <div class="auth-body">
+        <div class="auth-error" id="authError">—</div>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="create" id="tabCreate">Criar conta</div>
+          <div class="auth-tab" data-tab="login" id="tabLogin">Entrar</div>
+        </div>
+
+        <div class="auth-fields">
+          <div class="auth-field">
+            <label>Email</label>
+            <input class="auth-input" id="authEmail" type="email" autocomplete="email" placeholder="voce@email.com"/>
+          </div>
+          <div class="auth-field" id="pwWrap">
+            <label>Senha</label>
+            <input class="auth-input" id="authPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
+          </div>
+        </div>
+
+        <div class="auth-actions">
+          <button class="auth-btn" id="primaryAuthBtn">✨ Criar e entrar</button>
+          <button class="auth-btn secondary" id="googleBtn">🟦 Entrar com Google</button>
+          <button class="auth-btn secondary" id="guestBtn">🫧 Entrar como convidado</button>
+        </div>
+
+        <div class="auth-meta">
+          <div class="auth-small" id="authHint">
+            Você pode trocar de conta depois no menu. 🔁
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE POPUP -->
+  <div class="mini-overlay" id="profileOverlay" aria-hidden="true">
+    <div class="mini-modal" role="dialog" aria-modal="true" aria-label="Editar perfil">
+      <div class="mini-head">
+        <b>Editar perfil</b>
+        <div class="mini-close" id="profileClose" title="Fechar">✕</div>
+      </div>
+
+      <div class="mini-body">
+        <div class="prof-top">
+          <div class="prof-ava-wrap" id="profileAvatarPrev">
+            <div style="font-weight:900; color: var(--muted); font-size: 16px;">⌁</div>
+
+            <div class="prof-cam" id="profilePickBtn" title="Alterar foto">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </div>
+          </div>
+
+          <div style="flex:1 1 auto; min-width:0;">
+            <div class="auth-field" style="margin:0;">
+              <label>Nome</label>
+              <input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/>
+            </div>
+          </div>
+        </div>
+
+        <input class="auth-input" id="profilePhotoFile" type="file" accept="image/*" style="display:none;"/>
+
+        <details class="adv">
+          <summary>Avançado: usar URL da foto</summary>
+          <div class="auth-field" style="margin-top:10px;">
+            <label>Foto (URL)</label>
+            <input class="auth-input" id="profilePhotoUrl" type="url" placeholder="https://..."/>
+          </div>
+        </details>
+
+        <div class="auth-error" id="profileError">—</div>
+
+        <div class="mini-actions">
+          <button class="auth-btn secondary" id="profileCancel">Cancelar</button>
+          <button class="auth-btn" id="profileSave">💾 Salvar</button>
+        </div>
+
+        <div class="auth-small" style="color: var(--muted);">
+          Dica: em produção o ideal é usar Storage + URL pública. 🧊
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     /* =========================================================
@@ -536,7 +1873,7 @@
       measurementId: "G-V410E6KHMV"
     };
 
-    let fbApp = null, fbAuth = null, fbDb = null, fbStorage = null;
+    let fbApp = null, fbAuth = null, fbDb = null;
     let firebaseReady = false;
 
     function initFirebase(){
@@ -547,7 +1884,6 @@
         fbApp = firebase.initializeApp(firebaseConfig);
         fbAuth = firebase.auth();
         fbDb = firebase.firestore();
-        fbStorage = firebase.storage(); // ✅
         firebaseReady = true;
         return true;
       }catch(e){
@@ -557,80 +1893,6 @@
       }
     }
 
-    /* =========================================================
-       Helpers: Photo URL input memory (não preencher com photo atual)
-       ========================================================= */
-    const PHOTO_URL_LAST_KEY = 'terminal.profile.photoUrlLast.v1';
-
-    function getPhotoUrlLastKey(){
-      // por profile (guest ou uid)
-      const base = (activeProfileId === 'guest') ? 'guest' : activeProfileId.replace('uid:','uid_');
-      return `${PHOTO_URL_LAST_KEY}.${base}`;
-    }
-
-    function getPhotoUrlLast(){
-      try{ return String(localStorage.getItem(getPhotoUrlLastKey()) || ''); }catch(e){ return ''; }
-    }
-    function setPhotoUrlLast(v){
-      try{ localStorage.setItem(getPhotoUrlLastKey(), String(v || '')); }catch(e){}
-    }
-
-    function isDataUrl(str){
-      return typeof str === 'string' && str.trim().toLowerCase().startsWith('data:');
-    }
-
-    /* =========================================================
-       Helpers: Resize/compress + upload to Storage (para não estourar photoURL)
-       ========================================================= */
-    async function fileToJpegBlob(file, maxSide=512, quality=0.86){
-      // ✅ reduz e comprime antes de subir
-      const img = await new Promise((resolve, reject)=>{
-        const im = new Image();
-        im.onload = ()=>resolve(im);
-        im.onerror = reject;
-        im.src = URL.createObjectURL(file);
-      });
-
-      const w = img.naturalWidth || img.width;
-      const h = img.naturalHeight || img.height;
-
-      const scale = Math.min(1, maxSide / Math.max(w, h));
-      const tw = Math.max(1, Math.round(w * scale));
-      const th = Math.max(1, Math.round(h * scale));
-
-      const canvas = document.createElement('canvas');
-      canvas.width = tw;
-      canvas.height = th;
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, tw, th);
-
-      URL.revokeObjectURL(img.src);
-
-      const blob = await new Promise((resolve)=>canvas.toBlob(resolve, 'image/jpeg', quality));
-      if(!blob) throw new Error('Falha ao processar imagem.');
-      return blob;
-    }
-
-    async function uploadAvatarAndGetUrl(file){
-      if(!firebaseReady || !currentUser || !fbStorage) throw new Error('Storage indisponível.');
-      const blob = await fileToJpegBlob(file, 640, 0.86);
-
-      // ✅ caminho estável por user (sobrescreve)
-      const path = `avatars/${currentUser.uid}/avatar.jpg`;
-      const ref = fbStorage.ref().child(path);
-
-      await ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'public,max-age=86400' });
-      const url = await ref.getDownloadURL();
-      return url;
-    }
-
-    /* =========================================================
-       (SEU JS ORIGINAL CONTINUA...)
-       - Mantive tudo como estava
-       - A PARTE 2 vai substituir somente o bloco de salvar perfil
-       ========================================================= */
-
     const stage = document.getElementById('stage');
     const area  = document.getElementById('area');
     const ghost = document.getElementById('ghost');
@@ -639,7 +1901,973 @@
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    /* ... (TODO SEU JS segue igual até chegar no Profile Editor) ... */
+    function getVars(){
+      const cs = getComputedStyle(document.documentElement);
+      const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
+      const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
+      const step = cell + gap;
+      const subStep = step / 2;
+      const subGap = gap / 2;
+      const b = parseFloat(cs.getPropertyValue('--b')) || 1;
+      const seamFix = parseFloat(cs.getPropertyValue('--seamFix')) || 0;
+      return { cell, gap, step, subStep, subGap, b, seamFix };
+    }
+
+    function syncGridVars(){
+      const { step, subStep } = getVars();
+      document.documentElement.style.setProperty('--step', step + 'px');
+      document.documentElement.style.setProperty('--subStep', (subStep) + 'px');
+      document.documentElement.style.setProperty('--subGap', (getVars().gap / 2) + 'px');
+      document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
+    }
+
+    function areaRect(){ return area.getBoundingClientRect(); }
+
+    function colRowToPx(colU, rowU){
+      const { subStep } = getVars();
+      return { left: colU * subStep, top: rowU * subStep };
+    }
+
+    function pxToColRow(absX, absY){
+      const { subStep } = getVars();
+      const r = areaRect();
+      const rx = (absX - r.left);
+      const ry = (absY - r.top);
+      return { colU: Math.round(rx / subStep), rowU: Math.round(ry / subStep) };
+    }
+
+    function widgetUnits(w){
+      const wU = Math.max(1, parseInt(w.dataset.w || '2', 10));
+      const hU = Math.max(1, parseInt(w.dataset.h || '2', 10));
+      return { wU, hU };
+    }
+
+    function setWidgetPixelSize(w, wU, hU){
+      const { subStep, subGap, b, seamFix } = getVars();
+      const widthPx  = Math.max(12, (wU * subStep) - subGap - (b * 2) - seamFix);
+      const heightPx = Math.max(12, (hU * subStep) - subGap - (b * 2) - seamFix);
+      w.style.width  = Math.round(widthPx) + 'px';
+      w.style.height = Math.round(heightPx) + 'px';
+      w.dataset.w = String(wU);
+      w.dataset.h = String(hU);
+    }
+
+    function maxColsRowsForUnits(w){
+      const { subStep } = getVars();
+      const r = areaRect();
+      const wPx = w.offsetWidth;
+      const hPx = w.offsetHeight;
+      const maxColU = Math.max(0, Math.floor((r.width  - wPx) / subStep));
+      const maxRowU = Math.max(0, Math.floor((r.height - hPx) / subStep));
+      return { maxColU, maxRowU };
+    }
+
+    function buildOccupancy(exceptId=null){
+      const occ = new Set();
+      document.querySelectorAll('.widget').forEach(w=>{
+        if(w.style.display === 'none') return;
+        const id = w.dataset.id;
+        if(exceptId && id === exceptId) return;
+
+        const colU = parseInt(w.dataset.colU || '0', 10);
+        const rowU = parseInt(w.dataset.rowU || '0', 10);
+        const { wU, hU } = widgetUnits(w);
+
+        for(let y=0; y<hU; y++){
+          for(let x=0; x<wU; x++){
+            occ.add(`${colU+x},${rowU+y}`);
+          }
+        }
+      });
+      return occ;
+    }
+
+    function canPlaceUnits(w, colU, rowU, occ){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      colU = clamp(colU, 0, maxColU);
+      rowU = clamp(rowU, 0, maxRowU);
+
+      const { wU, hU } = widgetUnits(w);
+      for(let y=0; y<hU; y++){
+        for(let x=0; x<wU; x++){
+          if(occ.has(`${colU+x},${rowU+y}`)) return false;
+        }
+      }
+      return true;
+    }
+
+    function findNearestFreeCellUnits(w, desiredColU, desiredRowU){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      desiredColU = clamp(desiredColU, 0, maxColU);
+      desiredRowU = clamp(desiredRowU, 0, maxRowU);
+
+      const occ = buildOccupancy(w.dataset.id);
+      const maxRadius = Math.max(maxColU, maxRowU) + 12;
+
+      for(let rad=0; rad<=maxRadius; rad++){
+        for(let dr=-rad; dr<=rad; dr++){
+          for(let dc=-rad; dc<=rad; dc++){
+            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue;
+            const colU = desiredColU + dc;
+            const rowU = desiredRowU + dr;
+            if(colU < 0 || rowU < 0 || colU > maxColU || rowU > maxRowU) continue;
+            if(canPlaceUnits(w, colU, rowU, occ)) return { colU, rowU };
+          }
+        }
+      }
+      return { colU: desiredColU, rowU: desiredRowU };
+    }
+
+    function setGhost(w, colU, rowU){
+      const { left, top } = colRowToPx(colU, rowU);
+      ghost.style.width  = w.offsetWidth + 'px';
+      ghost.style.height = w.offsetHeight + 'px';
+      ghost.style.left   = Math.round(left) + 'px';
+      ghost.style.top    = Math.round(top)  + 'px';
+      ghost.classList.add('visible');
+    }
+    function hideGhost(){ ghost.classList.remove('visible'); }
+
+    /* =========================================================
+       Profiles, storage & account switch
+       ========================================================= */
+    const SYNC_KEY = 'terminal.account.sync.v2';
+    const ACCOUNTS_USED_KEY = 'terminal.accounts.used.v1';
+    const ACTIVE_PROFILE_KEY = 'terminal.profile.active.v1';
+    const GUEST_PROFILE_KEY = 'terminal.profile.guest.v1';
+
+    let activeProfileId = 'guest';
+    let currentUser = null;
+
+    function lockApp(){ document.body.classList.add('auth-locked'); }
+    function unlockApp(){ document.body.classList.remove('auth-locked'); }
+
+    function getSyncEnabled(){
+      try{
+        const raw = localStorage.getItem(SYNC_KEY);
+        if(raw == null) return true;
+        return raw === '1';
+      }catch(e){ return true; }
+    }
+    function setSyncEnabled(on){
+      try{ localStorage.setItem(SYNC_KEY, on ? '1' : '0'); }catch(e){}
+      const t = document.getElementById('syncToggle');
+      if(t) t.classList.toggle('on', !!on);
+    }
+
+    function setActiveProfile(id){
+      activeProfileId = id || 'guest';
+      try{ localStorage.setItem(ACTIVE_PROFILE_KEY, activeProfileId); }catch(e){}
+    }
+    function loadActiveProfile(){
+      try{
+        const raw = localStorage.getItem(ACTIVE_PROFILE_KEY);
+        if(raw) activeProfileId = raw;
+      }catch(e){}
+    }
+
+    function profileKeyBase(){
+      return activeProfileId === 'guest' ? 'guest' : activeProfileId.replace('uid:','uid_');
+    }
+    function k(name){
+      return `terminal.${name}.${profileKeyBase()}`;
+    }
+
+    function getLayoutKey(){ return k('layout.v9'); }
+    function getThemeKey(){  return k('theme.mode.v4'); }
+    function getEditKey(){   return k('editmode.v1'); }
+
+    function loadLayout(){
+      try{
+        const raw = localStorage.getItem(getLayoutKey());
+        return raw ? (JSON.parse(raw) || {}) : {};
+      }catch(e){ return {}; }
+    }
+    function saveLayout(layout){
+      try{ localStorage.setItem(getLayoutKey(), JSON.stringify(layout)); }catch(e){}
+      requestCloudSyncDebounced();
+    }
+
+    function loadGuestProfile(){
+      try{
+        return JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || '{}') || {};
+      }catch(e){ return {}; }
+    }
+    function saveGuestProfile(p){
+      try{ localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(p || {})); }catch(e){}
+    }
+
+    function upsertUsedAccount(entry){
+      try{
+        const list = JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || [];
+        const key = entry && entry.key;
+        if(!key) return;
+        const filtered = list.filter(x => x && x.key !== key);
+        filtered.unshift(entry);
+        localStorage.setItem(ACCOUNTS_USED_KEY, JSON.stringify(filtered.slice(0, 8)));
+      }catch(e){}
+    }
+
+    function getUsedAccounts(){
+      try{
+        return JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || [];
+      }catch(e){ return []; }
+    }
+
+    function commitWidgetCellUnits(w, colU, rowU){
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      colU = clamp(colU, 0, maxColU);
+      rowU = clamp(rowU, 0, maxRowU);
+
+      w.dataset.colU = String(colU);
+      w.dataset.rowU = String(rowU);
+
+      const p = colRowToPx(colU, rowU);
+      w.style.left = Math.round(p.left) + 'px';
+      w.style.top  = Math.round(p.top)  + 'px';
+
+      const layout = loadLayout();
+      const id = w.dataset.id;
+      layout[id] = layout[id] || {};
+      layout[id].colU = colU;
+      layout[id].rowU = rowU;
+      layout[id].wU = parseInt(w.dataset.w || '2', 10);
+      layout[id].hU = parseInt(w.dataset.h || '2', 10);
+      layout[id].hidden = false;
+      saveLayout(layout);
+    }
+
+    function applyLayout(){
+      const layout = loadLayout();
+      document.querySelectorAll('.widget').forEach(w=>{
+        const id = w.dataset.id;
+
+        if(layout[id] && layout[id].hidden){
+          w.style.display = 'none';
+          return;
+        } else {
+          w.style.display = '';
+        }
+
+        const wU = (layout[id] && typeof layout[id].wU === 'number') ? layout[id].wU : parseInt(w.dataset.w || '2', 10);
+        const hU = (layout[id] && typeof layout[id].hU === 'number') ? layout[id].hU : parseInt(w.dataset.h || '2', 10);
+        setWidgetPixelSize(w, wU, hU);
+
+        const colU = (layout[id] && typeof layout[id].colU === 'number') ? layout[id].colU : null;
+        const rowU = (layout[id] && typeof layout[id].rowU === 'number') ? layout[id].rowU : null;
+
+        if(colU !== null && rowU !== null){
+          commitWidgetCellUnits(w, colU, rowU);
+        }
+      });
+    }
+
+    function defaultLayoutIfNeeded(){
+      const layout = loadLayout();
+      if(Object.keys(layout).length) return;
+
+      const menu  = document.querySelector('.widget[data-id="menu"]');
+      const clockW = document.querySelector('.widget[data-id="clock"]');
+      const chat  = document.querySelector('.widget[data-id="chat"]');
+      const themeW = document.querySelector('.widget[data-id="theme"]');
+
+      const desired = [
+        { w: menu,   colU: 0,  rowU: 0 },
+        { w: chat,   colU: 2,  rowU: 0 },
+        { w: clockW, colU: 8,  rowU: 0 },
+        { w: themeW, colU: 14, rowU: 0 },
+      ];
+
+      desired.forEach(({w,colU,rowU})=>{
+        if(!w) return;
+        const free = findNearestFreeCellUnits(w, colU, rowU);
+        commitWidgetCellUnits(w, free.colU, free.rowU);
+      });
+    }
+
+    function normalizeAll(){
+      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
+
+      widgets.forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+        if(w.dataset.colU == null) w.dataset.colU = '0';
+        if(w.dataset.rowU == null) w.dataset.rowU = '0';
+      });
+
+      for(const w of widgets){
+        const colU = parseInt(w.dataset.colU || '0', 10);
+        const rowU = parseInt(w.dataset.rowU || '0', 10);
+        const free = findNearestFreeCellUnits(w, colU, rowU);
+        commitWidgetCellUnits(w, free.colU, free.rowU);
+      }
+    }
+
+    /* ===== Edit Mode ===== */
+    let isEditMode = false;
+    function setEditMode(on){
+      isEditMode = !!on;
+      stage.classList.toggle('edit-mode', isEditMode);
+      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
+      if(isEditMode) closeSidebar();
+      if(!isEditMode) hideGhost();
+      requestCloudSyncDebounced();
+    }
+
+    const HOLD_MS = 450;
+    let hold = null;
+
+    function startHold(e){
+      clearHold();
+      hold = {
+        startX: e.clientX,
+        startY: e.clientY,
+        timer: setTimeout(()=>{
+          setEditMode(!isEditMode);
+          clearHold();
+        }, HOLD_MS)
+      };
+    }
+    function clearHold(){
+      if(!hold) return;
+      clearTimeout(hold.timer);
+      hold = null;
+    }
+
+    stage.addEventListener('pointerdown', (e)=>{
+      if(!isEditMode) return;
+      if(e.target.closest('.widget')) return;
+      setEditMode(false);
+    }, true);
+
+    /* ===== Drag ===== */
+    let drag = null;
+
+    function canStartDragFromTarget(target){
+      if(target.closest('#themePill')) return false;
+      if(target.closest('.no-drag')) return false;
+      if(target.closest('[data-handle="resize"]')) return false;
+      if(target.closest('input, textarea, button, select')) return false;
+      return true;
+    }
+
+    function onPointerDown(e){
+      const w = e.target.closest('.widget');
+      if(!w) return;
+
+      startHold(e);
+
+      if(!isEditMode) return;
+      if(!canStartDragFromTarget(e.target)) return;
+
+      e.preventDefault();
+
+      drag = {
+        w,
+        startX: e.clientX,
+        startY: e.clientY,
+        originColU: parseInt(w.dataset.colU || '0', 10),
+        originRowU: parseInt(w.dataset.rowU || '0', 10),
+        dx: 0,
+        dy: 0
+      };
+
+      w.classList.add('dragging');
+      w.style.animation = 'none';
+      w.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e){
+      if(hold){
+        const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
+        if(md > 6) clearHold();
+      }
+      if(!drag) return;
+
+      const w = drag.w;
+      drag.dx = e.clientX - drag.startX;
+      drag.dy = e.clientY - drag.startY;
+
+      w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
+
+      const originPx = colRowToPx(drag.originColU, drag.originRowU);
+      const r = areaRect();
+      const absX = (r.left + originPx.left) + drag.dx;
+      const absY = (r.top  + originPx.top ) + drag.dy;
+
+      const { colU, rowU } = pxToColRow(absX, absY);
+      const free = findNearestFreeCellUnits(w, colU, rowU);
+
+      setGhost(w, free.colU, free.rowU);
+    }
+
+    function onPointerUp(){
+      clearHold();
+      if(!drag) return;
+
+      const w = drag.w;
+
+      const originPx = colRowToPx(drag.originColU, drag.originRowU);
+      const r = areaRect();
+      const absX = (r.left + originPx.left) + drag.dx;
+      const absY = (r.top  + originPx.top ) + drag.dy;
+
+      const { colU, rowU } = pxToColRow(absX, absY);
+      const free = findNearestFreeCellUnits(w, colU, rowU);
+
+      w.style.transform = 'translate3d(0,0,0)';
+      w.classList.remove('dragging');
+      w.style.animation = '';
+
+      commitWidgetCellUnits(w, free.colU, free.rowU);
+      hideGhost();
+      drag = null;
+
+      refreshAccountUI();
+    }
+
+    area.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
+    /* ===== Theme ===== */
+    const themeThumb   = document.getElementById('themeThumb');
+    const themeOptions = document.getElementById('themeOptions');
+    const themePill    = document.getElementById('themePill');
+
+    function applyTheme(mode){
+      let applied = mode;
+      if(mode === 'auto'){
+        applied = prefersDark() ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', applied);
+    }
+
+    function slotXForMode(mode){
+      const rect = themePill.getBoundingClientRect();
+      const thumbW = themeThumb.getBoundingClientRect().width || 0;
+      const innerW = rect.width - 14;
+      const range = Math.max(0, innerW - thumbW);
+      const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
+      return range * (idx / 2);
+    }
+
+    function syncThemeThumb(mode, immediate=false){
+      if(!mode) mode = localStorage.getItem(getThemeKey()) || 'auto';
+      themeThumb.style.transition = immediate ? 'none' : 'transform 240ms var(--ease)';
+      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
+    }
+
+    function setTheme(mode){
+      localStorage.setItem(getThemeKey(), mode);
+      applyTheme(mode);
+
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
+        opt.classList.toggle('active', opt.dataset.theme === mode);
+      });
+
+      syncThemeThumb(mode, false);
+      requestCloudSyncDebounced();
+      refreshAccountUI();
+    }
+
+    function loadTheme(){
+      const saved = localStorage.getItem(getThemeKey()) || 'auto';
+      setTheme(saved);
+    }
+
+    themeOptions.addEventListener('click', (e)=>{
+      if(isEditMode) return;
+      const opt = e.target.closest('.theme-opt');
+      if(!opt) return;
+      setTheme(opt.dataset.theme);
+    });
+
+    let pillDrag = null;
+    let rafId = 0;
+
+    function thumbXFromClientX(clientX, rect, thumbW){
+      const innerLeft = 7;
+      const innerRight = rect.width - 7;
+      const innerW = innerRight - innerLeft;
+      const range = Math.max(0, innerW - thumbW);
+
+      const local = clamp(clientX - rect.left - innerLeft, 0, innerW);
+      return clamp(local - thumbW/2, 0, range);
+    }
+
+    function renderThumbX(px){
+      themeThumb.style.transition = 'none';
+      themeThumb.style.transform = `translate3d(${px}px,0,0)`;
+    }
+
+    themePill.addEventListener('pointerdown', (e)=>{
+      if(isEditMode) return;
+      e.preventDefault();
+      const rect = themePill.getBoundingClientRect();
+      const thumbW = themeThumb.getBoundingClientRect().width || 0;
+      pillDrag = { rect, thumbW, lastX: e.clientX };
+      themePill.setPointerCapture(e.pointerId);
+      renderThumbX(thumbXFromClientX(e.clientX, rect, thumbW));
+    });
+
+    themePill.addEventListener('pointermove', (e)=>{
+      if(isEditMode) return;
+      if(!pillDrag) return;
+      pillDrag.lastX = e.clientX;
+      if(rafId) return;
+      rafId = requestAnimationFrame(()=>{
+        rafId = 0;
+        renderThumbX(thumbXFromClientX(pillDrag.lastX, pillDrag.rect, pillDrag.thumbW));
+      });
+    });
+
+    themePill.addEventListener('pointerup', (e)=>{
+      if(isEditMode) return;
+      if(!pillDrag) return;
+
+      const { rect, thumbW } = pillDrag;
+      pillDrag = null;
+
+      const innerW = rect.width - 14;
+      const range = Math.max(0, innerW - thumbW);
+
+      const x = thumbXFromClientX(e.clientX, rect, thumbW);
+      const t = range === 0 ? 0 : (x / range);
+      const idx = clamp(Math.round(t * 2), 0, 2);
+
+      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
+      setTheme(mode);
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
+      const saved = localStorage.getItem(getThemeKey()) || 'auto';
+      if(saved === 'auto') applyTheme('auto');
+    });
+
+    /* ===== Clock ===== */
+    const clockEl = document.getElementById('clock');
+    const dateLabel = document.getElementById('dateLabel');
+    const secondsLabel = document.getElementById('secondsLabel');
+
+    function tick(){
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const ss = String(now.getSeconds()).padStart(2,'0');
+
+      clockEl.textContent = `${hh}:${mm}`;
+      secondsLabel.textContent = ss;
+
+      const weekday = new Intl.DateTimeFormat('pt-PT', { weekday:'long' }).format(now);
+      const dd = String(now.getDate()).padStart(2,'0');
+      const mo = String(now.getMonth()+1).padStart(2,'0');
+      dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
+    }
+
+    function updateClockTypography(){
+      const w = document.querySelector('.widget[data-id="clock"]');
+      if(!w || w.style.display === 'none') return;
+
+      const { wU, hU } = widgetUnits(w);
+      const sx = wU / 4;
+      const sy = hU / 2;
+      const scale = clamp(Math.min(sx, sy), 0.85, 1.85);
+      w.style.setProperty('--clockScale', scale.toFixed(3));
+    }
+
+    /* =========================================================
+       Resize (Edit Mode)
+       ========================================================= */
+    let resize = null;
+
+    function startResize(e){
+      const w = e.target.closest('.widget');
+      if(!w) return;
+      if(!isEditMode) return;
+      if(w.dataset.resizable !== '1') return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      clearHold();
+
+      const startW = parseInt(w.dataset.w || '2', 10);
+      const startH = parseInt(w.dataset.h || '2', 10);
+
+      resize = {
+        w,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW,
+        startH,
+        originColU: parseInt(w.dataset.colU || '0', 10),
+        originRowU: parseInt(w.dataset.rowU || '0', 10),
+      };
+
+      w.classList.add('resizing');
+      w.style.animation = 'none';
+      w.setPointerCapture(e.pointerId);
+    }
+
+    function moveResize(e){
+      if(!resize) return;
+
+      const w = resize.w;
+      const { subStep } = getVars();
+
+      const dx = e.clientX - resize.startX;
+      const dy = e.clientY - resize.startY;
+
+      const addWU = Math.round(dx / subStep);
+      const addHU = Math.round(dy / subStep);
+
+      const minWU = 2;
+      const minHU = 2;
+
+      let nextWU = clamp(resize.startW + addWU, minWU, 60);
+      let nextHU = clamp(resize.startH + addHU, minHU, 60);
+
+      setWidgetPixelSize(w, nextWU, nextHU);
+
+      const occ = buildOccupancy(w.dataset.id);
+      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
+      const colU = clamp(resize.originColU, 0, maxColU);
+      const rowU = clamp(resize.originRowU, 0, maxRowU);
+
+      w.dataset.colU = String(colU);
+      w.dataset.rowU = String(rowU);
+
+      if(!canPlaceUnits(w, colU, rowU, occ)){
+        let ok = false;
+        let tryWU = nextWU;
+        let tryHU = nextHU;
+
+        for(let tries=0; tries<80 && !ok; tries++){
+          if(tryWU > minWU) tryWU--;
+          else if(tryHU > minHU) tryHU--;
+          else break;
+
+          setWidgetPixelSize(w, tryWU, tryHU);
+          if(canPlaceUnits(w, colU, rowU, occ)) ok = true;
+        }
+      }
+
+      setGhost(w, colU, rowU);
+
+      if(w.dataset.id === 'theme'){
+        syncThemeThumb(null, true);
+      }
+      if(w.dataset.id === 'clock'){
+        updateClockTypography();
+      }
+    }
+
+    function endResize(){
+      if(!resize) return;
+      const w = resize.w;
+
+      w.classList.remove('resizing');
+      w.style.animation = '';
+
+      const colU = parseInt(w.dataset.colU || '0', 10);
+      const rowU = parseInt(w.dataset.rowU || '0', 10);
+
+      commitWidgetCellUnits(w, colU, rowU);
+      hideGhost();
+
+      if(w.dataset.id === 'theme'){
+        syncThemeThumb(null, false);
+      }
+      if(w.dataset.id === 'clock'){
+        updateClockTypography();
+      }
+
+      resize = null;
+      refreshAccountUI();
+    }
+
+    document.querySelectorAll('.resize-handle').forEach(h=>{
+      h.addEventListener('pointerdown', startResize);
+    });
+    window.addEventListener('pointermove', moveResize);
+    window.addEventListener('pointerup', endResize);
+
+    /* =========================================================
+       Sidebar Router
+       ========================================================= */
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarBack = document.getElementById('sidebarBack');
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarSub = document.getElementById('sidebarSub');
+    const menuBtn = document.getElementById('menuBtn');
+    const sideDock = document.getElementById('sideDock');
+    const sidebarPages = document.getElementById('sidebarPages');
+
+    const pages = {
+      home:        { title: 'Menu',            sub: 'Config • Conta • Personalização • Automação • Dispositivos' },
+      configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
+      account:     { title: 'Conta',           sub: 'Perfil, sync, logout e troca' },
+      personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
+      automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
+      devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
+    };
+
+    let navStack = ['home'];
+
+    /* ✅ FIX: era o parse error que quebrava a página */
+    function getPageEl(id){
+      return document.querySelector(`.side-page[data-page="${id}"]`);
+    }
+
+    function updateHeader(){
+      const current = navStack[navStack.length - 1] || 'home';
+      const meta = pages[current] || pages.home;
+
+      sidebarTitle.textContent = meta.title;
+      sidebarSub.textContent = meta.sub;
+
+      sidebar.classList.toggle('has-back', current !== 'home');
+      sideDock.classList.toggle('hidden', current !== 'home');
+
+      if(current === 'account') refreshAccountUI();
+    }
+
+    function showPage(fromId, toId, direction){
+      if(!toId || fromId === toId) return;
+
+      const fromEl = getPageEl(fromId);
+      const toEl = getPageEl(toId);
+      if(!toEl) return;
+
+      document.querySelectorAll('.side-page').forEach(p=>{
+        if(p !== fromEl && p !== toEl){
+          p.classList.remove('active','left');
+        }
+      });
+
+      if(direction === 'back'){
+        toEl.classList.add('active','left');
+        if(fromEl){
+          fromEl.classList.remove('active');
+          fromEl.classList.remove('left');
+        }
+        requestAnimationFrame(()=> toEl.classList.remove('left'));
+      }else{
+        toEl.classList.add('active');
+        toEl.classList.remove('left');
+        if(fromEl){
+          fromEl.classList.add('left');
+          fromEl.classList.remove('active');
+        }
+      }
+
+      updateHeader();
+    }
+
+    function navTo(id){
+      if(!pages[id]) return;
+      const from = navStack[navStack.length - 1] || 'home';
+      if(id === from) return;
+
+      navStack.push(id);
+      showPage(from, id, 'forward');
+    }
+
+    function navBack(){
+      if(navStack.length <= 1) return;
+      const from = navStack.pop();
+      const to = navStack[navStack.length - 1] || 'home';
+      showPage(from, to, 'back');
+    }
+
+    function resetMenuNav(){
+      navStack = ['home'];
+      document.querySelectorAll('.side-page').forEach(p=>{
+        p.classList.remove('active','left');
+      });
+      const homeEl = getPageEl('home');
+      if(homeEl) homeEl.classList.add('active');
+      updateHeader();
+    }
+
+    function openSidebar(){
+      if(isEditMode) return;
+      sidebarOverlay.classList.add('open');
+      sidebarOverlay.setAttribute('aria-hidden', 'false');
+      resetMenuNav();
+    }
+    function closeSidebar(){
+      sidebarOverlay.classList.remove('open');
+      sidebarOverlay.setAttribute('aria-hidden', 'true');
+    }
+    function toggleSidebar(){
+      sidebarOverlay.classList.contains('open') ? closeSidebar() : openSidebar();
+    }
+
+    menuBtn.addEventListener('click', (e)=>{
+      if(isEditMode) return;
+      toggleSidebar();
+      e.stopPropagation();
+    });
+
+    sidebarClose.addEventListener('click', closeSidebar);
+    sidebarBack.addEventListener('click', navBack);
+
+    sidebarOverlay.addEventListener('pointerdown', (e)=>{
+      if(e.target === sidebarOverlay) closeSidebar();
+    });
+
+    sidebarPages.addEventListener('click', (e)=>{
+      const el = e.target.closest('[data-nav]');
+      if(!el) return;
+      const id = el.dataset.nav;
+      if(!id) return;
+      navTo(id);
+    });
+
+    document.getElementById('dockConfigs').addEventListener('click', ()=>navTo('configs'));
+    document.getElementById('dockAccount').addEventListener('click', ()=>navTo('account'));
+
+    document.querySelectorAll('[data-action]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const a = el.dataset.action;
+        if(!a) return;
+        alert(`${a} (placeholder)`);
+      });
+    });
+
+    /* =========================================================
+       Auth / Account / Cloud
+       ========================================================= */
+    const authOverlay = document.getElementById('authOverlay');
+    const tabCreate   = document.getElementById('tabCreate');
+    const tabLogin    = document.getElementById('tabLogin');
+    const primaryAuthBtn = document.getElementById('primaryAuthBtn');
+    const googleBtn   = document.getElementById('googleBtn');
+    const guestBtn    = document.getElementById('guestBtn');
+    const authEmail   = document.getElementById('authEmail');
+    const authPass    = document.getElementById('authPass');
+    const authError   = document.getElementById('authError');
+    const authHint    = document.getElementById('authHint');
+
+    let authTab = 'create';
+
+    function showAuthError(msg){
+      authError.textContent = msg;
+      authError.style.display = 'block';
+    }
+    function clearAuthError(){
+      authError.style.display = 'none';
+      authError.textContent = '—';
+    }
+
+    function setAuthTab(tab){
+      authTab = tab;
+      tabCreate.classList.toggle('active', tab === 'create');
+      tabLogin.classList.toggle('active', tab === 'login');
+      clearAuthError();
+
+      if(tab === 'create'){
+        primaryAuthBtn.textContent = '✨ Criar e entrar';
+        authHint.textContent = 'Crie sua conta para sincronizar layout/tema/perfil. ☁️';
+      }else{
+        primaryAuthBtn.textContent = '🔓 Entrar';
+        authHint.textContent = 'Entre para carregar suas configs. 🔁';
+      }
+    }
+
+    tabCreate.addEventListener('click', ()=>setAuthTab('create'));
+    tabLogin.addEventListener('click', ()=>setAuthTab('login'));
+
+    function openAuth(tab='create'){
+      setAuthTab(tab);
+      authOverlay.classList.add('open');
+      authOverlay.setAttribute('aria-hidden','false');
+      lockApp();
+      setTimeout(()=>authEmail.focus(), 60);
+    }
+
+    function closeAuth(){
+      authOverlay.classList.remove('open');
+      authOverlay.setAttribute('aria-hidden','true');
+      clearAuthError();
+      unlockApp();
+    }
+
+    authOverlay.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
+
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && authOverlay.classList.contains('open')){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+
+    function validEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function loginAsGuest(){
+      currentUser = null;
+      setActiveProfile('guest');
+      closeAuth();
+      await loadFromCloudIfNeeded();
+      bootApplyAfterProfileChange();
+      refreshAccountUI();
+    }
+
+    async function loginWithEmailPassword(email, pass, mode){
+      if(!firebaseReady) return showAuthError('Firebase não configurado.');
+      if(!validEmail(email)) return showAuthError('Digite um email válido.');
+      if(!pass || pass.length < 6) return showAuthError('Senha inválida (mínimo 6).');
+
+      try{
+        if(mode === 'create'){
+          await fbAuth.createUserWithEmailAndPassword(email, pass);
+        }else{
+          await fbAuth.signInWithEmailAndPassword(email, pass);
+        }
+      }catch(err){
+        const m = (err && err.message) ? err.message : 'Erro ao autenticar.';
+        showAuthError(m);
+      }
+    }
+
+    async function loginWithGoogle(){
+      if(!firebaseReady) return showAuthError('Firebase não configurado.');
+      try{
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await fbAuth.signInWithPopup(provider);
+      }catch(err){
+        const m = (err && err.message) ? err.message : 'Erro ao entrar com Google.';
+        showAuthError(m);
+      }
+    }
+
+    primaryAuthBtn.addEventListener('click', ()=>{
+      clearAuthError();
+      const email = String(authEmail.value || '').trim().toLowerCase();
+      const pass  = String(authPass.value || '');
+      loginWithEmailPassword(email, pass, authTab);
+    });
+
+    googleBtn.addEventListener('click', ()=>{
+      clearAuthError();
+      loginWithGoogle();
+    });
+
+    guestBtn.addEventListener('click', ()=>{
+      clearAuthError();
+      loginAsGuest();
+    });
+
+    authPass.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') primaryAuthBtn.click();
+    });
 
     /* ===== Profile Edit (WhatsApp-like) ===== */
     const profileOverlay = document.getElementById('profileOverlay');
@@ -696,8 +2924,7 @@
           name: g.name || 'Convidado',
           email: 'Sessão local',
           photo: g.photo || '',
-          badge: 'Guest',
-          photoUrlLast: g.photoUrlLast || getPhotoUrlLast() || ''
+          badge: 'Guest'
         };
       }
       if(currentUser){
@@ -705,23 +2932,18 @@
           name: currentUser.displayName || 'Usuário',
           email: currentUser.email || '—',
           photo: currentUser.photoURL || '',
-          badge: 'Sync',
-          photoUrlLast: getPhotoUrlLast() || ''
+          badge: 'Sync'
         };
       }
-      return { name:'Conta', email:'—', photo:'', badge:'—', photoUrlLast: getPhotoUrlLast() || '' };
+      return { name:'Conta', email:'—', photo:'', badge:'—' };
     }
 
     function openProfileEditor(){
       clearProfileError();
       const p = getCurrentProfileView();
       profileName.value = p.name || '';
-
-      // ✅ NÃO preencher com photo atual (do google/email).
-      // ✅ Só mostra o último URL que o usuário digitou.
-      profilePhotoUrl.value = p.photoUrlLast || '';
+      profilePhotoUrl.value = p.photo || '';
       profilePhotoFile.value = '';
-
       setProfileAvatarPreview(p.photo || '');
       profileOverlay.classList.add('open');
       profileOverlay.setAttribute('aria-hidden','false');
@@ -746,87 +2968,58 @@
       const f = profilePhotoFile.files && profilePhotoFile.files[0];
       if(!f) return;
       try{
-        // preview local (pode ser dataURL, sem gravar no Auth)
         const dataUrl = await fileToDataUrl(f);
         setProfileAvatarPreview(dataUrl);
       }catch(e){}
     });
 
-    async function saveProfileToCloud({name, photo, photoUrlLast}){
+    async function saveProfileToCloud({name, photo}){
       const ref = userDocRef();
       if(!ref) return;
       await ref.set({
-        profile: { name: name || '', photo: photo || '', photoUrlLast: photoUrlLast || '' },
+        profile: { name: name || '', photo: photo || '' },
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
     }
 
-    document.getElementById('editProfileBtn').addEventListener('click', openProfileEditor);
-
-  
     profileSave.addEventListener('click', async ()=>{
       clearProfileError();
-
       const name = String(profileName.value || '').trim();
       if(!name) return showProfileError('Digite um nome.');
 
       try{
         const f = profilePhotoFile.files && profilePhotoFile.files[0];
-        const typedUrl = String(profilePhotoUrl.value || '').trim();
+        let photo = '';
 
-        // ✅ Guardar sempre o último URL digitado (para preencher o input da próxima vez)
-        setPhotoUrlLast(typedUrl);
-
-        let finalPhoto = '';
-        let finalPhotoUrlLast = typedUrl;
+        if(f){
+          photo = await fileToDataUrl(f);
+        }else{
+          photo = String(profilePhotoUrl.value || '').trim();
+        }
 
         if(activeProfileId === 'guest'){
-          // Guest: pode aceitar file (dataURL) OU URL
-          if(f){
-            finalPhoto = await fileToDataUrl(f); // ok para guest (local)
-          }else{
-            finalPhoto = typedUrl;
-          }
-
-          saveGuestProfile({ name, photo: finalPhoto, photoUrlLast: finalPhotoUrlLast });
+          saveGuestProfile({ name, photo });
           requestCloudSyncDebounced();
           closeProfileEditor();
           refreshAccountUI();
           return;
         }
 
-        // Logged: precisa estar logado
         if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
 
-        // Logged: se for file => subir no Storage (URL curta)
-        if(f){
-          finalPhoto = await uploadAvatarAndGetUrl(f); // ✅ URL curta do Storage
-        }else{
-          // Se for URL colada, bloquear dataURL (causa auth/invalid-profile-attribute)
-          if(isDataUrl(typedUrl)) return showProfileError('URL inválida: use um link http(s) (não data:).');
-          finalPhoto = typedUrl || '';
-        }
-
-        // ✅ Atualizar Auth com URL curta (ou vazia)
         await currentUser.updateProfile({
           displayName: name,
-          photoURL: finalPhoto || ''
+          photoURL: photo || ''
         });
 
-        // ✅ Salvar também no Firestore (inclui photoUrlLast)
-        await saveProfileToCloud({
-          name,
-          photo: finalPhoto || '',
-          photoUrlLast: finalPhotoUrlLast || ''
-        });
+        await saveProfileToCloud({ name, photo: photo || '' });
 
-        // ✅ atualizar switcher
         upsertUsedAccount({
           key: 'uid:' + currentUser.uid,
           uid: currentUser.uid,
           email: currentUser.email || '',
           name,
-          photo: finalPhoto || '',
+          photo: photo || '',
           provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
           lastAt: Date.now()
         });
@@ -839,82 +3032,60 @@
       }
     });
 
-    /* =========================================================
-       ✅ FIX: Load cloud trazendo profile.photoUrlLast + aplicando corretamente
-       ========================================================= */
-    async function loadFromCloudIfNeeded(){
-      if(!getSyncEnabled()) return;
-      if(!firebaseReady || !currentUser) return;
+    document.getElementById('editProfileBtn').addEventListener('click', openProfileEditor);
 
+    /* ===== Account Page ===== */
+    const acctNameEl = document.getElementById('acctName');
+    const acctEmailEl = document.getElementById('acctEmail');
+    const acctBadgeEl = document.getElementById('acctBadge');
+    const acctAvatarEl = document.getElementById('acctAvatar');
+    const syncToggle = document.getElementById('syncToggle');
+    const saveNowBtn = document.getElementById('saveNowBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const switchRow = document.getElementById('switchRow');
+    const openSwitcherBtn = document.getElementById('openSwitcherBtn');
+    const switcherBox = document.getElementById('switcherBox');
+    const acctSwitchList = document.getElementById('acctSwitchList');
+
+    syncToggle.addEventListener('click', async ()=>{
+      const next = !getSyncEnabled();
+      setSyncEnabled(next);
+
+      if(next) await loadFromCloudIfNeeded();
+
+      bootApplyAfterProfileChange();
+      refreshAccountUI();
+    });
+
+    saveNowBtn.addEventListener('click', async ()=>{
+      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
+      const layout = loadLayout();
+      saveLayout(layout);
+      await saveToCloudNow();
+      alert('Configs salvas ✅');
+    });
+
+    logoutBtn.addEventListener('click', async ()=>{
       try{
-        const data = await loadSettingsFromCloud();
-        if(!data) return;
+        if(firebaseReady && currentUser){
+          await fbAuth.signOut();
+        }
+      }catch(e){}
+      currentUser = null;
+      setActiveProfile('guest');
+      lockApp();
+      openAuth('login');
+      refreshAccountUI();
+    });
 
-        // ✅ Profile no topo (como você usa em saveProfileToCloud)
-        const prof = data.profile || (data.profile && data.profile.profile) || null;
+    openSwitcherBtn.addEventListener('click', ()=>{
+      const open = switcherBox.style.display !== 'none';
+      switcherBox.style.display = open ? 'none' : '';
+    });
 
-        // Seu documento salva assim:
-        // { profile: { name, photo, photoUrlLast }, settings: {...} }
-        // então:
-        const pn = data.profile?.name || '';
-        const pp = data.profile?.photo || '';
-        const pul = data.profile?.photoUrlLast || '';
-
-        // ✅ aplica no Auth (com try/catch)
-        try{
-          if(pn && (!currentUser.displayName || currentUser.displayName !== pn)){
-            await currentUser.updateProfile({ displayName: pn });
-          }
-          if(pp && (!currentUser.photoURL || currentUser.photoURL !== pp)){
-            // ⚠️ se por algum motivo veio dataURL do cloud, ignora (proteção)
-            if(!isDataUrl(pp)) await currentUser.updateProfile({ photoURL: pp });
-          }
-        }catch(e){}
-
-        // ✅ guarda o último url digitado localmente (não auto-popular com foto google)
-        if(pul) setPhotoUrlLast(pul);
-
-        const s = data.settings || {};
-        if(s.themeMode != null) localStorage.setItem(getThemeKey(), String(s.themeMode));
-        if(s.editMode != null)  localStorage.setItem(getEditKey(),  s.editMode ? '1' : '0');
-        if(s.layoutJson != null) localStorage.setItem(getLayoutKey(), String(s.layoutJson));
-
-      }catch(e){
-        console.warn("Load cloud falhou:", e);
-      }
-    }
-
-    /* =========================================================
-       ✅ FIX: Save cloud também salva profile.photoUrlLast
-       ========================================================= */
-    async function saveToCloudNow(){
-      if(!getSyncEnabled()) return;
-      if(!firebaseReady || !currentUser) return;
-
-      try{
-        const themeMode = localStorage.getItem(getThemeKey()) || 'auto';
-        const editMode = (localStorage.getItem(getEditKey()) || '0') === '1';
-        const layoutJson = localStorage.getItem(getLayoutKey()) || '{}';
-
-        await saveSettingsToCloud({ themeMode, editMode, layoutJson });
-
-        const name = currentUser.displayName || '';
-        const photo = currentUser.photoURL || '';
-        const photoUrlLast = getPhotoUrlLast() || '';
-        await saveProfileToCloud({ name, photo, photoUrlLast });
-      }catch(e){
-        console.warn("Save cloud falhou:", e);
-      }
-    }
-
-    /* =========================================================
-       ✅ Pequena proteção: refreshAccountUI não quebra se photo for dataUrl
-       (não é obrigatório, mas evita bug visual se algum profile antigo tiver data:)
-       ========================================================= */
     function setAvatarUI(photo){
       acctAvatarEl.innerHTML = '';
       if(photo){
-        // se por acaso vier dataURL enorme, ainda dá pra renderizar; ok.
         const img = document.createElement('img');
         img.src = photo;
         img.alt = 'avatar';
@@ -928,6 +3099,282 @@
         acctAvatarEl.appendChild(d);
       }
     }
+
+    function rebuildAccountSwitcher(){
+      const list = getUsedAccounts()
+        .filter(x => x && x.uid && ('uid:' + x.uid) !== (currentUser ? ('uid:' + currentUser.uid) : ''));
+
+      const shouldShow = list.length > 0;
+      switchRow.style.display = shouldShow ? '' : 'none';
+      if(!shouldShow){
+        switcherBox.style.display = 'none';
+        acctSwitchList.innerHTML = '';
+        return;
+      }
+
+      acctSwitchList.innerHTML = '';
+      list.forEach(acc=>{
+        const chip = document.createElement('div');
+        chip.className = 'acct-chip';
+
+        const left = document.createElement('div');
+        left.className = 'chip-left';
+
+        const ava = document.createElement('div');
+        ava.className = 'chip-ava';
+        if(acc.photo){
+          const img = document.createElement('img');
+          img.src = acc.photo;
+          ava.appendChild(img);
+        }else{
+          ava.textContent = (acc.name || acc.email || 'U').slice(0,1).toUpperCase();
+        }
+
+        const txt = document.createElement('div');
+        txt.className = 'chip-txt';
+        const b = document.createElement('b');
+        b.textContent = acc.name || 'Conta';
+        const s = document.createElement('span');
+        s.textContent = acc.email || '—';
+        txt.appendChild(b);
+        txt.appendChild(s);
+
+        left.appendChild(ava);
+        left.appendChild(txt);
+
+        const right = document.createElement('div');
+        right.className = 'chip-right';
+        right.textContent = 'Entrar ›';
+
+        chip.appendChild(left);
+        chip.appendChild(right);
+
+        chip.addEventListener('click', async ()=>{
+          closeSidebar();
+          openAuth('login');
+          authEmail.value = acc.email || '';
+          authPass.value = '';
+          switcherBox.style.display = 'none';
+        });
+
+        acctSwitchList.appendChild(chip);
+      });
+    }
+
+    function refreshAccountUI(){
+      const syncOn = getSyncEnabled();
+      syncToggle.classList.toggle('on', !!syncOn);
+
+      const p = getCurrentProfileView();
+
+      acctNameEl.textContent = p.name || 'Conta';
+      acctEmailEl.textContent = p.email || '—';
+      setAvatarUI(p.photo || '');
+
+      // ✅ Badge com utilidade (em vez de "Online")
+      if(activeProfileId === 'guest'){
+        acctBadgeEl.textContent = 'Guest';
+      }else{
+        acctBadgeEl.textContent = syncOn ? 'Sync on' : 'Sync off';
+      }
+
+      // ✅ Logout só faz sentido se estiver logado (não guest)
+      logoutBtn.style.display = (firebaseReady && currentUser) ? '' : 'none';
+
+      rebuildAccountSwitcher();
+    }
+
+    /* ===== Cloud Sync (Firestore) ===== */
+    function userDocRef(){
+      if(!firebaseReady || !currentUser) return null;
+      return fbDb.collection('terminalUsers').doc(currentUser.uid);
+    }
+
+    async function saveSettingsToCloud(payload){
+      const ref = userDocRef();
+      if(!ref) return;
+      await ref.set({
+        settings: payload,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function loadSettingsFromCloud(){
+      const ref = userDocRef();
+      if(!ref) return null;
+      const snap = await ref.get();
+      if(!snap.exists) return null;
+      const data = snap.data() || {};
+      return data;
+    }
+
+    async function loadFromCloudIfNeeded(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+
+      try{
+        const data = await loadSettingsFromCloud();
+        if(!data) return;
+
+        if(data.profile){
+          const pn = data.profile.name || '';
+          const pp = data.profile.photo || '';
+          try{
+            if(pn && (!currentUser.displayName || currentUser.displayName !== pn)){
+              await currentUser.updateProfile({ displayName: pn });
+            }
+            if(pp && (!currentUser.photoURL || currentUser.photoURL !== pp)){
+              await currentUser.updateProfile({ photoURL: pp });
+            }
+          }catch(e){}
+        }
+
+        const s = data.settings || {};
+        if(s.themeMode != null) localStorage.setItem(getThemeKey(), String(s.themeMode));
+        if(s.editMode != null)  localStorage.setItem(getEditKey(),  s.editMode ? '1' : '0');
+        if(s.layoutJson != null) localStorage.setItem(getLayoutKey(), String(s.layoutJson));
+
+      }catch(e){
+        console.warn("Load cloud falhou:", e);
+      }
+    }
+
+    async function saveToCloudNow(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+
+      try{
+        const themeMode = localStorage.getItem(getThemeKey()) || 'auto';
+        const editMode = (localStorage.getItem(getEditKey()) || '0') === '1';
+        const layoutJson = localStorage.getItem(getLayoutKey()) || '{}';
+
+        await saveSettingsToCloud({ themeMode, editMode, layoutJson });
+
+        const name = currentUser.displayName || '';
+        const photo = currentUser.photoURL || '';
+        await saveProfileToCloud({ name, photo });
+      }catch(e){
+        console.warn("Save cloud falhou:", e);
+      }
+    }
+
+    let cloudSyncTimer = 0;
+    function requestCloudSyncDebounced(){
+      if(!getSyncEnabled()) return;
+      if(!firebaseReady || !currentUser) return;
+      clearTimeout(cloudSyncTimer);
+      cloudSyncTimer = setTimeout(()=>saveToCloudNow(), 700);
+    }
+
+    function bootApplyAfterProfileChange(){
+      const savedTheme = localStorage.getItem(getThemeKey()) || 'auto';
+      applyTheme(savedTheme);
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
+        opt.classList.toggle('active', opt.dataset.theme === savedTheme);
+      });
+      syncThemeThumb(savedTheme, true);
+
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+
+      document.querySelectorAll('.widget').forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+      });
+
+      defaultLayoutIfNeeded();
+      applyLayout();
+      normalizeAll();
+
+      updateClockTypography();
+      syncThemeThumb(null, true);
+    }
+
+    function setupAuthListener(){
+      if(!firebaseReady) return;
+
+      fbAuth.onAuthStateChanged(async (user)=>{
+        currentUser = user || null;
+
+        if(currentUser){
+          setActiveProfile('uid:' + currentUser.uid);
+
+          upsertUsedAccount({
+            key: 'uid:' + currentUser.uid,
+            uid: currentUser.uid,
+            email: currentUser.email || '',
+            name: currentUser.displayName || 'Usuário',
+            photo: currentUser.photoURL || '',
+            provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
+            lastAt: Date.now()
+          });
+
+          await loadFromCloudIfNeeded();
+
+          closeAuth();
+          bootApplyAfterProfileChange();
+          refreshAccountUI();
+        }else{
+          if(activeProfileId !== 'guest'){
+            setActiveProfile('guest');
+          }
+          openAuth('login');
+          refreshAccountUI();
+        }
+      });
+    }
+
+    /* ===== Boot ===== */
+    function boot(){
+      syncGridVars();
+
+      loadActiveProfile();
+      if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
+      else setSyncEnabled(getSyncEnabled());
+
+      initFirebase();
+      if(firebaseReady) setupAuthListener();
+
+      document.querySelectorAll('.widget').forEach(w=>{
+        const { wU, hU } = widgetUnits(w);
+        setWidgetPixelSize(w, wU, hU);
+      });
+
+      const em = localStorage.getItem(getEditKey());
+      setEditMode(em === '1');
+      loadTheme();
+
+      defaultLayoutIfNeeded();
+      applyLayout();
+      normalizeAll();
+
+      updateClockTypography();
+      syncThemeThumb(null, true);
+
+      tick();
+      setInterval(tick, 1000);
+
+      window.addEventListener('resize', ()=>{
+        syncGridVars();
+        document.querySelectorAll('.widget').forEach(w=>{
+          const { wU, hU } = widgetUnits(w);
+          setWidgetPixelSize(w, wU, hU);
+        });
+        normalizeAll();
+        updateClockTypography();
+        syncThemeThumb(null, true);
+      });
+
+      refreshAccountUI();
+
+      if(!firebaseReady){
+        openAuth('create');
+      }else{
+        lockApp();
+        openAuth('login');
+      }
+    }
+
     boot();
   </script>
 </body>
