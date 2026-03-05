@@ -17,7 +17,7 @@
       --cell:120px; --gap:14px; --pad:16px;
       --step:134px; --subStep:67px; --subGap:7px;
       --b:1px;
-      --seamFix:0px;
+      --seamFix:2px;
 
       --gridDot:rgba(255,255,255,0.14);
       --gridMajorDot:rgba(255,255,255,0.22);
@@ -167,12 +167,45 @@
     .subline{ font-size:calc(12.5px * (0.92 * var(--clockScale))); color:var(--muted); line-height:calc(1.2rem * var(--clockScale)); }
 
     /* Chat */
-    .chat-row{ width:100%; display:flex; align-items:center; gap:10px; }
-    .cmd{
-      flex:1 1 auto; height:44px; border-radius:999px;
-      border:1px solid var(--stroke2); background:rgba(0,0,0,0.12);
-      color:var(--text); padding:0 14px; outline:none; font-size:14px;
-    }
+.chat-row{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;                 /* ✅ permite adaptar em tamanhos pequenos */
+}
+
+.cmd{
+  flex:1 1 180px;                 /* ✅ não força esmagar tudo */
+  min-width:120px;                /* ✅ evita ficar minúsculo demais */
+  height:44px;
+  border-radius:999px;
+  border:1px solid var(--stroke2);
+  background:rgba(0,0,0,0.12);
+  color:var(--text);
+  padding:0 14px;
+  outline:none;
+  font-size:14px;
+}
+
+.hint{
+  flex:0 0 auto;
+  font-size:12px;
+  color:var(--muted);
+  white-space:nowrap;
+  max-width:100%;                 /* ✅ não vaza */
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:6px 10px;               /* ✅ vira “chip” e cabe melhor */
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(0,0,0,0.08);
+}
+
+html[data-theme="light"] .hint{
+  border:1px solid rgba(10,20,40,0.10);
+  background:rgba(255,255,255,0.35);
+}
     html[data-theme="light"] .cmd{ background:rgba(255,255,255,0.40); }
     .cmd:focus{ box-shadow:0 0 0 6px rgba(var(--accent),0.18); border-color:rgba(var(--accent),0.45); }
     .hint{ flex:0 0 auto; font-size:12px; color:var(--muted); white-space:nowrap; }
@@ -2292,75 +2325,98 @@
     }
 
     profileSave.addEventListener('click', async ()=>{
-      clearProfileError();
-      const name = String(profileName.value || '').trim();
-      if(!name) return showProfileError('Digite um nome.');
+  clearProfileError();
 
-      try{
-        const f = profilePhotoFile.files && profilePhotoFile.files[0];
-        let photo = '';
+  // UI: estado "salvando"
+  const prevText = profileSave.textContent;
+  profileSave.textContent = '💾 Salvando...';
+  profileSave.disabled = true;
 
-        if(activeProfileId === 'guest'){
-          // guest pode usar dataURL (offline)
-          if(f){
-            photo = await new Promise((resolve, reject)=>{
-              const r = new FileReader();
-              r.onload = ()=> resolve(String(r.result || ''));
-              r.onerror = reject;
-              r.readAsDataURL(f);
-            });
-          }else{
-            const v = validatePhotoUrl(profilePhotoUrl.value);
-            if(!v.ok) return showProfileError(v.msg);
-            photo = v.value || '';
-          }
+  try{
+    const name = String(profileName.value || '').trim();
+    if(!name) return showProfileError('Digite um nome.');
 
-          saveGuestProfile({ name, photo });
-          requestCloudSyncDebounced();
-          closeProfileEditor();
-          refreshAccountUI();
-          return;
-        }
+    const f = profilePhotoFile.files && profilePhotoFile.files[0];
+    let photo = '';
 
-        if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
-
-        // ✅ FIX: com usuário logado, NUNCA setar dataURL no photoURL (isso causava “Photo URL too long”)
-        if(f){
-          // upload -> URL curta
-          photo = await uploadAvatarToStorage(f);
-        }else{
-          // URL manual
-          const v = validatePhotoUrl(profilePhotoUrl.value);
-          if(!v.ok) return showProfileError(v.msg);
-          // Se o campo estiver vazio, mantém a foto atual (não “perde”)
-          photo = v.value || (lastKnownPhoto || '');
-        }
-
-        await currentUser.updateProfile({
-          displayName: name,
-          photoURL: photo || ''
+    // ====== GUEST ======
+    if(activeProfileId === 'guest'){
+      if(f){
+        photo = await new Promise((resolve, reject)=>{
+          const r = new FileReader();
+          r.onload = ()=> resolve(String(r.result || ''));
+          r.onerror = reject;
+          r.readAsDataURL(f);
         });
-
-        await saveProfileToCloud({ name, photo: photo || '' });
-
-        upsertUsedAccount({
-          key: 'uid:' + currentUser.uid,
-          uid: currentUser.uid,
-          email: currentUser.email || '',
-          name,
-          photo: photo || '',
-          provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
-          lastAt: Date.now()
-        });
-
-        lastKnownPhoto = photo || '';
-        closeProfileEditor();
-        refreshAccountUI();
-      }catch(err){
-        const m = (err && err.message) ? err.message : 'Erro ao salvar perfil.';
-        showProfileError(m);
+      }else{
+        const v = validatePhotoUrl(profilePhotoUrl.value);
+        if(!v.ok) return showProfileError(v.msg);
+        photo = v.value || '';
       }
+
+      saveGuestProfile({ name, photo });
+      lastKnownPhoto = photo || '';
+
+      // ✅ atualiza UI + fecha
+      refreshAccountUI();
+      closeProfileEditor();
+      requestCloudSyncDebounced();
+      return;
+    }
+
+    // ====== LOGADO ======
+    if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
+
+    // ✅ nunca usar dataURL em user logado (causa photoURL too long)
+    if(f){
+      photo = await uploadAvatarToStorage(f);
+    }else{
+      const v = validatePhotoUrl(profilePhotoUrl.value);
+      if(!v.ok) return showProfileError(v.msg);
+
+      // se campo vazio: mantém a atual
+      photo = v.value || (lastKnownPhoto || '');
+    }
+
+    // 1) Atualiza no auth
+    await currentUser.updateProfile({
+      displayName: name,
+      photoURL: photo || ''
     });
+
+    // 2) Força refresh do user em memória (✅ isso resolve “não mudou nada”)
+    await fbAuth.currentUser.reload();
+    currentUser = fbAuth.currentUser;
+
+    // 3) Salva no Firestore (perfil)
+    await saveProfileToCloud({ name, photo: (currentUser.photoURL || '') });
+
+    // 4) Atualiza “contas usadas” (switcher)
+    upsertUsedAccount({
+      key: 'uid:' + currentUser.uid,
+      uid: currentUser.uid,
+      email: currentUser.email || '',
+      name: currentUser.displayName || name,
+      photo: currentUser.photoURL || '',
+      provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
+      lastAt: Date.now()
+    });
+
+    lastKnownPhoto = currentUser.photoURL || '';
+
+    // ✅ atualiza UI + fecha
+    refreshAccountUI();
+    closeProfileEditor();
+    requestCloudSyncDebounced();
+
+  }catch(err){
+    const m = (err && err.message) ? err.message : 'Erro ao salvar perfil.';
+    showProfileError(m);
+  }finally{
+    profileSave.textContent = prevText;
+    profileSave.disabled = false;
+  }
+});
 
     document.getElementById('editProfileBtn').addEventListener('click', openProfileEditor);
 
