@@ -34,7 +34,7 @@
       --seamFix:2px;
     }
     @media (max-width:640px){
-      :root{ --cell:104px; --gap:12px; --pad:12px; --radius:20px; --radius2:26px; }
+      :root{ --gap:10px; --pad:10px; --radius:16px; --radius2:20px; }
       html[data-theme="light"]{ --seamFix:2px; }
     }
 
@@ -167,48 +167,44 @@
     .subline{ font-size:calc(12.5px * (0.92 * var(--clockScale))); color:var(--muted); line-height:calc(1.2rem * var(--clockScale)); }
 
     /* Chat */
-.chat-row{
-  width:100%;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;                 /* ✅ permite adaptar em tamanhos pequenos */
-}
-
-.cmd{
-  flex:1 1 180px;                 /* ✅ não força esmagar tudo */
-  min-width:120px;                /* ✅ evita ficar minúsculo demais */
-  height:44px;
-  border-radius:999px;
-  border:1px solid var(--stroke2);
-  background:rgba(0,0,0,0.12);
-  color:var(--text);
-  padding:0 14px;
-  outline:none;
-  font-size:14px;
-}
-
-.hint{
-  flex:0 0 auto;
-  font-size:12px;
-  color:var(--muted);
-  white-space:nowrap;
-  max-width:100%;                 /* ✅ não vaza */
-  overflow:hidden;
-  text-overflow:ellipsis;
-  padding:6px 10px;               /* ✅ vira “chip” e cabe melhor */
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.10);
-  background:rgba(0,0,0,0.08);
-}
-
-html[data-theme="light"] .hint{
-  border:1px solid rgba(10,20,40,0.10);
-  background:rgba(255,255,255,0.35);
-}
+    .chat-row{
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .cmd{
+      flex:1 1 80px;
+      min-width:60px;
+      height:44px;
+      border-radius:999px;
+      border:1px solid var(--stroke2);
+      background:rgba(0,0,0,0.12);
+      color:var(--text);
+      padding:0 14px;
+      outline:none;
+      font-size:14px;
+    }
+    .hint{
+      flex:0 0 auto;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.08);
+    }
+    html[data-theme="light"] .hint{
+      border:1px solid rgba(10,20,40,0.10);
+      background:rgba(255,255,255,0.35);
+    }
     html[data-theme="light"] .cmd{ background:rgba(255,255,255,0.40); }
     .cmd:focus{ box-shadow:0 0 0 6px rgba(var(--accent),0.18); border-color:rgba(var(--accent),0.45); }
-    .hint{ flex:0 0 auto; font-size:12px; color:var(--muted); white-space:nowrap; }
 
     /* Theme pill */
     .theme-widget .pad{ padding:12px; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
@@ -688,7 +684,6 @@ html[data-theme="light"] .hint{
     }
     details.adv summary::-webkit-details-marker{ display:none; }
 
-    /* small helper */
     .chipline{
       display:flex; align-items:center; gap:8px; flex-wrap:wrap;
       margin-top:8px;
@@ -728,22 +723,18 @@ html[data-theme="light"] .hint{
     }
   </style>
 
-  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- ✅ FIX: Storage para upload de avatar (evita photoURL too long) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 </head>
 
 <body>
   <div class="stage" id="stage">
     <div class="grid-overlay" id="grid"></div>
-
     <div class="widget-area" id="area">
       <div class="snap-ghost" id="ghost"></div>
 
-      <!-- MENU -->
       <div class="widget menu-widget" data-id="menu" data-kind="menu" data-w="1" data-h="1" data-resizable="0">
         <div class="pad">
           <div class="menu-btn no-drag" id="menuBtn" title="Menu">
@@ -754,7 +745,6 @@ html[data-theme="light"] .hint{
         </div>
       </div>
 
-      <!-- CLOCK -->
       <div class="widget clock-widget" data-id="clock" data-kind="clock" data-w="4" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
           <div class="clock-inner">
@@ -762,16 +752,13 @@ html[data-theme="light"] .hint{
               <div class="big-time" id="clock">--:--</div>
               <div class="seconds" id="secondsLabel">--</div>
             </div>
-            <div class="date-line">
-              <div id="dateLabel">—</div>
-            </div>
+            <div class="date-line"><div id="dateLabel">—</div></div>
             <div class="subline">Lisboa</div>
           </div>
         </div>
         <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <!-- CHAT -->
       <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
           <div class="chat-row">
@@ -782,7 +769,6 @@ html[data-theme="light"] .hint{
         <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <!-- THEME -->
       <div class="widget theme-widget" data-id="theme" data-kind="theme" data-w="4" data-h="2" data-resizable="1">
         <div class="pad">
           <div class="theme-pill" id="themePill">
@@ -797,19 +783,16 @@ html[data-theme="light"] .hint{
         <div class="resize-handle" data-handle="resize"></div>
       </div>
 
-      <!-- Sidebar -->
       <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true">
         <div class="sidebar" id="sidebar" role="dialog" aria-modal="true" aria-label="Menu lateral">
           <div class="sidebar-header">
             <div class="sidebar-head-left">
               <div class="sidebar-back" id="sidebarBack" title="Voltar">←</div>
-
               <div class="sidebar-title-wrap">
                 <div class="sidebar-title" id="sidebarTitle">Menu</div>
                 <div class="sidebar-sub" id="sidebarSub">Config • Conta • Personalização • Automação • Dispositivos</div>
               </div>
             </div>
-
             <div class="sidebar-close" id="sidebarClose" title="Fechar">✕</div>
           </div>
 
@@ -819,35 +802,15 @@ html[data-theme="light"] .hint{
               <div class="side-page active" data-page="home" id="page-home">
                 <div class="side-section">
                   <div class="side-item" data-nav="personalize">
-                    <div class="side-left">
-                      <div class="side-ico">🎨</div>
-                      <div class="side-label">
-                        <b>Personalização</b>
-                        <span>tema, grid, vidro, animações</span>
-                      </div>
-                    </div>
+                    <div class="side-left"><div class="side-ico">🎨</div><div class="side-label"><b>Personalização</b><span>tema, grid, vidro, animações</span></div></div>
                     <div class="side-right">›</div>
                   </div>
-
                   <div class="side-item" data-nav="automation">
-                    <div class="side-left">
-                      <div class="side-ico">🗓️</div>
-                      <div class="side-label">
-                        <b>Automação & Agendamento</b>
-                        <span>rotinas e lembretes (em breve)</span>
-                      </div>
-                    </div>
+                    <div class="side-left"><div class="side-ico">🗓️</div><div class="side-label"><b>Automação & Agendamento</b><span>rotinas e lembretes (em breve)</span></div></div>
                     <div class="side-right">Soon</div>
                   </div>
-
                   <div class="side-item" data-nav="devices">
-                    <div class="side-left">
-                      <div class="side-ico">📱</div>
-                      <div class="side-label">
-                        <b>Dispositivos</b>
-                        <span>layouts por dispositivo (em breve)</span>
-                      </div>
-                    </div>
+                    <div class="side-left"><div class="side-ico">📱</div><div class="side-label"><b>Dispositivos</b><span>layouts por dispositivo (em breve)</span></div></div>
                     <div class="side-right">›</div>
                   </div>
                 </div>
@@ -855,374 +818,172 @@ html[data-theme="light"] .hint{
 
               <div class="side-page" data-page="configs" id="page-configs">
                 <div class="side-section">
-                  <div class="side-item" data-action="layout">
-                    <div class="side-left">
-                      <div class="side-ico">🧩</div>
-                      <div class="side-label">
-                        <b>Layout</b>
-                        <span>grid, snap, organização</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-action="preferences">
-                    <div class="side-left">
-                      <div class="side-ico">⚡</div>
-                      <div class="side-label">
-                        <b>Preferências</b>
-                        <span>atalhos, acessibilidade</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-action="about">
-                    <div class="side-left">
-                      <div class="side-ico">ℹ️</div>
-                      <div class="side-label">
-                        <b>Sobre</b>
-                        <span>versão e informações</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-note">
-                    Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨
-                  </div>
+                  <div class="side-item" data-action="layout"><div class="side-left"><div class="side-ico">🧩</div><div class="side-label"><b>Layout</b><span>grid, snap, organização</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-item" data-action="preferences"><div class="side-left"><div class="side-ico">⚡</div><div class="side-label"><b>Preferências</b><span>atalhos, acessibilidade</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-item" data-action="about"><div class="side-left"><div class="side-ico">ℹ️</div><div class="side-label"><b>Sobre</b><span>versão e informações</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-note">Placeholders por enquanto — depois isso vira controles reais + IA por voz. 🎙️✨</div>
                 </div>
               </div>
 
-              <!-- ACCOUNT PAGE -->
               <div class="side-page" data-page="account" id="page-account">
                 <div class="side-section" style="padding-bottom: 66px;">
                   <div class="acct-top">
                     <div class="acct-left">
-                      <div class="avatar" id="acctAvatar">
-                        <div style="font-weight:900; color: var(--muted); font-size: 14px;">⌁</div>
-                      </div>
-
+                      <div class="avatar" id="acctAvatar"><div style="font-weight:900; color: var(--muted); font-size: 14px;">⌁</div></div>
                       <div class="acct-meta">
                         <div class="acct-name-row">
                           <div class="acct-name" id="acctName">Conta</div>
-
                           <button class="pencil-btn" id="editProfileBtn" title="Editar perfil">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                              <path d="M4 20h4l10.8-10.8a1.6 1.6 0 0 0 0-2.3l-1.6-1.6a1.6 1.6 0 0 0-2.3 0L4 14.1V20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                              <path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                            </svg>
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4l10.8-10.8a1.6 1.6 0 0 0 0-2.3l-1.6-1.6a1.6 1.6 0 0 0-2.3 0L4 14.1V20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                           </button>
                         </div>
-
                         <div class="acct-email" id="acctEmail">—</div>
                       </div>
                     </div>
-
                     <span class="mini-pill" id="acctBadge">—</span>
                   </div>
-
                   <div class="row" style="padding-top: 10px;">
-                    <div class="left">
-                      <b>Sincronizar configurações</b>
-                      <span>layout, tema e perfil via nuvem</span>
-                    </div>
+                    <div class="left"><b>Sincronizar configurações</b><span>layout, tema e perfil via nuvem</span></div>
                     <div class="toggle on" id="syncToggle" title="Sync"></div>
                   </div>
-
                   <div class="row" id="switchRow" style="display:none; padding-bottom: 4px;">
-                    <div class="left">
-                      <b>Trocar conta</b>
-                      <span>alternar rapidamente</span>
-                    </div>
+                    <div class="left"><b>Trocar conta</b><span>alternar rapidamente</span></div>
                     <button class="tiny-btn" id="openSwitcherBtn">Trocar</button>
                   </div>
-
-                  <div id="switcherBox" style="display:none;">
-                    <div class="acct-switch-list" id="acctSwitchList"></div>
-                  </div>
-
-                  <div class="side-note" id="acctNote" style="padding-bottom: 0;">
-                    Dica: use “Convidado” para testar rápido sem cloud. 🫧
-                  </div>
-
+                  <div id="switcherBox" style="display:none;"><div class="acct-switch-list" id="acctSwitchList"></div></div>
+                  <div class="side-note" id="acctNote" style="padding-bottom: 0;">Dica: use "Convidado" para testar rápido sem cloud. 🫧</div>
                   <div class="acct-actions-bar">
                     <button class="tiny-btn" id="saveNowBtn" title="Salvar configurações">
-                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M7 3h10l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                        <path d="M7 3v6h10V3" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                        <path d="M8 21v-7h8v7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                      </svg>
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h10l3 3v15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 3v6h10V3" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 21v-7h8v7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
                       Salvar
                     </button>
-
-                    <button class="tiny-btn danger" id="logoutBtn" title="Sair da conta">
-                      Sair
-                    </button>
+                    <button class="tiny-btn danger" id="logoutBtn" title="Sair da conta">Sair</button>
                   </div>
                 </div>
               </div>
 
               <div class="side-page" data-page="personalize" id="page-personalize">
                 <div class="side-section">
-                  <div class="side-item" data-action="themes">
-                    <div class="side-left">
-                      <div class="side-ico">✨</div>
-                      <div class="side-label">
-                        <b>Temas</b>
-                        <span>light, dark, auto</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-action="grid">
-                    <div class="side-left">
-                      <div class="side-ico">•</div>
-                      <div class="side-label">
-                        <b>Grid</b>
-                        <span>opacidade e estilo</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-action="motion">
-                    <div class="side-left">
-                      <div class="side-ico">🫧</div>
-                      <div class="side-label">
-                        <b>Animações</b>
-                        <span>float no edit mode</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-note">
-                    Aqui a gente evolui o “liquid glass” mantendo leve pra devices antigos. 🫶
-                  </div>
+                  <div class="side-item" data-action="themes"><div class="side-left"><div class="side-ico">✨</div><div class="side-label"><b>Temas</b><span>light, dark, auto</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-item" data-action="grid"><div class="side-left"><div class="side-ico">•</div><div class="side-label"><b>Grid</b><span>opacidade e estilo</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-item" data-action="motion"><div class="side-left"><div class="side-ico">🫧</div><div class="side-label"><b>Animações</b><span>float no edit mode</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-note">Aqui a gente evolui o "liquid glass" mantendo leve pra devices antigos. 🫶</div>
                 </div>
               </div>
 
               <div class="side-page" data-page="automation" id="page-automation">
                 <div class="side-section">
-                  <div class="side-item" data-action="routines">
-                    <div class="side-left">
-                      <div class="side-ico">🧷</div>
-                      <div class="side-label">
-                        <b>Rotinas</b>
-                        <span>gatilhos e ações (em breve)</span>
-                      </div>
-                    </div>
-                    <div class="side-right">Soon</div>
-                  </div>
-
-                  <div class="side-item" data-action="calendar">
-                    <div class="side-left">
-                      <div class="side-ico">📅</div>
-                      <div class="side-label">
-                        <b>Agenda</b>
-                        <span>tarefas e lembretes (em breve)</span>
-                      </div>
-                    </div>
-                    <div class="side-right">Soon</div>
-                  </div>
-
-                  <div class="side-note">
-                    Futuro: wake word + automações + notificações. 🎙️⏰
-                  </div>
+                  <div class="side-item" data-action="routines"><div class="side-left"><div class="side-ico">🧷</div><div class="side-label"><b>Rotinas</b><span>gatilhos e ações (em breve)</span></div></div><div class="side-right">Soon</div></div>
+                  <div class="side-item" data-action="calendar"><div class="side-left"><div class="side-ico">📅</div><div class="side-label"><b>Agenda</b><span>tarefas e lembretes (em breve)</span></div></div><div class="side-right">Soon</div></div>
+                  <div class="side-note">Futuro: wake word + automações + notificações. 🎙️⏰</div>
                 </div>
               </div>
 
               <div class="side-page" data-page="devices" id="page-devices">
                 <div class="side-section">
-                  <div class="side-item" data-action="current">
-                    <div class="side-left">
-                      <div class="side-ico">💻</div>
-                      <div class="side-label">
-                        <b>Este dispositivo</b>
-                        <span>layout atual</span>
-                      </div>
-                    </div>
-                    <div class="side-right">›</div>
-                  </div>
-
-                  <div class="side-item" data-action="manage">
-                    <div class="side-left">
-                      <div class="side-ico">📱</div>
-                      <div class="side-label">
-                        <b>Gerenciar</b>
-                        <span>layouts por dispositivo (em breve)</span>
-                      </div>
-                    </div>
-                    <div class="side-right">Soon</div>
-                  </div>
-
-                  <div class="side-note">
-                    Ideia: cada device com widgets/layout próprios, sincronizados. 🔁
-                  </div>
+                  <div class="side-item" data-action="current"><div class="side-left"><div class="side-ico">💻</div><div class="side-label"><b>Este dispositivo</b><span>layout atual</span></div></div><div class="side-right">›</div></div>
+                  <div class="side-item" data-action="manage"><div class="side-left"><div class="side-ico">📱</div><div class="side-label"><b>Gerenciar</b><span>layouts por dispositivo (em breve)</span></div></div><div class="side-right">Soon</div></div>
+                  <div class="side-note">Ideia: cada device com widgets/layout próprios, sincronizados. 🔁</div>
                 </div>
               </div>
 
             </div>
 
             <div class="side-dock" id="sideDock">
-              <div class="dock-btn" id="dockConfigs" data-nav="configs" title="Configurações">
-                <div class="dock-ico">⚙️</div>
-              </div>
-
-              <div class="dock-btn" id="dockAccount" data-nav="account" title="Conta">
-                <div class="dock-ico">👤</div>
-              </div>
+              <div class="dock-btn" id="dockConfigs" data-nav="configs" title="Configurações"><div class="dock-ico">⚙️</div></div>
+              <div class="dock-btn" id="dockAccount" data-nav="account" title="Conta"><div class="dock-ico">👤</div></div>
             </div>
-
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- fatal overlay -->
     <div class="fatal" id="fatal">
       <div class="card">
         <b>Erro de script (tela branca) 😵‍💫</b>
-        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
-          Abra o console (F12) para mais detalhes. O erro capturado está abaixo:
-        </div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">Abra o console (F12) para mais detalhes.</div>
         <pre id="fatalMsg">—</pre>
       </div>
     </div>
   </div>
 
-  <!-- AUTH POPUP -->
   <div class="auth-overlay" id="authOverlay" aria-hidden="true">
     <div class="auth-modal" role="dialog" aria-modal="true" aria-label="Conta Terminal">
       <div class="auth-top">
         <div class="auth-brand">
           <div class="auth-logo">⌁</div>
-          <div class="auth-title">
-            <b>Terminal • Conta</b>
-            <span>entre/crie ou use convidado</span>
-          </div>
+          <div class="auth-title"><b>Terminal • Conta</b><span>entre/crie ou use convidado</span></div>
         </div>
         <div class="auth-close" id="authClose" title="Fechar">✕</div>
       </div>
-
       <div class="auth-body">
         <div class="auth-error" id="authError">—</div>
-
         <div class="auth-tabs">
           <div class="auth-tab active" data-tab="create" id="tabCreate">Criar conta</div>
           <div class="auth-tab" data-tab="login" id="tabLogin">Entrar</div>
         </div>
-
         <div class="auth-fields">
-          <div class="auth-field">
-            <label>Email</label>
-            <input class="auth-input" id="authEmail" type="email" autocomplete="email" placeholder="voce@email.com"/>
-          </div>
-          <div class="auth-field" id="pwWrap">
-            <label>Senha</label>
-            <input class="auth-input" id="authPass" type="password" autocomplete="current-password" placeholder="••••••••"/>
-          </div>
+          <div class="auth-field"><label>Email</label><input class="auth-input" id="authEmail" type="email" autocomplete="email" placeholder="voce@email.com"/></div>
+          <div class="auth-field" id="pwWrap"><label>Senha</label><input class="auth-input" id="authPass" type="password" autocomplete="current-password" placeholder="••••••••"/></div>
         </div>
-
         <div class="auth-actions">
           <button class="auth-btn" id="primaryAuthBtn">✨ Criar e entrar</button>
           <button class="auth-btn secondary" id="googleBtn">🟦 Entrar com Google</button>
           <button class="auth-btn secondary" id="guestBtn">🫧 Entrar como convidado</button>
         </div>
-
-        <div class="auth-meta">
-          <div class="auth-small" id="authHint">
-            Você pode trocar de conta depois no menu. 🔁
-          </div>
-        </div>
+        <div class="auth-meta"><div class="auth-small" id="authHint">Você pode trocar de conta depois no menu. 🔁</div></div>
       </div>
     </div>
   </div>
 
-  <!-- EDIT PROFILE POPUP -->
   <div class="mini-overlay" id="profileOverlay" aria-hidden="true">
     <div class="mini-modal" role="dialog" aria-modal="true" aria-label="Editar perfil">
-      <div class="mini-head">
-        <b>Editar perfil</b>
-        <div class="mini-close" id="profileClose" title="Fechar">✕</div>
-      </div>
-
+      <div class="mini-head"><b>Editar perfil</b><div class="mini-close" id="profileClose" title="Fechar">✕</div></div>
       <div class="mini-body">
         <div class="prof-top">
           <div class="prof-ava-wrap" id="profileAvatarPrev">
             <div style="font-weight:900; color: var(--muted); font-size: 16px;">⌁</div>
-
             <div class="prof-cam" id="profilePickBtn" title="Alterar foto">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/></svg>
             </div>
           </div>
-
           <div style="flex:1 1 auto; min-width:0;">
-            <div class="auth-field" style="margin:0;">
-              <label>Nome</label>
-              <input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/>
-            </div>
+            <div class="auth-field" style="margin:0;"><label>Nome</label><input class="auth-input" id="profileName" type="text" placeholder="Seu nome"/></div>
           </div>
         </div>
-
         <input class="auth-input" id="profilePhotoFile" type="file" accept="image/*" style="display:none;"/>
-
         <details class="adv" id="advUrlBox">
           <summary>Avançado: usar URL da foto</summary>
           <div class="auth-field" style="margin-top:10px;">
             <label>Foto (URL)</label>
-            <!-- ✅ FIX: não preencher com URL antiga; usar placeholder com a foto atual -->
             <input class="auth-input" id="profilePhotoUrl" type="url" placeholder="https://..."/>
             <div class="chipline">
-              <div class="mini-tag" id="useCurrentPhotoBtn" title="Preencher com a foto atual">Usar foto atual</div>
-              <div class="mini-tag" id="clearPhotoBtn" title="Remover foto">Remover foto</div>
+              <div class="mini-tag" id="useCurrentPhotoBtn">Usar foto atual</div>
+              <div class="mini-tag" id="clearPhotoBtn">Remover foto</div>
             </div>
           </div>
         </details>
-
         <div class="auth-error" id="profileError">—</div>
-
         <div class="mini-actions">
           <button class="auth-btn secondary" id="profileCancel">Cancelar</button>
           <button class="auth-btn" id="profileSave">💾 Salvar</button>
         </div>
-
-        <div class="auth-small" style="color: var(--muted);">
-          Dica: com login, foto por arquivo vai para Firebase Storage (URL curta e pública). 🧊✅
-        </div>
+        <div class="auth-small" style="color: var(--muted);">Dica: com login, foto por arquivo vai para Firebase Storage. 🧊✅</div>
       </div>
     </div>
   </div>
 
   <script>
   (function(){
-    /* =========================================================
-       Captura de erros (evita “tela branca sem aviso”)
-       ========================================================= */
     const fatal = document.getElementById('fatal');
     const fatalMsg = document.getElementById('fatalMsg');
     window.addEventListener('error', (e)=>{
-      try{
-        fatal.style.display = 'flex';
-        fatalMsg.textContent = String(e && e.error ? (e.error.stack || e.error.message || e.message) : (e.message || e));
-      }catch(_){}
+      try{ fatal.style.display='flex'; fatalMsg.textContent=String(e&&e.error?(e.error.stack||e.error.message||e.message):(e.message||e)); }catch(_){}
     });
     window.addEventListener('unhandledrejection', (e)=>{
-      try{
-        fatal.style.display = 'flex';
-        fatalMsg.textContent = String(e && e.reason ? (e.reason.stack || e.reason.message || e.reason) : e);
-      }catch(_){}
+      try{ fatal.style.display='flex'; fatalMsg.textContent=String(e&&e.reason?(e.reason.stack||e.reason.message||e.reason):e); }catch(_){}
     });
 
-    /* =========================================================
-       Firebase Setup
-       ========================================================= */
     const firebaseConfig = {
       apiKey: "AIzaSyCcHOUTlxQ2_cMLPq00mBDuGRpFR3ykOo8",
       authDomain: "terminal-d2e2d.firebaseapp.com",
@@ -1234,25 +995,19 @@ html[data-theme="light"] .hint{
       measurementId: "G-V410E6KHMV"
     };
 
-    let fbApp=null, fbAuth=null, fbDb=null, fbStorage=null;
-    let firebaseReady=false;
+    let fbApp=null, fbAuth=null, fbDb=null, fbStorage=null, firebaseReady=false;
 
     function initFirebase(){
       try{
         const hasReal = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_AQUI";
         if(!hasReal) return false;
-
         fbApp = firebase.initializeApp(firebaseConfig);
         fbAuth = firebase.auth();
         fbDb = firebase.firestore();
         fbStorage = firebase.storage();
         firebaseReady = true;
         return true;
-      }catch(e){
-        console.warn("Firebase init falhou:", e);
-        firebaseReady = false;
-        return false;
-      }
+      }catch(e){ console.warn("Firebase init falhou:", e); firebaseReady=false; return false; }
     }
 
     const stage = document.getElementById('stage');
@@ -1260,25 +1015,40 @@ html[data-theme="light"] .hint{
     const ghost = document.getElementById('ghost');
     const cmd   = document.getElementById('cmd');
 
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+    /* =====================================================
+       FIX PRINCIPAL: getVars() agora calcula o tamanho
+       das células com base na largura REAL da área,
+       em vez de usar pixels fixos do CSS.
+       Isso faz os widgets escalarem em qualquer tela.
+       ===================================================== */
     function getVars(){
       const cs = getComputedStyle(document.documentElement);
-      const cell = parseFloat(cs.getPropertyValue('--cell')) || 120;
-      const gap  = parseFloat(cs.getPropertyValue('--gap'))  || 14;
-      const step = cell + gap;
-      const subStep = step / 2;
-      const subGap = gap / 2;
-      const b = parseFloat(cs.getPropertyValue('--b')) || 1;
+      const gap = parseFloat(cs.getPropertyValue('--gap')) || 14;
+
+      // Número fixo de colunas (unidades sub-step) na horizontal
+      const TOTAL_COLS = 32; // 16 células × 2 sub-steps por célula
+
+      // Largura real disponível
+      const areaW = area.offsetWidth || window.innerWidth;
+
+      // Calcula subStep de forma fluida
+      const subStep = Math.max(20, (areaW + gap) / TOTAL_COLS);
+      const step    = subStep * 2;
+      const cell    = step - gap;
+      const subGap  = gap / 2;
+      const b       = parseFloat(cs.getPropertyValue('--b')) || 1;
       const seamFix = parseFloat(cs.getPropertyValue('--seamFix')) || 0;
       return { cell, gap, step, subStep, subGap, b, seamFix };
     }
+
     function syncGridVars(){
-      const { step, subStep } = getVars();
+      const { step, subStep, gap } = getVars();
       document.documentElement.style.setProperty('--step', step + 'px');
-      document.documentElement.style.setProperty('--subStep', (subStep) + 'px');
-      document.documentElement.style.setProperty('--subGap', (getVars().gap / 2) + 'px');
+      document.documentElement.style.setProperty('--subStep', subStep + 'px');
+      document.documentElement.style.setProperty('--subGap', (gap / 2) + 'px');
       document.documentElement.style.setProperty('--microStep', (step / 4) + 'px');
     }
 
@@ -1287,21 +1057,17 @@ html[data-theme="light"] .hint{
     function pxToColRow(absX, absY){
       const { subStep } = getVars();
       const r = areaRect();
-      const rx = (absX - r.left);
-      const ry = (absY - r.top);
-      return { colU: Math.round(rx / subStep), rowU: Math.round(ry / subStep) };
+      return { colU: Math.round((absX - r.left) / subStep), rowU: Math.round((absY - r.top) / subStep) };
     }
 
     function widgetUnits(w){
-      const wU = Math.max(1, parseInt(w.dataset.w || '2', 10));
-      const hU = Math.max(1, parseInt(w.dataset.h || '2', 10));
-      return { wU, hU };
+      return { wU: Math.max(1, parseInt(w.dataset.w||'2',10)), hU: Math.max(1, parseInt(w.dataset.h||'2',10)) };
     }
 
     function setWidgetPixelSize(w, wU, hU){
       const { subStep, subGap, b, seamFix } = getVars();
-      const widthPx  = Math.max(12, (wU * subStep) - subGap - (b * 2) - seamFix);
-      const heightPx = Math.max(12, (hU * subStep) - subGap - (b * 2) - seamFix);
+      const widthPx  = Math.max(12, (wU * subStep) - subGap - (b*2) - seamFix);
+      const heightPx = Math.max(12, (hU * subStep) - subGap - (b*2) - seamFix);
       w.style.width  = Math.round(widthPx) + 'px';
       w.style.height = Math.round(heightPx) + 'px';
       w.dataset.w = String(wU);
@@ -1311,1443 +1077,607 @@ html[data-theme="light"] .hint{
     function maxColsRowsForUnits(w){
       const { subStep } = getVars();
       const r = areaRect();
-      const wPx = w.offsetWidth;
-      const hPx = w.offsetHeight;
-      const maxColU = Math.max(0, Math.floor((r.width  - wPx) / subStep));
-      const maxRowU = Math.max(0, Math.floor((r.height - hPx) / subStep));
-      return { maxColU, maxRowU };
+      return {
+        maxColU: Math.max(0, Math.floor((r.width  - w.offsetWidth)  / subStep)),
+        maxRowU: Math.max(0, Math.floor((r.height - w.offsetHeight) / subStep))
+      };
     }
 
     function buildOccupancy(exceptId=null){
       const occ = new Set();
       document.querySelectorAll('.widget').forEach(w=>{
-        if(w.style.display === 'none') return;
-        const id = w.dataset.id;
-        if(exceptId && id === exceptId) return;
-
-        const colU = parseInt(w.dataset.colU || '0', 10);
-        const rowU = parseInt(w.dataset.rowU || '0', 10);
-        const { wU, hU } = widgetUnits(w);
-
-        for(let y=0; y<hU; y++){
-          for(let x=0; x<wU; x++){
-            occ.add(`${colU+x},${rowU+y}`);
-          }
-        }
+        if(w.style.display==='none') return;
+        if(exceptId && w.dataset.id===exceptId) return;
+        const colU=parseInt(w.dataset.colU||'0',10), rowU=parseInt(w.dataset.rowU||'0',10);
+        const {wU,hU}=widgetUnits(w);
+        for(let y=0;y<hU;y++) for(let x=0;x<wU;x++) occ.add(`${colU+x},${rowU+y}`);
       });
       return occ;
     }
 
     function canPlaceUnits(w, colU, rowU, occ){
-      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
-      colU = clamp(colU, 0, maxColU);
-      rowU = clamp(rowU, 0, maxRowU);
-
-      const { wU, hU } = widgetUnits(w);
-      for(let y=0; y<hU; y++){
-        for(let x=0; x<wU; x++){
-          if(occ.has(`${colU+x},${rowU+y}`)) return false;
-        }
-      }
+      const {maxColU,maxRowU}=maxColsRowsForUnits(w);
+      colU=clamp(colU,0,maxColU); rowU=clamp(rowU,0,maxRowU);
+      const {wU,hU}=widgetUnits(w);
+      for(let y=0;y<hU;y++) for(let x=0;x<wU;x++) if(occ.has(`${colU+x},${rowU+y}`)) return false;
       return true;
     }
 
     function findNearestFreeCellUnits(w, desiredColU, desiredRowU){
-      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
-      desiredColU = clamp(desiredColU, 0, maxColU);
-      desiredRowU = clamp(desiredRowU, 0, maxRowU);
-
-      const occ = buildOccupancy(w.dataset.id);
-      const maxRadius = Math.max(maxColU, maxRowU) + 12;
-
-      for(let rad=0; rad<=maxRadius; rad++){
-        for(let dr=-rad; dr<=rad; dr++){
-          for(let dc=-rad; dc<=rad; dc++){
-            if(Math.abs(dc) !== rad && Math.abs(dr) !== rad) continue;
-            const colU = desiredColU + dc;
-            const rowU = desiredRowU + dr;
-            if(colU < 0 || rowU < 0 || colU > maxColU || rowU > maxRowU) continue;
-            if(canPlaceUnits(w, colU, rowU, occ)) return { colU, rowU };
+      const {maxColU,maxRowU}=maxColsRowsForUnits(w);
+      desiredColU=clamp(desiredColU,0,maxColU); desiredRowU=clamp(desiredRowU,0,maxRowU);
+      const occ=buildOccupancy(w.dataset.id);
+      const maxRadius=Math.max(maxColU,maxRowU)+12;
+      for(let rad=0;rad<=maxRadius;rad++){
+        for(let dr=-rad;dr<=rad;dr++){
+          for(let dc=-rad;dc<=rad;dc++){
+            if(Math.abs(dc)!==rad && Math.abs(dr)!==rad) continue;
+            const c=desiredColU+dc, r=desiredRowU+dr;
+            if(c<0||r<0||c>maxColU||r>maxRowU) continue;
+            if(canPlaceUnits(w,c,r,occ)) return {colU:c,rowU:r};
           }
         }
       }
-      return { colU: desiredColU, rowU: desiredRowU };
+      return {colU:desiredColU,rowU:desiredRowU};
     }
 
-    function setGhost(w, colU, rowU){
-      const { left, top } = colRowToPx(colU, rowU);
-      ghost.style.width  = w.offsetWidth + 'px';
-      ghost.style.height = w.offsetHeight + 'px';
-      ghost.style.left   = Math.round(left) + 'px';
-      ghost.style.top    = Math.round(top)  + 'px';
+    function setGhost(w,colU,rowU){
+      const {left,top}=colRowToPx(colU,rowU);
+      ghost.style.width=w.offsetWidth+'px'; ghost.style.height=w.offsetHeight+'px';
+      ghost.style.left=Math.round(left)+'px'; ghost.style.top=Math.round(top)+'px';
       ghost.classList.add('visible');
     }
     function hideGhost(){ ghost.classList.remove('visible'); }
 
-    /* =========================================================
-       Profiles, storage & account switch
-       ========================================================= */
-    const SYNC_KEY = 'terminal.account.sync.v2';
-    const ACCOUNTS_USED_KEY = 'terminal.accounts.used.v1';
-    const ACTIVE_PROFILE_KEY = 'terminal.profile.active.v1';
-    const GUEST_PROFILE_KEY = 'terminal.profile.guest.v1';
-
-    let activeProfileId = 'guest';
-    let currentUser = null;
+    /* ===== Storage / Profiles ===== */
+    const SYNC_KEY='terminal.account.sync.v2', ACCOUNTS_USED_KEY='terminal.accounts.used.v1';
+    const ACTIVE_PROFILE_KEY='terminal.profile.active.v1', GUEST_PROFILE_KEY='terminal.profile.guest.v1';
+    let activeProfileId='guest', currentUser=null;
 
     function lockApp(){ document.body.classList.add('auth-locked'); }
     function unlockApp(){ document.body.classList.remove('auth-locked'); }
-
-    function getSyncEnabled(){
-      try{
-        const raw = localStorage.getItem(SYNC_KEY);
-        if(raw == null) return true;
-        return raw === '1';
-      }catch(e){ return true; }
-    }
-    function setSyncEnabled(on){
-      try{ localStorage.setItem(SYNC_KEY, on ? '1' : '0'); }catch(e){}
-      const t = document.getElementById('syncToggle');
-      if(t) t.classList.toggle('on', !!on);
-    }
-
-    function setActiveProfile(id){
-      activeProfileId = id || 'guest';
-      try{ localStorage.setItem(ACTIVE_PROFILE_KEY, activeProfileId); }catch(e){}
-    }
-    function loadActiveProfile(){
-      try{
-        const raw = localStorage.getItem(ACTIVE_PROFILE_KEY);
-        if(raw) activeProfileId = raw;
-      }catch(e){}
-    }
-
-    function profileKeyBase(){
-      return activeProfileId === 'guest' ? 'guest' : activeProfileId.replace('uid:','uid_');
-    }
+    function getSyncEnabled(){ try{ const r=localStorage.getItem(SYNC_KEY); return r==null?true:r==='1'; }catch(e){return true;} }
+    function setSyncEnabled(on){ try{localStorage.setItem(SYNC_KEY,on?'1':'0');}catch(e){} const t=document.getElementById('syncToggle'); if(t) t.classList.toggle('on',!!on); }
+    function setActiveProfile(id){ activeProfileId=id||'guest'; try{localStorage.setItem(ACTIVE_PROFILE_KEY,activeProfileId);}catch(e){} }
+    function loadActiveProfile(){ try{ const r=localStorage.getItem(ACTIVE_PROFILE_KEY); if(r) activeProfileId=r; }catch(e){} }
+    function profileKeyBase(){ return activeProfileId==='guest'?'guest':activeProfileId.replace('uid:','uid_'); }
     function k(name){ return `terminal.${name}.${profileKeyBase()}`; }
-
     function getLayoutKey(){ return k('layout.v9'); }
     function getThemeKey(){  return k('theme.mode.v4'); }
     function getEditKey(){   return k('editmode.v1'); }
 
-    function loadLayout(){
-      try{
-        const raw = localStorage.getItem(getLayoutKey());
-        return raw ? (JSON.parse(raw) || {}) : {};
-      }catch(e){ return {}; }
-    }
-    function saveLayout(layout){
-      try{ localStorage.setItem(getLayoutKey(), JSON.stringify(layout)); }catch(e){}
-      requestCloudSyncDebounced();
-    }
-
-    function loadGuestProfile(){
-      try{ return JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY) || '{}') || {}; }
-      catch(e){ return {}; }
-    }
-    function saveGuestProfile(p){
-      try{ localStorage.setItem(GUEST_PROFILE_KEY, JSON.stringify(p || {})); }catch(e){}
-    }
-
+    function loadLayout(){ try{ const r=localStorage.getItem(getLayoutKey()); return r?(JSON.parse(r)||{}):{} }catch(e){return{};} }
+    function saveLayout(layout){ try{localStorage.setItem(getLayoutKey(),JSON.stringify(layout));}catch(e){} requestCloudSyncDebounced(); }
+    function loadGuestProfile(){ try{return JSON.parse(localStorage.getItem(GUEST_PROFILE_KEY)||'{}')||{};}catch(e){return{};} }
+    function saveGuestProfile(p){ try{localStorage.setItem(GUEST_PROFILE_KEY,JSON.stringify(p||{}));}catch(e){} }
     function upsertUsedAccount(entry){
       try{
-        const list = JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || [];
-        const key = entry && entry.key;
-        if(!key) return;
-        const filtered = list.filter(x => x && x.key !== key);
-        filtered.unshift(entry);
-        localStorage.setItem(ACCOUNTS_USED_KEY, JSON.stringify(filtered.slice(0, 8)));
+        const list=JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY)||'[]')||[];
+        const key=entry&&entry.key; if(!key) return;
+        const filtered=list.filter(x=>x&&x.key!==key); filtered.unshift(entry);
+        localStorage.setItem(ACCOUNTS_USED_KEY,JSON.stringify(filtered.slice(0,8)));
       }catch(e){}
     }
-    function getUsedAccounts(){
-      try{ return JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY) || '[]') || []; }
-      catch(e){ return []; }
-    }
+    function getUsedAccounts(){ try{return JSON.parse(localStorage.getItem(ACCOUNTS_USED_KEY)||'[]')||[];}catch(e){return[];} }
 
-    function commitWidgetCellUnits(w, colU, rowU){
-      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
-      colU = clamp(colU, 0, maxColU);
-      rowU = clamp(rowU, 0, maxRowU);
-
-      w.dataset.colU = String(colU);
-      w.dataset.rowU = String(rowU);
-
-      const p = colRowToPx(colU, rowU);
-      w.style.left = Math.round(p.left) + 'px';
-      w.style.top  = Math.round(p.top)  + 'px';
-
-      const layout = loadLayout();
-      const id = w.dataset.id;
-      layout[id] = layout[id] || {};
-      layout[id].colU = colU;
-      layout[id].rowU = rowU;
-      layout[id].wU = parseInt(w.dataset.w || '2', 10);
-      layout[id].hU = parseInt(w.dataset.h || '2', 10);
-      layout[id].hidden = false;
+    function commitWidgetCellUnits(w,colU,rowU){
+      const {maxColU,maxRowU}=maxColsRowsForUnits(w);
+      colU=clamp(colU,0,maxColU); rowU=clamp(rowU,0,maxRowU);
+      w.dataset.colU=String(colU); w.dataset.rowU=String(rowU);
+      const p=colRowToPx(colU,rowU);
+      w.style.left=Math.round(p.left)+'px'; w.style.top=Math.round(p.top)+'px';
+      const layout=loadLayout(), id=w.dataset.id;
+      layout[id]=layout[id]||{};
+      layout[id].colU=colU; layout[id].rowU=rowU;
+      layout[id].wU=parseInt(w.dataset.w||'2',10); layout[id].hU=parseInt(w.dataset.h||'2',10);
+      layout[id].hidden=false;
       saveLayout(layout);
     }
 
     function applyLayout(){
-      const layout = loadLayout();
+      const layout=loadLayout();
       document.querySelectorAll('.widget').forEach(w=>{
-        const id = w.dataset.id;
-
-        if(layout[id] && layout[id].hidden){
-          w.style.display = 'none';
-          return;
-        } else {
-          w.style.display = '';
-        }
-
-        const wU = (layout[id] && typeof layout[id].wU === 'number') ? layout[id].wU : parseInt(w.dataset.w || '2', 10);
-        const hU = (layout[id] && typeof layout[id].hU === 'number') ? layout[id].hU : parseInt(w.dataset.h || '2', 10);
-        setWidgetPixelSize(w, wU, hU);
-
-        const colU = (layout[id] && typeof layout[id].colU === 'number') ? layout[id].colU : null;
-        const rowU = (layout[id] && typeof layout[id].rowU === 'number') ? layout[id].rowU : null;
-
-        if(colU !== null && rowU !== null){
-          commitWidgetCellUnits(w, colU, rowU);
-        }
+        const id=w.dataset.id;
+        if(layout[id]&&layout[id].hidden){ w.style.display='none'; return; } else { w.style.display=''; }
+        const wU=(layout[id]&&typeof layout[id].wU==='number')?layout[id].wU:parseInt(w.dataset.w||'2',10);
+        const hU=(layout[id]&&typeof layout[id].hU==='number')?layout[id].hU:parseInt(w.dataset.h||'2',10);
+        setWidgetPixelSize(w,wU,hU);
+        const colU=(layout[id]&&typeof layout[id].colU==='number')?layout[id].colU:null;
+        const rowU=(layout[id]&&typeof layout[id].rowU==='number')?layout[id].rowU:null;
+        if(colU!==null&&rowU!==null) commitWidgetCellUnits(w,colU,rowU);
       });
     }
 
     function defaultLayoutIfNeeded(){
-      const layout = loadLayout();
+      const layout=loadLayout();
       if(Object.keys(layout).length) return;
-
-      const menu  = document.querySelector('.widget[data-id="menu"]');
-      const clockW = document.querySelector('.widget[data-id="clock"]');
-      const chat  = document.querySelector('.widget[data-id="chat"]');
-      const themeW = document.querySelector('.widget[data-id="theme"]');
-
-      const desired = [
-        { w: menu,   colU: 0,  rowU: 0 },
-        { w: chat,   colU: 2,  rowU: 0 },
-        { w: clockW, colU: 8,  rowU: 0 },
-        { w: themeW, colU: 14, rowU: 0 },
+      const menu=document.querySelector('.widget[data-id="menu"]');
+      const clockW=document.querySelector('.widget[data-id="clock"]');
+      const chat=document.querySelector('.widget[data-id="chat"]');
+      const themeW=document.querySelector('.widget[data-id="theme"]');
+      const desired=[
+        {w:menu,  colU:0, rowU:0},
+        {w:chat,  colU:2, rowU:0},
+        {w:clockW,colU:14,rowU:0},
+        {w:themeW,colU:24,rowU:0},
       ];
-
-      desired.forEach(({w,colU,rowU})=>{
-        if(!w) return;
-        const free = findNearestFreeCellUnits(w, colU, rowU);
-        commitWidgetCellUnits(w, free.colU, free.rowU);
-      });
+      desired.forEach(({w,colU,rowU})=>{ if(!w) return; const free=findNearestFreeCellUnits(w,colU,rowU); commitWidgetCellUnits(w,free.colU,free.rowU); });
     }
 
     function normalizeAll(){
-      const widgets = [...document.querySelectorAll('.widget')].filter(w=>w.style.display !== 'none');
-
-      widgets.forEach(w=>{
-        const { wU, hU } = widgetUnits(w);
-        setWidgetPixelSize(w, wU, hU);
-        if(w.dataset.colU == null) w.dataset.colU = '0';
-        if(w.dataset.rowU == null) w.dataset.rowU = '0';
-      });
-
-      for(const w of widgets){
-        const colU = parseInt(w.dataset.colU || '0', 10);
-        const rowU = parseInt(w.dataset.rowU || '0', 10);
-        const free = findNearestFreeCellUnits(w, colU, rowU);
-        commitWidgetCellUnits(w, free.colU, free.rowU);
-      }
+      const widgets=[...document.querySelectorAll('.widget')].filter(w=>w.style.display!=='none');
+      widgets.forEach(w=>{ const {wU,hU}=widgetUnits(w); setWidgetPixelSize(w,wU,hU); if(w.dataset.colU==null) w.dataset.colU='0'; if(w.dataset.rowU==null) w.dataset.rowU='0'; });
+      for(const w of widgets){ const colU=parseInt(w.dataset.colU||'0',10), rowU=parseInt(w.dataset.rowU||'0',10); const free=findNearestFreeCellUnits(w,colU,rowU); commitWidgetCellUnits(w,free.colU,free.rowU); }
     }
 
     /* ===== Edit Mode ===== */
-    let isEditMode = false;
+    let isEditMode=false;
     function setEditMode(on){
-      isEditMode = !!on;
-      stage.classList.toggle('edit-mode', isEditMode);
-      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
+      isEditMode=!!on; stage.classList.toggle('edit-mode',isEditMode);
+      try{localStorage.setItem(getEditKey(),isEditMode?'1':'0');}catch(e){}
       if(isEditMode) closeSidebar();
       if(!isEditMode) hideGhost();
       requestCloudSyncDebounced();
     }
 
-    const HOLD_MS = 450;
-    let hold = null;
-    function startHold(e){
-      clearHold();
-      hold = {
-        startX: e.clientX,
-        startY: e.clientY,
-        timer: setTimeout(()=>{
-          setEditMode(!isEditMode);
-          clearHold();
-        }, HOLD_MS)
-      };
-    }
-    function clearHold(){
-      if(!hold) return;
-      clearTimeout(hold.timer);
-      hold = null;
-    }
+    const HOLD_MS=450; let hold=null;
+    function startHold(e){ clearHold(); hold={startX:e.clientX,startY:e.clientY,timer:setTimeout(()=>{setEditMode(!isEditMode);clearHold();},HOLD_MS)}; }
+    function clearHold(){ if(!hold) return; clearTimeout(hold.timer); hold=null; }
 
-    stage.addEventListener('pointerdown', (e)=>{
-      if(!isEditMode) return;
-      if(e.target.closest('.widget')) return;
-      setEditMode(false);
-    }, true);
+    stage.addEventListener('pointerdown',(e)=>{ if(!isEditMode) return; if(e.target.closest('.widget')) return; setEditMode(false); },true);
 
     /* ===== Drag ===== */
-    let drag = null;
+    let drag=null;
     function canStartDragFromTarget(target){
       if(target.closest('#themePill')) return false;
       if(target.closest('.no-drag')) return false;
       if(target.closest('[data-handle="resize"]')) return false;
-      if(target.closest('input, textarea, button, select')) return false;
+      if(target.closest('input,textarea,button,select')) return false;
       return true;
     }
 
     function onPointerDown(e){
-      const w = e.target.closest('.widget');
-      if(!w) return;
-
+      const w=e.target.closest('.widget'); if(!w) return;
       startHold(e);
-
       if(!isEditMode) return;
       if(!canStartDragFromTarget(e.target)) return;
-
       e.preventDefault();
-
-      drag = {
-        w,
-        startX: e.clientX,
-        startY: e.clientY,
-        originColU: parseInt(w.dataset.colU || '0', 10),
-        originRowU: parseInt(w.dataset.rowU || '0', 10),
-        dx: 0,
-        dy: 0
-      };
-
-      w.classList.add('dragging');
-      w.style.animation = 'none';
-      w.setPointerCapture(e.pointerId);
+      drag={w,startX:e.clientX,startY:e.clientY,originColU:parseInt(w.dataset.colU||'0',10),originRowU:parseInt(w.dataset.rowU||'0',10),dx:0,dy:0};
+      w.classList.add('dragging'); w.style.animation='none'; w.setPointerCapture(e.pointerId);
     }
 
     function onPointerMove(e){
-      if(hold){
-        const md = Math.abs(e.clientX - hold.startX) + Math.abs(e.clientY - hold.startY);
-        if(md > 6) clearHold();
-      }
+      if(hold){ if(Math.abs(e.clientX-hold.startX)+Math.abs(e.clientY-hold.startY)>6) clearHold(); }
       if(!drag) return;
-
-      const w = drag.w;
-      drag.dx = e.clientX - drag.startX;
-      drag.dy = e.clientY - drag.startY;
-
-      w.style.transform = `translate3d(${drag.dx}px, ${drag.dy}px, 0)`;
-
-      const originPx = colRowToPx(drag.originColU, drag.originRowU);
-      const r = areaRect();
-      const absX = (r.left + originPx.left) + drag.dx;
-      const absY = (r.top  + originPx.top ) + drag.dy;
-
-      const { colU, rowU } = pxToColRow(absX, absY);
-      const free = findNearestFreeCellUnits(w, colU, rowU);
-
-      setGhost(w, free.colU, free.rowU);
+      const w=drag.w; drag.dx=e.clientX-drag.startX; drag.dy=e.clientY-drag.startY;
+      w.style.transform=`translate3d(${drag.dx}px,${drag.dy}px,0)`;
+      const originPx=colRowToPx(drag.originColU,drag.originRowU);
+      const r=areaRect();
+      const {colU,rowU}=pxToColRow(r.left+originPx.left+drag.dx, r.top+originPx.top+drag.dy);
+      setGhost(w,findNearestFreeCellUnits(w,colU,rowU).colU,findNearestFreeCellUnits(w,colU,rowU).rowU);
     }
 
     function onPointerUp(){
-      clearHold();
-      if(!drag) return;
-
-      const w = drag.w;
-
-      const originPx = colRowToPx(drag.originColU, drag.originRowU);
-      const r = areaRect();
-      const absX = (r.left + originPx.left) + drag.dx;
-      const absY = (r.top  + originPx.top ) + drag.dy;
-
-      const { colU, rowU } = pxToColRow(absX, absY);
-      const free = findNearestFreeCellUnits(w, colU, rowU);
-
-      w.style.transform = 'translate3d(0,0,0)';
-      w.classList.remove('dragging');
-      w.style.animation = '';
-
-      commitWidgetCellUnits(w, free.colU, free.rowU);
-      hideGhost();
-      drag = null;
-
-      refreshAccountUI();
+      clearHold(); if(!drag) return;
+      const w=drag.w;
+      const originPx=colRowToPx(drag.originColU,drag.originRowU);
+      const r=areaRect();
+      const {colU,rowU}=pxToColRow(r.left+originPx.left+drag.dx, r.top+originPx.top+drag.dy);
+      const free=findNearestFreeCellUnits(w,colU,rowU);
+      w.style.transform='translate3d(0,0,0)'; w.classList.remove('dragging'); w.style.animation='';
+      commitWidgetCellUnits(w,free.colU,free.rowU); hideGhost(); drag=null; refreshAccountUI();
     }
 
-    area.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    area.addEventListener('pointerdown',onPointerDown);
+    window.addEventListener('pointermove',onPointerMove);
+    window.addEventListener('pointerup',onPointerUp);
 
     /* ===== Theme ===== */
-    const themeThumb   = document.getElementById('themeThumb');
-    const themeOptions = document.getElementById('themeOptions');
-    const themePill    = document.getElementById('themePill');
+    const themeThumb=document.getElementById('themeThumb');
+    const themeOptions=document.getElementById('themeOptions');
+    const themePill=document.getElementById('themePill');
 
-    function applyTheme(mode){
-      let applied = mode;
-      if(mode === 'auto') applied = prefersDark() ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', applied);
-    }
+    function applyTheme(mode){ document.documentElement.setAttribute('data-theme', mode==='auto'?(prefersDark()?'dark':'light'):mode); }
 
     function slotXForMode(mode){
-      const rect = themePill.getBoundingClientRect();
-      const thumbW = themeThumb.getBoundingClientRect().width || 0;
-      const innerW = rect.width - 14;
-      const range = Math.max(0, innerW - thumbW);
-      const idx = (mode === 'light') ? 0 : (mode === 'dark' ? 1 : 2);
-      return range * (idx / 2);
+      const rect=themePill.getBoundingClientRect(), thumbW=themeThumb.getBoundingClientRect().width||0;
+      const range=Math.max(0,rect.width-14-thumbW);
+      return range*({light:0,dark:1,auto:2}[mode]||0)/2;
     }
-
-    function syncThemeThumb(mode, immediate=false){
-      if(!mode) mode = localStorage.getItem(getThemeKey()) || 'auto';
-      themeThumb.style.transition = immediate ? 'none' : 'transform 240ms var(--ease)';
-      themeThumb.style.transform = `translate3d(${slotXForMode(mode)}px,0,0)`;
+    function syncThemeThumb(mode,immediate=false){
+      if(!mode) mode=localStorage.getItem(getThemeKey())||'auto';
+      themeThumb.style.transition=immediate?'none':'transform 240ms var(--ease)';
+      themeThumb.style.transform=`translate3d(${slotXForMode(mode)}px,0,0)`;
     }
-
     function setTheme(mode){
-      localStorage.setItem(getThemeKey(), mode);
-      applyTheme(mode);
-
-      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
-        opt.classList.toggle('active', opt.dataset.theme === mode);
-      });
-
-      syncThemeThumb(mode, false);
-      requestCloudSyncDebounced();
-      refreshAccountUI();
+      localStorage.setItem(getThemeKey(),mode); applyTheme(mode);
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(o=>o.classList.toggle('active',o.dataset.theme===mode));
+      syncThemeThumb(mode,false); requestCloudSyncDebounced(); refreshAccountUI();
     }
+    function loadTheme(){ setTheme(localStorage.getItem(getThemeKey())||'auto'); }
 
-    function loadTheme(){
-      const saved = localStorage.getItem(getThemeKey()) || 'auto';
-      setTheme(saved);
+    themeOptions.addEventListener('click',(e)=>{ if(isEditMode) return; const o=e.target.closest('.theme-opt'); if(o) setTheme(o.dataset.theme); });
+
+    let pillDrag=null, rafId=0;
+    function thumbXFromClientX(clientX,rect,thumbW){
+      const innerW=rect.width-14, range=Math.max(0,innerW-thumbW);
+      return clamp(clamp(clientX-rect.left-7,0,innerW)-thumbW/2,0,range);
     }
+    function renderThumbX(px){ themeThumb.style.transition='none'; themeThumb.style.transform=`translate3d(${px}px,0,0)`; }
 
-    themeOptions.addEventListener('click', (e)=>{
-      if(isEditMode) return;
-      const opt = e.target.closest('.theme-opt');
-      if(!opt) return;
-      setTheme(opt.dataset.theme);
-    });
-
-    let pillDrag = null;
-    let rafId = 0;
-
-    function thumbXFromClientX(clientX, rect, thumbW){
-      const innerLeft = 7;
-      const innerRight = rect.width - 7;
-      const innerW = innerRight - innerLeft;
-      const range = Math.max(0, innerW - thumbW);
-
-      const local = clamp(clientX - rect.left - innerLeft, 0, innerW);
-      return clamp(local - thumbW/2, 0, range);
-    }
-
-    function renderThumbX(px){
-      themeThumb.style.transition = 'none';
-      themeThumb.style.transform = `translate3d(${px}px,0,0)`;
-    }
-
-    themePill.addEventListener('pointerdown', (e)=>{
-      if(isEditMode) return;
-      e.preventDefault();
-      const rect = themePill.getBoundingClientRect();
-      const thumbW = themeThumb.getBoundingClientRect().width || 0;
-      pillDrag = { rect, thumbW, lastX: e.clientX };
-      themePill.setPointerCapture(e.pointerId);
-      renderThumbX(thumbXFromClientX(e.clientX, rect, thumbW));
-    });
-
-    themePill.addEventListener('pointermove', (e)=>{
-      if(isEditMode) return;
-      if(!pillDrag) return;
-      pillDrag.lastX = e.clientX;
-      if(rafId) return;
-      rafId = requestAnimationFrame(()=>{
-        rafId = 0;
-        renderThumbX(thumbXFromClientX(pillDrag.lastX, pillDrag.rect, pillDrag.thumbW));
-      });
-    });
-
-    themePill.addEventListener('pointerup', (e)=>{
-      if(isEditMode) return;
-      if(!pillDrag) return;
-
-      const { rect, thumbW } = pillDrag;
-      pillDrag = null;
-
-      const innerW = rect.width - 14;
-      const range = Math.max(0, innerW - thumbW);
-
-      const x = thumbXFromClientX(e.clientX, rect, thumbW);
-      const t = range === 0 ? 0 : (x / range);
-      const idx = clamp(Math.round(t * 2), 0, 2);
-
-      const mode = idx === 0 ? 'light' : (idx === 1 ? 'dark' : 'auto');
-      setTheme(mode);
-    });
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
-      const saved = localStorage.getItem(getThemeKey()) || 'auto';
-      if(saved === 'auto') applyTheme('auto');
-    });
+    themePill.addEventListener('pointerdown',(e)=>{ if(isEditMode) return; e.preventDefault(); const rect=themePill.getBoundingClientRect(), thumbW=themeThumb.getBoundingClientRect().width||0; pillDrag={rect,thumbW,lastX:e.clientX}; themePill.setPointerCapture(e.pointerId); renderThumbX(thumbXFromClientX(e.clientX,rect,thumbW)); });
+    themePill.addEventListener('pointermove',(e)=>{ if(isEditMode||!pillDrag) return; pillDrag.lastX=e.clientX; if(rafId) return; rafId=requestAnimationFrame(()=>{rafId=0;renderThumbX(thumbXFromClientX(pillDrag.lastX,pillDrag.rect,pillDrag.thumbW));}); });
+    themePill.addEventListener('pointerup',(e)=>{ if(isEditMode||!pillDrag) return; const {rect,thumbW}=pillDrag; pillDrag=null; const range=Math.max(0,rect.width-14-thumbW), x=thumbXFromClientX(e.clientX,rect,thumbW), idx=clamp(Math.round(range===0?0:(x/range)*2),0,2); setTheme(['light','dark','auto'][idx]); });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{ const s=localStorage.getItem(getThemeKey())||'auto'; if(s==='auto') applyTheme('auto'); });
 
     /* ===== Clock ===== */
-    const clockEl = document.getElementById('clock');
-    const dateLabel = document.getElementById('dateLabel');
-    const secondsLabel = document.getElementById('secondsLabel');
-
+    const clockEl=document.getElementById('clock'), dateLabel=document.getElementById('dateLabel'), secondsLabel=document.getElementById('secondsLabel');
     function tick(){
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2,'0');
-      const mm = String(now.getMinutes()).padStart(2,'0');
-      const ss = String(now.getSeconds()).padStart(2,'0');
-
-      clockEl.textContent = `${hh}:${mm}`;
-      secondsLabel.textContent = ss;
-
-      const weekday = new Intl.DateTimeFormat('pt-PT', { weekday:'long' }).format(now);
-      const dd = String(now.getDate()).padStart(2,'0');
-      const mo = String(now.getMonth()+1).padStart(2,'0');
-      dateLabel.textContent = `${weekday}, ${dd}/${mo}`;
+      const now=new Date();
+      clockEl.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      secondsLabel.textContent=String(now.getSeconds()).padStart(2,'0');
+      dateLabel.textContent=`${new Intl.DateTimeFormat('pt-PT',{weekday:'long'}).format(now)}, ${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}`;
     }
-
     function updateClockTypography(){
-      const w = document.querySelector('.widget[data-id="clock"]');
-      if(!w || w.style.display === 'none') return;
-      const { wU, hU } = widgetUnits(w);
-      const sx = wU / 4;
-      const sy = hU / 2;
-      const scale = clamp(Math.min(sx, sy), 0.85, 1.85);
-      w.style.setProperty('--clockScale', scale.toFixed(3));
+      const w=document.querySelector('.widget[data-id="clock"]'); if(!w||w.style.display==='none') return;
+      const {wU,hU}=widgetUnits(w);
+      w.style.setProperty('--clockScale',clamp(Math.min(wU/4,hU/2),0.55,1.85).toFixed(3));
     }
 
-    /* =========================================================
-       Resize (Edit Mode)
-       ========================================================= */
-    let resize = null;
-
+    /* ===== Resize ===== */
+    let resize=null;
     function startResize(e){
-      const w = e.target.closest('.widget');
-      if(!w) return;
-      if(!isEditMode) return;
-      if(w.dataset.resizable !== '1') return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      clearHold();
-
-      const startW = parseInt(w.dataset.w || '2', 10);
-      const startH = parseInt(w.dataset.h || '2', 10);
-
-      resize = {
-        w,
-        pointerId: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        startW,
-        startH,
-        originColU: parseInt(w.dataset.colU || '0', 10),
-        originRowU: parseInt(w.dataset.rowU || '0', 10),
-      };
-
-      w.classList.add('resizing');
-      w.style.animation = 'none';
-      w.setPointerCapture(e.pointerId);
+      const w=e.target.closest('.widget'); if(!w||!isEditMode||w.dataset.resizable!=='1') return;
+      e.preventDefault(); e.stopPropagation(); clearHold();
+      resize={w,startX:e.clientX,startY:e.clientY,startW:parseInt(w.dataset.w||'2',10),startH:parseInt(w.dataset.h||'2',10),originColU:parseInt(w.dataset.colU||'0',10),originRowU:parseInt(w.dataset.rowU||'0',10)};
+      w.classList.add('resizing'); w.style.animation='none'; w.setPointerCapture(e.pointerId);
     }
-
     function moveResize(e){
       if(!resize) return;
-
-      const w = resize.w;
-      const { subStep } = getVars();
-
-      const dx = e.clientX - resize.startX;
-      const dy = e.clientY - resize.startY;
-
-      const addWU = Math.round(dx / subStep);
-      const addHU = Math.round(dy / subStep);
-
-      const minWU = 2;
-      const minHU = 2;
-
-      let nextWU = clamp(resize.startW + addWU, minWU, 60);
-      let nextHU = clamp(resize.startH + addHU, minHU, 60);
-
-      setWidgetPixelSize(w, nextWU, nextHU);
-
-      const occ = buildOccupancy(w.dataset.id);
-      const { maxColU, maxRowU } = maxColsRowsForUnits(w);
-      const colU = clamp(resize.originColU, 0, maxColU);
-      const rowU = clamp(resize.originRowU, 0, maxRowU);
-
-      w.dataset.colU = String(colU);
-      w.dataset.rowU = String(rowU);
-
-      if(!canPlaceUnits(w, colU, rowU, occ)){
-        let ok = false;
-        let tryWU = nextWU;
-        let tryHU = nextHU;
-
-        for(let tries=0; tries<80 && !ok; tries++){
-          if(tryWU > minWU) tryWU--;
-          else if(tryHU > minHU) tryHU--;
-          else break;
-
-          setWidgetPixelSize(w, tryWU, tryHU);
-          if(canPlaceUnits(w, colU, rowU, occ)) ok = true;
-        }
+      const w=resize.w, {subStep}=getVars();
+      const addWU=Math.round((e.clientX-resize.startX)/subStep), addHU=Math.round((e.clientY-resize.startY)/subStep);
+      let nextWU=clamp(resize.startW+addWU,2,60), nextHU=clamp(resize.startH+addHU,2,60);
+      setWidgetPixelSize(w,nextWU,nextHU);
+      const occ=buildOccupancy(w.dataset.id), {maxColU,maxRowU}=maxColsRowsForUnits(w);
+      const colU=clamp(resize.originColU,0,maxColU), rowU=clamp(resize.originRowU,0,maxRowU);
+      w.dataset.colU=String(colU); w.dataset.rowU=String(rowU);
+      if(!canPlaceUnits(w,colU,rowU,occ)){
+        let ok=false, tryWU=nextWU, tryHU=nextHU;
+        for(let t=0;t<80&&!ok;t++){ if(tryWU>2) tryWU--; else if(tryHU>2) tryHU--; else break; setWidgetPixelSize(w,tryWU,tryHU); if(canPlaceUnits(w,colU,rowU,occ)) ok=true; }
       }
-
-      setGhost(w, colU, rowU);
-
-      if(w.dataset.id === 'theme') syncThemeThumb(null, true);
-      if(w.dataset.id === 'clock') updateClockTypography();
+      setGhost(w,colU,rowU);
+      if(w.dataset.id==='theme') syncThemeThumb(null,true);
+      if(w.dataset.id==='clock') updateClockTypography();
     }
-
     function endResize(){
       if(!resize) return;
-      const w = resize.w;
-
-      w.classList.remove('resizing');
-      w.style.animation = '';
-
-      const colU = parseInt(w.dataset.colU || '0', 10);
-      const rowU = parseInt(w.dataset.rowU || '0', 10);
-
-      commitWidgetCellUnits(w, colU, rowU);
+      const w=resize.w; w.classList.remove('resizing'); w.style.animation='';
+      commitWidgetCellUnits(w,parseInt(w.dataset.colU||'0',10),parseInt(w.dataset.rowU||'0',10));
       hideGhost();
-
-      if(w.dataset.id === 'theme') syncThemeThumb(null, false);
-      if(w.dataset.id === 'clock') updateClockTypography();
-
-      resize = null;
-      refreshAccountUI();
+      if(w.dataset.id==='theme') syncThemeThumb(null,false);
+      if(w.dataset.id==='clock') updateClockTypography();
+      resize=null; refreshAccountUI();
     }
+    document.querySelectorAll('.resize-handle').forEach(h=>h.addEventListener('pointerdown',startResize));
+    window.addEventListener('pointermove',moveResize);
+    window.addEventListener('pointerup',endResize);
 
-    document.querySelectorAll('.resize-handle').forEach(h=>{
-      h.addEventListener('pointerdown', startResize);
-    });
-    window.addEventListener('pointermove', moveResize);
-    window.addEventListener('pointerup', endResize);
+    /* ===== Sidebar ===== */
+    const sidebarOverlay=document.getElementById('sidebarOverlay'), sidebar=document.getElementById('sidebar');
+    const sidebarClose=document.getElementById('sidebarClose'), sidebarBack=document.getElementById('sidebarBack');
+    const sidebarTitle=document.getElementById('sidebarTitle'), sidebarSub=document.getElementById('sidebarSub');
+    const menuBtn=document.getElementById('menuBtn'), sideDock=document.getElementById('sideDock');
+    const sidebarPages=document.getElementById('sidebarPages');
 
-    /* =========================================================
-       Sidebar Router
-       ========================================================= */
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarClose = document.getElementById('sidebarClose');
-    const sidebarBack = document.getElementById('sidebarBack');
-    const sidebarTitle = document.getElementById('sidebarTitle');
-    const sidebarSub = document.getElementById('sidebarSub');
-    const menuBtn = document.getElementById('menuBtn');
-    const sideDock = document.getElementById('sideDock');
-    const sidebarPages = document.getElementById('sidebarPages');
-
-    const pages = {
-      home:        { title: 'Menu',            sub: 'Config • Conta • Personalização • Automação • Dispositivos' },
-      configs:     { title: 'Configurações',   sub: 'Ajustes do sistema e layout' },
-      account:     { title: 'Conta',           sub: 'Perfil, sync, logout e troca' },
-      personalize: { title: 'Personalização',  sub: 'Visual e comportamento' },
-      automation:  { title: 'Automação',       sub: 'Rotinas e agendamentos' },
-      devices:     { title: 'Dispositivos',    sub: 'Layouts por device' }
+    const pages={
+      home:{title:'Menu',sub:'Config • Conta • Personalização • Automação • Dispositivos'},
+      configs:{title:'Configurações',sub:'Ajustes do sistema e layout'},
+      account:{title:'Conta',sub:'Perfil, sync, logout e troca'},
+      personalize:{title:'Personalização',sub:'Visual e comportamento'},
+      automation:{title:'Automação',sub:'Rotinas e agendamentos'},
+      devices:{title:'Dispositivos',sub:'Layouts por device'}
     };
-
-    let navStack = ['home'];
+    let navStack=['home'];
     function getPageEl(id){ return document.querySelector(`.side-page[data-page="${id}"]`); }
-
     function updateHeader(){
-      const current = navStack[navStack.length - 1] || 'home';
-      const meta = pages[current] || pages.home;
-
-      sidebarTitle.textContent = meta.title;
-      sidebarSub.textContent = meta.sub;
-
-      sidebar.classList.toggle('has-back', current !== 'home');
-      sideDock.classList.toggle('hidden', current !== 'home');
-
-      if(current === 'account') refreshAccountUI();
+      const current=navStack[navStack.length-1]||'home', meta=pages[current]||pages.home;
+      sidebarTitle.textContent=meta.title; sidebarSub.textContent=meta.sub;
+      sidebar.classList.toggle('has-back',current!=='home');
+      sideDock.classList.toggle('hidden',current!=='home');
+      if(current==='account') refreshAccountUI();
     }
-
-    function showPage(fromId, toId, direction){
-      if(!toId || fromId === toId) return;
-
-      const fromEl = getPageEl(fromId);
-      const toEl = getPageEl(toId);
-      if(!toEl) return;
-
-      document.querySelectorAll('.side-page').forEach(p=>{
-        if(p !== fromEl && p !== toEl){
-          p.classList.remove('active','left');
-        }
-      });
-
-      if(direction === 'back'){
-        toEl.classList.add('active','left');
-        if(fromEl){
-          fromEl.classList.remove('active');
-          fromEl.classList.remove('left');
-        }
-        requestAnimationFrame(()=> toEl.classList.remove('left'));
+    function showPage(fromId,toId,direction){
+      if(!toId||fromId===toId) return;
+      const fromEl=getPageEl(fromId), toEl=getPageEl(toId); if(!toEl) return;
+      document.querySelectorAll('.side-page').forEach(p=>{ if(p!==fromEl&&p!==toEl) p.classList.remove('active','left'); });
+      if(direction==='back'){
+        toEl.classList.add('active','left'); if(fromEl){fromEl.classList.remove('active','left');}
+        requestAnimationFrame(()=>toEl.classList.remove('left'));
       }else{
-        toEl.classList.add('active');
-        toEl.classList.remove('left');
-        if(fromEl){
-          fromEl.classList.add('left');
-          fromEl.classList.remove('active');
-        }
+        toEl.classList.add('active'); toEl.classList.remove('left');
+        if(fromEl){fromEl.classList.add('left'); fromEl.classList.remove('active');}
       }
-
       updateHeader();
     }
-
-    function navTo(id){
-      if(!pages[id]) return;
-      const from = navStack[navStack.length - 1] || 'home';
-      if(id === from) return;
-
-      navStack.push(id);
-      showPage(from, id, 'forward');
-    }
-
-    function navBack(){
-      if(navStack.length <= 1) return;
-      const from = navStack.pop();
-      const to = navStack[navStack.length - 1] || 'home';
-      showPage(from, to, 'back');
-    }
-
+    function navTo(id){ if(!pages[id]) return; const from=navStack[navStack.length-1]||'home'; if(id===from) return; navStack.push(id); showPage(from,id,'forward'); }
+    function navBack(){ if(navStack.length<=1) return; const from=navStack.pop(); showPage(from,navStack[navStack.length-1]||'home','back'); }
     function resetMenuNav(){
-      navStack = ['home'];
-      document.querySelectorAll('.side-page').forEach(p=>{
-        p.classList.remove('active','left');
-      });
-      const homeEl = getPageEl('home');
-      if(homeEl) homeEl.classList.add('active');
+      navStack=['home'];
+      document.querySelectorAll('.side-page').forEach(p=>p.classList.remove('active','left'));
+      const homeEl=getPageEl('home'); if(homeEl) homeEl.classList.add('active');
       updateHeader();
     }
+    function openSidebar(){ if(isEditMode) return; sidebarOverlay.classList.add('open'); sidebarOverlay.setAttribute('aria-hidden','false'); resetMenuNav(); }
+    function closeSidebar(){ sidebarOverlay.classList.remove('open'); sidebarOverlay.setAttribute('aria-hidden','true'); }
+    function toggleSidebar(){ sidebarOverlay.classList.contains('open')?closeSidebar():openSidebar(); }
 
-    function openSidebar(){
-      if(isEditMode) return;
-      sidebarOverlay.classList.add('open');
-      sidebarOverlay.setAttribute('aria-hidden', 'false');
-      resetMenuNav();
-    }
-    function closeSidebar(){
-      sidebarOverlay.classList.remove('open');
-      sidebarOverlay.setAttribute('aria-hidden', 'true');
-    }
-    function toggleSidebar(){
-      sidebarOverlay.classList.contains('open') ? closeSidebar() : openSidebar();
-    }
+    menuBtn.addEventListener('click',(e)=>{ if(isEditMode) return; toggleSidebar(); e.stopPropagation(); });
+    sidebarClose.addEventListener('click',closeSidebar);
+    sidebarBack.addEventListener('click',navBack);
+    sidebarOverlay.addEventListener('pointerdown',(e)=>{ if(e.target===sidebarOverlay) closeSidebar(); });
+    sidebarPages.addEventListener('click',(e)=>{ const el=e.target.closest('[data-nav]'); if(el) navTo(el.dataset.nav); });
+    document.getElementById('dockConfigs').addEventListener('click',()=>navTo('configs'));
+    document.getElementById('dockAccount').addEventListener('click',()=>navTo('account'));
+    document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',()=>alert(`${el.dataset.action} (placeholder)`)));
 
-    menuBtn.addEventListener('click', (e)=>{
-      if(isEditMode) return;
-      toggleSidebar();
-      e.stopPropagation();
-    });
+    /* ===== Auth ===== */
+    const authOverlay=document.getElementById('authOverlay'), tabCreate=document.getElementById('tabCreate'), tabLogin=document.getElementById('tabLogin');
+    const primaryAuthBtn=document.getElementById('primaryAuthBtn'), googleBtn=document.getElementById('googleBtn'), guestBtn=document.getElementById('guestBtn');
+    const authEmail=document.getElementById('authEmail'), authPass=document.getElementById('authPass'), authError=document.getElementById('authError'), authHint=document.getElementById('authHint');
+    let authTab='create';
 
-    sidebarClose.addEventListener('click', closeSidebar);
-    sidebarBack.addEventListener('click', navBack);
-
-    sidebarOverlay.addEventListener('pointerdown', (e)=>{
-      if(e.target === sidebarOverlay) closeSidebar();
-    });
-
-    sidebarPages.addEventListener('click', (e)=>{
-      const el = e.target.closest('[data-nav]');
-      if(!el) return;
-      const id = el.dataset.nav;
-      if(!id) return;
-      navTo(id);
-    });
-
-    document.getElementById('dockConfigs').addEventListener('click', ()=>navTo('configs'));
-    document.getElementById('dockAccount').addEventListener('click', ()=>navTo('account'));
-
-    document.querySelectorAll('[data-action]').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        const a = el.dataset.action;
-        if(!a) return;
-        alert(`${a} (placeholder)`);
-      });
-    });
-
-    /* =========================================================
-       Auth / Account / Cloud
-       ========================================================= */
-    const authOverlay = document.getElementById('authOverlay');
-    const tabCreate   = document.getElementById('tabCreate');
-    const tabLogin    = document.getElementById('tabLogin');
-    const primaryAuthBtn = document.getElementById('primaryAuthBtn');
-    const googleBtn   = document.getElementById('googleBtn');
-    const guestBtn    = document.getElementById('guestBtn');
-    const authEmail   = document.getElementById('authEmail');
-    const authPass    = document.getElementById('authPass');
-    const authError   = document.getElementById('authError');
-    const authHint    = document.getElementById('authHint');
-
-    let authTab = 'create';
-
-    function showAuthError(msg){ authError.textContent = msg; authError.style.display = 'block'; }
-    function clearAuthError(){ authError.style.display = 'none'; authError.textContent = '—'; }
-
+    function showAuthError(msg){ authError.textContent=msg; authError.style.display='block'; }
+    function clearAuthError(){ authError.style.display='none'; authError.textContent='—'; }
     function setAuthTab(tab){
-      authTab = tab;
-      tabCreate.classList.toggle('active', tab === 'create');
-      tabLogin.classList.toggle('active', tab === 'login');
-      clearAuthError();
-
-      if(tab === 'create'){
-        primaryAuthBtn.textContent = '✨ Criar e entrar';
-        authHint.textContent = 'Crie sua conta para sincronizar layout/tema/perfil. ☁️';
-      }else{
-        primaryAuthBtn.textContent = '🔓 Entrar';
-        authHint.textContent = 'Entre para carregar suas configs. 🔁';
-      }
+      authTab=tab; tabCreate.classList.toggle('active',tab==='create'); tabLogin.classList.toggle('active',tab==='login'); clearAuthError();
+      if(tab==='create'){ primaryAuthBtn.textContent='✨ Criar e entrar'; authHint.textContent='Crie sua conta para sincronizar layout/tema/perfil. ☁️'; }
+      else{ primaryAuthBtn.textContent='🔓 Entrar'; authHint.textContent='Entre para carregar suas configs. 🔁'; }
     }
-    tabCreate.addEventListener('click', ()=>setAuthTab('create'));
-    tabLogin.addEventListener('click', ()=>setAuthTab('login'));
+    tabCreate.addEventListener('click',()=>setAuthTab('create'));
+    tabLogin.addEventListener('click',()=>setAuthTab('login'));
 
-    function openAuth(tab='create'){
-      setAuthTab(tab);
-      authOverlay.classList.add('open');
-      authOverlay.setAttribute('aria-hidden','false');
-      lockApp();
-      setTimeout(()=>authEmail.focus(), 60);
-    }
-    function closeAuth(){
-      authOverlay.classList.remove('open');
-      authOverlay.setAttribute('aria-hidden','true');
-      clearAuthError();
-      unlockApp();
-    }
+    function openAuth(tab='create'){ setAuthTab(tab); authOverlay.classList.add('open'); authOverlay.setAttribute('aria-hidden','false'); lockApp(); setTimeout(()=>authEmail.focus(),60); }
+    function closeAuth(){ authOverlay.classList.remove('open'); authOverlay.setAttribute('aria-hidden','true'); clearAuthError(); unlockApp(); }
+    authOverlay.addEventListener('pointerdown',(e)=>e.stopPropagation());
+    window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&authOverlay.classList.contains('open')){e.preventDefault();e.stopPropagation();} },true);
 
-    authOverlay.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
-
-    window.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape' && authOverlay.classList.contains('open')){
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true);
-
-    function validEmail(email){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
-
-    async function loginAsGuest(){
-      currentUser = null;
-      setActiveProfile('guest');
-      closeAuth();
-      await loadFromCloudIfNeeded();
-      bootApplyAfterProfileChange();
-      refreshAccountUI();
-    }
-
-    async function loginWithEmailPassword(email, pass, mode){
+    function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+    async function loginAsGuest(){ currentUser=null; setActiveProfile('guest'); closeAuth(); await loadFromCloudIfNeeded(); bootApplyAfterProfileChange(); refreshAccountUI(); }
+    async function loginWithEmailPassword(email,pass,mode){
       if(!firebaseReady) return showAuthError('Firebase não configurado.');
       if(!validEmail(email)) return showAuthError('Digite um email válido.');
-      if(!pass || pass.length < 6) return showAuthError('Senha inválida (mínimo 6).');
-
-      try{
-        if(mode === 'create') await fbAuth.createUserWithEmailAndPassword(email, pass);
-        else await fbAuth.signInWithEmailAndPassword(email, pass);
-      }catch(err){
-        const m = (err && err.message) ? err.message : 'Erro ao autenticar.';
-        showAuthError(m);
-      }
+      if(!pass||pass.length<6) return showAuthError('Senha inválida (mínimo 6).');
+      try{ if(mode==='create') await fbAuth.createUserWithEmailAndPassword(email,pass); else await fbAuth.signInWithEmailAndPassword(email,pass); }
+      catch(err){ showAuthError((err&&err.message)||'Erro ao autenticar.'); }
     }
-
     async function loginWithGoogle(){
       if(!firebaseReady) return showAuthError('Firebase não configurado.');
-      try{
-        const provider = new firebase.auth.GoogleAuthProvider();
-        await fbAuth.signInWithPopup(provider);
-      }catch(err){
-        const m = (err && err.message) ? err.message : 'Erro ao entrar com Google.';
-        showAuthError(m);
-      }
+      try{ await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+      catch(err){ showAuthError((err&&err.message)||'Erro ao entrar com Google.'); }
     }
 
-    primaryAuthBtn.addEventListener('click', ()=>{
-      clearAuthError();
-      const email = String(authEmail.value || '').trim().toLowerCase();
-      const pass  = String(authPass.value || '');
-      loginWithEmailPassword(email, pass, authTab);
-    });
-    googleBtn.addEventListener('click', ()=>{ clearAuthError(); loginWithGoogle(); });
-    guestBtn.addEventListener('click', ()=>{ clearAuthError(); loginAsGuest(); });
-    authPass.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') primaryAuthBtn.click(); });
+    primaryAuthBtn.addEventListener('click',()=>{ clearAuthError(); loginWithEmailPassword(String(authEmail.value||'').trim().toLowerCase(),String(authPass.value||''),authTab); });
+    googleBtn.addEventListener('click',()=>{ clearAuthError(); loginWithGoogle(); });
+    guestBtn.addEventListener('click',()=>{ clearAuthError(); loginAsGuest(); });
+    authPass.addEventListener('keydown',(e)=>{ if(e.key==='Enter') primaryAuthBtn.click(); });
 
-    /* ===== Profile Edit (WhatsApp-like) ===== */
-    const profileOverlay = document.getElementById('profileOverlay');
-    const profileClose = document.getElementById('profileClose');
-    const profileCancel = document.getElementById('profileCancel');
-    const profileSave = document.getElementById('profileSave');
-    const profileName = document.getElementById('profileName');
-    const profilePhotoUrl = document.getElementById('profilePhotoUrl');
-    const profilePhotoFile = document.getElementById('profilePhotoFile');
-    const profileError = document.getElementById('profileError');
-    const profileAvatarPrev = document.getElementById('profileAvatarPrev');
-    const profilePickBtn = document.getElementById('profilePickBtn');
-    const useCurrentPhotoBtn = document.getElementById('useCurrentPhotoBtn');
-    const clearPhotoBtn = document.getElementById('clearPhotoBtn');
+    /* ===== Profile Editor ===== */
+    const profileOverlay=document.getElementById('profileOverlay'), profileClose=document.getElementById('profileClose'), profileCancel=document.getElementById('profileCancel');
+    const profileSave=document.getElementById('profileSave'), profileName=document.getElementById('profileName'), profilePhotoUrl=document.getElementById('profilePhotoUrl');
+    const profilePhotoFile=document.getElementById('profilePhotoFile'), profileError=document.getElementById('profileError');
+    const profileAvatarPrev=document.getElementById('profileAvatarPrev'), profilePickBtn=document.getElementById('profilePickBtn');
+    const useCurrentPhotoBtn=document.getElementById('useCurrentPhotoBtn'), clearPhotoBtn=document.getElementById('clearPhotoBtn');
+    let lastKnownPhoto='';
 
-    let lastKnownPhoto = ""; // ✅ mantém a foto atual sem “perder” ao editar URL
-
-    function showProfileError(msg){ profileError.textContent = msg; profileError.style.display = 'block'; }
-    function clearProfileError(){ profileError.style.display = 'none'; profileError.textContent = '—'; }
-
+    function showProfileError(msg){ profileError.textContent=msg; profileError.style.display='block'; }
+    function clearProfileError(){ profileError.style.display='none'; profileError.textContent='—'; }
     function setProfileAvatarPreview(photo){
-      profileAvatarPrev.innerHTML = '';
-      if(photo){
-        const img = document.createElement('img');
-        img.src = photo;
-        img.alt = 'avatar';
-        profileAvatarPrev.appendChild(img);
-      }else{
-        const d = document.createElement('div');
-        d.style.fontWeight = '900';
-        d.style.color = 'var(--muted)';
-        d.style.fontSize = '16px';
-        d.textContent = '⌁';
-        profileAvatarPrev.appendChild(d);
-      }
+      profileAvatarPrev.innerHTML='';
+      if(photo){ const img=document.createElement('img'); img.src=photo; img.alt='avatar'; profileAvatarPrev.appendChild(img); }
+      else{ const d=document.createElement('div'); d.style.cssText='font-weight:900;color:var(--muted);font-size:16px'; d.textContent='⌁'; profileAvatarPrev.appendChild(d); }
       profileAvatarPrev.appendChild(profilePickBtn);
     }
-
     function getCurrentProfileView(){
-      if(activeProfileId === 'guest'){
-        const g = loadGuestProfile();
-        return { name: g.name || 'Convidado', email:'Sessão local', photo: g.photo || '', badge:'Guest' };
-      }
-      if(currentUser){
-        return { name: currentUser.displayName || 'Usuário', email: currentUser.email || '—', photo: currentUser.photoURL || '', badge:'Sync' };
-      }
-      return { name:'Conta', email:'—', photo:'', badge:'—' };
+      if(activeProfileId==='guest'){ const g=loadGuestProfile(); return {name:g.name||'Convidado',email:'Sessão local',photo:g.photo||'',badge:'Guest'}; }
+      if(currentUser) return {name:currentUser.displayName||'Usuário',email:currentUser.email||'—',photo:currentUser.photoURL||'',badge:'Sync'};
+      return {name:'Conta',email:'—',photo:'',badge:'—'};
     }
-
     function openProfileEditor(){
-      clearProfileError();
-      const p = getCurrentProfileView();
-
-      lastKnownPhoto = p.photo || "";
-
-      profileName.value = p.name || '';
-      profilePhotoFile.value = '';
-
-      // ✅ FIX: NÃO preencher com a URL atual (pra não “perder” a antiga ao tentar editar)
-      profilePhotoUrl.value = '';
-      profilePhotoUrl.placeholder = lastKnownPhoto ? lastKnownPhoto : 'https://...';
-
-      setProfileAvatarPreview(lastKnownPhoto || '');
-      profileOverlay.classList.add('open');
-      profileOverlay.setAttribute('aria-hidden','false');
-      setTimeout(()=>profileName.focus(), 60);
+      clearProfileError(); const p=getCurrentProfileView(); lastKnownPhoto=p.photo||'';
+      profileName.value=p.name||''; profilePhotoFile.value=''; profilePhotoUrl.value='';
+      profilePhotoUrl.placeholder=lastKnownPhoto||'https://...';
+      setProfileAvatarPreview(lastKnownPhoto); profileOverlay.classList.add('open'); profileOverlay.setAttribute('aria-hidden','false');
+      setTimeout(()=>profileName.focus(),60);
     }
+    function closeProfileEditor(){ profileOverlay.classList.remove('open'); profileOverlay.setAttribute('aria-hidden','true'); }
 
-    function closeProfileEditor(){
-      profileOverlay.classList.remove('open');
-      profileOverlay.setAttribute('aria-hidden','true');
-    }
+    profileClose.addEventListener('click',closeProfileEditor); profileCancel.addEventListener('click',closeProfileEditor);
+    profileOverlay.addEventListener('pointerdown',(e)=>{ if(e.target===profileOverlay) closeProfileEditor(); });
+    profilePickBtn.addEventListener('click',()=>profilePhotoFile.click());
+    useCurrentPhotoBtn.addEventListener('click',()=>{ profilePhotoUrl.value=lastKnownPhoto||''; setProfileAvatarPreview(lastKnownPhoto||''); });
+    clearPhotoBtn.addEventListener('click',()=>{ profilePhotoFile.value=''; profilePhotoUrl.value=''; lastKnownPhoto=''; setProfileAvatarPreview(''); });
+    profilePhotoFile.addEventListener('change',async()=>{ const f=profilePhotoFile.files&&profilePhotoFile.files[0]; if(!f) return; try{setProfileAvatarPreview(URL.createObjectURL(f));}catch(_){} });
 
-    profileClose.addEventListener('click', closeProfileEditor);
-    profileCancel.addEventListener('click', closeProfileEditor);
-    profileOverlay.addEventListener('pointerdown', (e)=>{ if(e.target === profileOverlay) closeProfileEditor(); });
-
-    profilePickBtn.addEventListener('click', ()=>{ profilePhotoFile.click(); });
-
-    useCurrentPhotoBtn.addEventListener('click', ()=>{
-      // Preenche com a foto atual (se você quiser copiar/editar)
-      profilePhotoUrl.value = lastKnownPhoto || '';
-      setProfileAvatarPreview(lastKnownPhoto || '');
-    });
-
-    clearPhotoBtn.addEventListener('click', ()=>{
-      profilePhotoFile.value = '';
-      profilePhotoUrl.value = '';
-      lastKnownPhoto = '';
-      setProfileAvatarPreview('');
-    });
-
-    profilePhotoFile.addEventListener('change', async ()=>{
-      const f = profilePhotoFile.files && profilePhotoFile.files[0];
-      if(!f) return;
-      // preview local rápido
-      try{
-        const url = URL.createObjectURL(f);
-        setProfileAvatarPreview(url);
-      }catch(_){}
-    });
-
-    function isProbablyDataUrl(s){
-      return /^data:/i.test(String(s || '').trim());
-    }
-
+    function isProbablyDataUrl(s){ return /^data:/i.test(String(s||'').trim()); }
     function validatePhotoUrl(url){
-      const u = String(url || '').trim();
-      if(!u) return { ok:true, value:'' };
-      if(isProbablyDataUrl(u)) return { ok:false, msg:'Data URL é muito longa. Use arquivo (upload) ou uma URL https.' };
-      if(u.length > 1900) return { ok:false, msg:'URL muito longa. Use uma URL menor ou upload.' };
-      try{
-        const parsed = new URL(u);
-        if(parsed.protocol !== 'http:' && parsed.protocol !== 'https:'){
-          return { ok:false, msg:'Use uma URL http/https.' };
-        }
-      }catch(e){
-        return { ok:false, msg:'URL inválida.' };
-      }
-      return { ok:true, value:u };
+      const u=String(url||'').trim(); if(!u) return {ok:true,value:''};
+      if(isProbablyDataUrl(u)) return {ok:false,msg:'Data URL é muito longa. Use arquivo (upload) ou uma URL https.'};
+      if(u.length>1900) return {ok:false,msg:'URL muito longa.'};
+      try{ const p=new URL(u); if(p.protocol!=='http:'&&p.protocol!=='https:') return {ok:false,msg:'Use uma URL http/https.'}; }
+      catch(e){ return {ok:false,msg:'URL inválida.'}; }
+      return {ok:true,value:u};
     }
-
     async function uploadAvatarToStorage(file){
-      if(!firebaseReady || !currentUser || !fbStorage) throw new Error('Storage não disponível.');
-      const maxMB = 6; // limite simples
-      if(file.size > maxMB * 1024 * 1024) throw new Error(`Arquivo muito grande (máx ${maxMB}MB).`);
-
-      const safeName = (file.name || 'avatar').replace(/[^\w.\-]+/g, '_').slice(0, 60);
-      const path = `avatars/${currentUser.uid}/${Date.now()}_${safeName}`;
-      const ref = fbStorage.ref().child(path);
-
-      const meta = { contentType: file.type || 'image/jpeg', cacheControl: 'public,max-age=31536000' };
-      await ref.put(file, meta);
-      const url = await ref.getDownloadURL();
-      return url;
+      if(!firebaseReady||!currentUser||!fbStorage) throw new Error('Storage não disponível.');
+      if(file.size>6*1024*1024) throw new Error('Arquivo muito grande (máx 6MB).');
+      const path=`avatars/${currentUser.uid}/${Date.now()}_${(file.name||'avatar').replace(/[^\w.\-]+/g,'_').slice(0,60)}`;
+      const ref=fbStorage.ref().child(path);
+      await ref.put(file,{contentType:file.type||'image/jpeg',cacheControl:'public,max-age=31536000'});
+      return ref.getDownloadURL();
+    }
+    async function saveProfileToCloud({name,photo}){
+      const ref=userDocRef(); if(!ref) return;
+      await ref.set({profile:{name:name||'',photo:photo||''},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
 
-    async function saveProfileToCloud({name, photo}){
-      const ref = userDocRef();
-      if(!ref) return;
-      await ref.set({
-        profile: { name: name || '', photo: photo || '' },
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-
-    profileSave.addEventListener('click', async ()=>{
-  clearProfileError();
-
-  // UI: estado "salvando"
-  const prevText = profileSave.textContent;
-  profileSave.textContent = '💾 Salvando...';
-  profileSave.disabled = true;
-
-  try{
-    const name = String(profileName.value || '').trim();
-    if(!name) return showProfileError('Digite um nome.');
-
-    const f = profilePhotoFile.files && profilePhotoFile.files[0];
-    let photo = '';
-
-    // ====== GUEST ======
-    if(activeProfileId === 'guest'){
-      if(f){
-        photo = await new Promise((resolve, reject)=>{
-          const r = new FileReader();
-          r.onload = ()=> resolve(String(r.result || ''));
-          r.onerror = reject;
-          r.readAsDataURL(f);
-        });
-      }else{
-        const v = validatePhotoUrl(profilePhotoUrl.value);
-        if(!v.ok) return showProfileError(v.msg);
-        photo = v.value || '';
-      }
-
-      saveGuestProfile({ name, photo });
-      lastKnownPhoto = photo || '';
-
-      // ✅ atualiza UI + fecha
-      refreshAccountUI();
-      closeProfileEditor();
-      requestCloudSyncDebounced();
-      return;
-    }
-
-    // ====== LOGADO ======
-    if(!firebaseReady || !currentUser) return showProfileError('Você precisa estar logado.');
-
-    // ✅ nunca usar dataURL em user logado (causa photoURL too long)
-    if(f){
-      photo = await uploadAvatarToStorage(f);
-    }else{
-      const v = validatePhotoUrl(profilePhotoUrl.value);
-      if(!v.ok) return showProfileError(v.msg);
-
-      // se campo vazio: mantém a atual
-      photo = v.value || (lastKnownPhoto || '');
-    }
-
-    // 1) Atualiza no auth
-    await currentUser.updateProfile({
-      displayName: name,
-      photoURL: photo || ''
+    profileSave.addEventListener('click',async()=>{
+      clearProfileError(); const prevText=profileSave.textContent; profileSave.textContent='💾 Salvando...'; profileSave.disabled=true;
+      try{
+        const name=String(profileName.value||'').trim(); if(!name) return showProfileError('Digite um nome.');
+        const f=profilePhotoFile.files&&profilePhotoFile.files[0]; let photo='';
+        if(activeProfileId==='guest'){
+          if(f){ photo=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||''));r.onerror=rej;r.readAsDataURL(f);}); }
+          else{ const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg); photo=v.value||''; }
+          saveGuestProfile({name,photo}); lastKnownPhoto=photo||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced(); return;
+        }
+        if(!firebaseReady||!currentUser) return showProfileError('Você precisa estar logado.');
+        if(f){ photo=await uploadAvatarToStorage(f); }
+        else{ const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg); photo=v.value||(lastKnownPhoto||''); }
+        await currentUser.updateProfile({displayName:name,photoURL:photo||''});
+        await fbAuth.currentUser.reload(); currentUser=fbAuth.currentUser;
+        await saveProfileToCloud({name,photo:currentUser.photoURL||''});
+        upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||name,photo:currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
+        lastKnownPhoto=currentUser.photoURL||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced();
+      }catch(err){ showProfileError((err&&err.message)||'Erro ao salvar perfil.'); }
+      finally{ profileSave.textContent=prevText; profileSave.disabled=false; }
     });
 
-    // 2) Força refresh do user em memória (✅ isso resolve “não mudou nada”)
-    await fbAuth.currentUser.reload();
-    currentUser = fbAuth.currentUser;
-
-    // 3) Salva no Firestore (perfil)
-    await saveProfileToCloud({ name, photo: (currentUser.photoURL || '') });
-
-    // 4) Atualiza “contas usadas” (switcher)
-    upsertUsedAccount({
-      key: 'uid:' + currentUser.uid,
-      uid: currentUser.uid,
-      email: currentUser.email || '',
-      name: currentUser.displayName || name,
-      photo: currentUser.photoURL || '',
-      provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
-      lastAt: Date.now()
-    });
-
-    lastKnownPhoto = currentUser.photoURL || '';
-
-    // ✅ atualiza UI + fecha
-    refreshAccountUI();
-    closeProfileEditor();
-    requestCloudSyncDebounced();
-
-  }catch(err){
-    const m = (err && err.message) ? err.message : 'Erro ao salvar perfil.';
-    showProfileError(m);
-  }finally{
-    profileSave.textContent = prevText;
-    profileSave.disabled = false;
-  }
-});
-
-    document.getElementById('editProfileBtn').addEventListener('click', openProfileEditor);
+    document.getElementById('editProfileBtn').addEventListener('click',openProfileEditor);
 
     /* ===== Account Page ===== */
-    const acctNameEl = document.getElementById('acctName');
-    const acctEmailEl = document.getElementById('acctEmail');
-    const acctBadgeEl = document.getElementById('acctBadge');
-    const acctAvatarEl = document.getElementById('acctAvatar');
-    const syncToggle = document.getElementById('syncToggle');
-    const saveNowBtn = document.getElementById('saveNowBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const switchRow = document.getElementById('switchRow');
-    const openSwitcherBtn = document.getElementById('openSwitcherBtn');
-    const switcherBox = document.getElementById('switcherBox');
-    const acctSwitchList = document.getElementById('acctSwitchList');
+    const acctNameEl=document.getElementById('acctName'), acctEmailEl=document.getElementById('acctEmail');
+    const acctBadgeEl=document.getElementById('acctBadge'), acctAvatarEl=document.getElementById('acctAvatar');
+    const syncToggle=document.getElementById('syncToggle'), saveNowBtn=document.getElementById('saveNowBtn'), logoutBtn=document.getElementById('logoutBtn');
+    const switchRow=document.getElementById('switchRow'), openSwitcherBtn=document.getElementById('openSwitcherBtn');
+    const switcherBox=document.getElementById('switcherBox'), acctSwitchList=document.getElementById('acctSwitchList');
 
-    syncToggle.addEventListener('click', async ()=>{
-      const next = !getSyncEnabled();
-      setSyncEnabled(next);
-
-      if(next) await loadFromCloudIfNeeded();
-
-      bootApplyAfterProfileChange();
-      refreshAccountUI();
-    });
-
-    saveNowBtn.addEventListener('click', async ()=>{
-      try{ localStorage.setItem(getEditKey(), isEditMode ? '1' : '0'); }catch(e){}
-      const layout = loadLayout();
-      saveLayout(layout);
-      await saveToCloudNow();
-      alert('Configs salvas ✅');
-    });
-
-    logoutBtn.addEventListener('click', async ()=>{
-      try{ if(firebaseReady && currentUser) await fbAuth.signOut(); }catch(e){}
-      currentUser = null;
-      setActiveProfile('guest');
-      lockApp();
-      openAuth('login');
-      refreshAccountUI();
-    });
-
-    openSwitcherBtn.addEventListener('click', ()=>{
-      const open = switcherBox.style.display !== 'none';
-      switcherBox.style.display = open ? 'none' : '';
-    });
+    syncToggle.addEventListener('click',async()=>{ const next=!getSyncEnabled(); setSyncEnabled(next); if(next) await loadFromCloudIfNeeded(); bootApplyAfterProfileChange(); refreshAccountUI(); });
+    saveNowBtn.addEventListener('click',async()=>{ try{localStorage.setItem(getEditKey(),isEditMode?'1':'0');}catch(e){} saveLayout(loadLayout()); await saveToCloudNow(); alert('Configs salvas ✅'); });
+    logoutBtn.addEventListener('click',async()=>{ try{if(firebaseReady&&currentUser) await fbAuth.signOut();}catch(e){} currentUser=null; setActiveProfile('guest'); lockApp(); openAuth('login'); refreshAccountUI(); });
+    openSwitcherBtn.addEventListener('click',()=>{ switcherBox.style.display=switcherBox.style.display!=='none'?'none':''; });
 
     function setAvatarUI(photo){
-      acctAvatarEl.innerHTML = '';
-      if(photo){
-        const img = document.createElement('img');
-        img.src = photo;
-        img.alt = 'avatar';
-        acctAvatarEl.appendChild(img);
-      }else{
-        const d = document.createElement('div');
-        d.style.fontWeight = '900';
-        d.style.color = 'var(--muted)';
-        d.style.fontSize = '14px';
-        d.textContent = '⌁';
-        acctAvatarEl.appendChild(d);
-      }
+      acctAvatarEl.innerHTML='';
+      if(photo){ const img=document.createElement('img'); img.src=photo; img.alt='avatar'; acctAvatarEl.appendChild(img); }
+      else{ const d=document.createElement('div'); d.style.cssText='font-weight:900;color:var(--muted);font-size:14px'; d.textContent='⌁'; acctAvatarEl.appendChild(d); }
     }
-
     function rebuildAccountSwitcher(){
-      const list = getUsedAccounts()
-        .filter(x => x && x.uid && ('uid:' + x.uid) !== (currentUser ? ('uid:' + currentUser.uid) : ''));
-
-      const shouldShow = list.length > 0;
-      switchRow.style.display = shouldShow ? '' : 'none';
-      if(!shouldShow){
-        switcherBox.style.display = 'none';
-        acctSwitchList.innerHTML = '';
-        return;
-      }
-
-      acctSwitchList.innerHTML = '';
+      const list=getUsedAccounts().filter(x=>x&&x.uid&&('uid:'+x.uid)!==(currentUser?('uid:'+currentUser.uid):''));
+      switchRow.style.display=list.length>0?'':'none';
+      if(!list.length){ switcherBox.style.display='none'; acctSwitchList.innerHTML=''; return; }
+      acctSwitchList.innerHTML='';
       list.forEach(acc=>{
-        const chip = document.createElement('div');
-        chip.className = 'acct-chip';
-
-        const left = document.createElement('div');
-        left.className = 'chip-left';
-
-        const ava = document.createElement('div');
-        ava.className = 'chip-ava';
-        if(acc.photo){
-          const img = document.createElement('img');
-          img.src = acc.photo;
-          ava.appendChild(img);
-        }else{
-          ava.textContent = (acc.name || acc.email || 'U').slice(0,1).toUpperCase();
-        }
-
-        const txt = document.createElement('div');
-        txt.className = 'chip-txt';
-        const b = document.createElement('b');
-        b.textContent = acc.name || 'Conta';
-        const s = document.createElement('span');
-        s.textContent = acc.email || '—';
-        txt.appendChild(b);
-        txt.appendChild(s);
-
-        left.appendChild(ava);
-        left.appendChild(txt);
-
-        const right = document.createElement('div');
-        right.className = 'chip-right';
-        right.textContent = 'Entrar ›';
-
-        chip.appendChild(left);
-        chip.appendChild(right);
-
-        chip.addEventListener('click', async ()=>{
-          closeSidebar();
-          openAuth('login');
-          authEmail.value = acc.email || '';
-          authPass.value = '';
-          switcherBox.style.display = 'none';
-        });
-
+        const chip=document.createElement('div'); chip.className='acct-chip';
+        const left=document.createElement('div'); left.className='chip-left';
+        const ava=document.createElement('div'); ava.className='chip-ava';
+        if(acc.photo){const img=document.createElement('img');img.src=acc.photo;ava.appendChild(img);}else{ava.textContent=(acc.name||acc.email||'U').slice(0,1).toUpperCase();}
+        const txt=document.createElement('div'); txt.className='chip-txt';
+        const b=document.createElement('b'); b.textContent=acc.name||'Conta';
+        const s=document.createElement('span'); s.textContent=acc.email||'—';
+        txt.appendChild(b); txt.appendChild(s); left.appendChild(ava); left.appendChild(txt);
+        const right=document.createElement('div'); right.className='chip-right'; right.textContent='Entrar ›';
+        chip.appendChild(left); chip.appendChild(right);
+        chip.addEventListener('click',async()=>{ closeSidebar(); openAuth('login'); authEmail.value=acc.email||''; authPass.value=''; switcherBox.style.display='none'; });
         acctSwitchList.appendChild(chip);
       });
     }
-
     function refreshAccountUI(){
-      const syncOn = getSyncEnabled();
-      syncToggle.classList.toggle('on', !!syncOn);
-
-      const p = getCurrentProfileView();
-
-      acctNameEl.textContent = p.name || 'Conta';
-      acctEmailEl.textContent = p.email || '—';
-      setAvatarUI(p.photo || '');
-
-      if(activeProfileId === 'guest') acctBadgeEl.textContent = 'Guest';
-      else acctBadgeEl.textContent = syncOn ? 'Sync on' : 'Sync off';
-
-      logoutBtn.style.display = (firebaseReady && currentUser) ? '' : 'none';
-
+      const syncOn=getSyncEnabled(); syncToggle.classList.toggle('on',!!syncOn);
+      const p=getCurrentProfileView();
+      acctNameEl.textContent=p.name||'Conta'; acctEmailEl.textContent=p.email||'—'; setAvatarUI(p.photo||'');
+      acctBadgeEl.textContent=activeProfileId==='guest'?'Guest':(syncOn?'Sync on':'Sync off');
+      logoutBtn.style.display=(firebaseReady&&currentUser)?'':'none';
       rebuildAccountSwitcher();
     }
 
-    /* ===== Cloud Sync (Firestore) ===== */
-    function userDocRef(){
-      if(!firebaseReady || !currentUser) return null;
-      return fbDb.collection('terminalUsers').doc(currentUser.uid);
-    }
-
-    async function saveSettingsToCloud(payload){
-      const ref = userDocRef();
-      if(!ref) return;
-      await ref.set({
-        settings: payload,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-
-    async function loadSettingsFromCloud(){
-      const ref = userDocRef();
-      if(!ref) return null;
-      const snap = await ref.get();
-      if(!snap.exists) return null;
-      return snap.data() || {};
-    }
+    /* ===== Cloud ===== */
+    function userDocRef(){ if(!firebaseReady||!currentUser) return null; return fbDb.collection('terminalUsers').doc(currentUser.uid); }
+    async function saveSettingsToCloud(payload){ const ref=userDocRef(); if(!ref) return; await ref.set({settings:payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }
+    async function loadSettingsFromCloud(){ const ref=userDocRef(); if(!ref) return null; const snap=await ref.get(); return snap.exists?snap.data()||null:null; }
 
     async function loadFromCloudIfNeeded(){
-      if(!getSyncEnabled()) return;
-      if(!firebaseReady || !currentUser) return;
-
+      if(!getSyncEnabled()||!firebaseReady||!currentUser) return;
       try{
-        const data = await loadSettingsFromCloud();
-        if(!data) return;
-
+        const data=await loadSettingsFromCloud(); if(!data) return;
         if(data.profile){
-          const pn = data.profile.name || '';
-          const pp = data.profile.photo || '';
           try{
-            if(pn && (!currentUser.displayName || currentUser.displayName !== pn)){
-              await currentUser.updateProfile({ displayName: pn });
-            }
-            if(pp && (!currentUser.photoURL || currentUser.photoURL !== pp)){
-              await currentUser.updateProfile({ photoURL: pp });
-            }
+            if(data.profile.name&&currentUser.displayName!==data.profile.name) await currentUser.updateProfile({displayName:data.profile.name});
+            if(data.profile.photo&&currentUser.photoURL!==data.profile.photo) await currentUser.updateProfile({photoURL:data.profile.photo});
           }catch(e){}
         }
-
-        const s = data.settings || {};
-        if(s.themeMode != null) localStorage.setItem(getThemeKey(), String(s.themeMode));
-        if(s.editMode != null)  localStorage.setItem(getEditKey(),  s.editMode ? '1' : '0');
-        if(s.layoutJson != null) localStorage.setItem(getLayoutKey(), String(s.layoutJson));
-      }catch(e){
-        console.warn("Load cloud falhou:", e);
-      }
+        const s=data.settings||{};
+        if(s.themeMode!=null) localStorage.setItem(getThemeKey(),String(s.themeMode));
+        if(s.editMode!=null) localStorage.setItem(getEditKey(),s.editMode?'1':'0');
+        if(s.layoutJson!=null) localStorage.setItem(getLayoutKey(),String(s.layoutJson));
+      }catch(e){ console.warn("Load cloud falhou:",e); }
     }
-
     async function saveToCloudNow(){
-      if(!getSyncEnabled()) return;
-      if(!firebaseReady || !currentUser) return;
-
+      if(!getSyncEnabled()||!firebaseReady||!currentUser) return;
       try{
-        const themeMode = localStorage.getItem(getThemeKey()) || 'auto';
-        const editMode = (localStorage.getItem(getEditKey()) || '0') === '1';
-        const layoutJson = localStorage.getItem(getLayoutKey()) || '{}';
-
-        await saveSettingsToCloud({ themeMode, editMode, layoutJson });
-
-        const name = currentUser.displayName || '';
-        const photo = currentUser.photoURL || '';
-        await saveProfileToCloud({ name, photo });
-      }catch(e){
-        console.warn("Save cloud falhou:", e);
-      }
+        await saveSettingsToCloud({themeMode:localStorage.getItem(getThemeKey())||'auto',editMode:(localStorage.getItem(getEditKey())||'0')==='1',layoutJson:localStorage.getItem(getLayoutKey())||'{}'});
+        await saveProfileToCloud({name:currentUser.displayName||'',photo:currentUser.photoURL||''});
+      }catch(e){ console.warn("Save cloud falhou:",e); }
     }
-
-    let cloudSyncTimer = 0;
-    function requestCloudSyncDebounced(){
-      if(!getSyncEnabled()) return;
-      if(!firebaseReady || !currentUser) return;
-      clearTimeout(cloudSyncTimer);
-      cloudSyncTimer = setTimeout(()=>saveToCloudNow(), 700);
-    }
+    let cloudSyncTimer=0;
+    function requestCloudSyncDebounced(){ if(!getSyncEnabled()||!firebaseReady||!currentUser) return; clearTimeout(cloudSyncTimer); cloudSyncTimer=setTimeout(()=>saveToCloudNow(),700); }
 
     function bootApplyAfterProfileChange(){
-      const savedTheme = localStorage.getItem(getThemeKey()) || 'auto';
+      const savedTheme=localStorage.getItem(getThemeKey())||'auto';
       applyTheme(savedTheme);
-      [...themeOptions.querySelectorAll('.theme-opt')].forEach(opt=>{
-        opt.classList.toggle('active', opt.dataset.theme === savedTheme);
-      });
-      syncThemeThumb(savedTheme, true);
-
-      const em = localStorage.getItem(getEditKey());
-      setEditMode(em === '1');
-
-      document.querySelectorAll('.widget').forEach(w=>{
-        const { wU, hU } = widgetUnits(w);
-        setWidgetPixelSize(w, wU, hU);
-      });
-
-      defaultLayoutIfNeeded();
-      applyLayout();
-      normalizeAll();
-
-      updateClockTypography();
-      syncThemeThumb(null, true);
+      [...themeOptions.querySelectorAll('.theme-opt')].forEach(o=>o.classList.toggle('active',o.dataset.theme===savedTheme));
+      syncThemeThumb(savedTheme,true);
+      setEditMode((localStorage.getItem(getEditKey())||'0')==='1');
+      document.querySelectorAll('.widget').forEach(w=>{const {wU,hU}=widgetUnits(w);setWidgetPixelSize(w,wU,hU);});
+      defaultLayoutIfNeeded(); applyLayout(); normalizeAll(); updateClockTypography(); syncThemeThumb(null,true);
     }
 
     function setupAuthListener(){
       if(!firebaseReady) return;
-
-      fbAuth.onAuthStateChanged(async (user)=>{
-        currentUser = user || null;
-
+      fbAuth.onAuthStateChanged(async(user)=>{
+        currentUser=user||null;
         if(currentUser){
-          setActiveProfile('uid:' + currentUser.uid);
-
-          upsertUsedAccount({
-            key: 'uid:' + currentUser.uid,
-            uid: currentUser.uid,
-            email: currentUser.email || '',
-            name: currentUser.displayName || 'Usuário',
-            photo: currentUser.photoURL || '',
-            provider: (currentUser.providerData && currentUser.providerData[0] && currentUser.providerData[0].providerId) || 'password',
-            lastAt: Date.now()
-          });
-
-          lastKnownPhoto = currentUser.photoURL || "";
-
-          await loadFromCloudIfNeeded();
-
-          closeAuth();
-          bootApplyAfterProfileChange();
-          refreshAccountUI();
+          setActiveProfile('uid:'+currentUser.uid);
+          upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||'Usuário',photo:currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
+          lastKnownPhoto=currentUser.photoURL||'';
+          await loadFromCloudIfNeeded(); closeAuth(); bootApplyAfterProfileChange(); refreshAccountUI();
         }else{
-          if(activeProfileId !== 'guest') setActiveProfile('guest');
-          openAuth('login');
-          refreshAccountUI();
+          if(activeProfileId!=='guest') setActiveProfile('guest');
+          openAuth('login'); refreshAccountUI();
         }
       });
+    }
+
+    /* =====================================================
+       FIX RESIZE: ao redimensionar a janela, recalcula
+       tudo com base no novo tamanho real da área.
+       ===================================================== */
+    function handleResize(){
+      syncGridVars();   // atualiza variáveis CSS com novo subStep
+      applyLayout();    // reposiciona widgets com o novo grid
+      normalizeAll();   // garante que nenhum widget fica fora da área
+      updateClockTypography();
+      syncThemeThumb(null,true);
     }
 
     /* ===== Boot ===== */
     function boot(){
       syncGridVars();
-
       loadActiveProfile();
-      if(localStorage.getItem(SYNC_KEY) == null) setSyncEnabled(true);
-      else setSyncEnabled(getSyncEnabled());
-
+      if(localStorage.getItem(SYNC_KEY)==null) setSyncEnabled(true); else setSyncEnabled(getSyncEnabled());
       initFirebase();
       if(firebaseReady) setupAuthListener();
-
-      document.querySelectorAll('.widget').forEach(w=>{
-        const { wU, hU } = widgetUnits(w);
-        setWidgetPixelSize(w, wU, hU);
-      });
-
-      const em = localStorage.getItem(getEditKey());
-      setEditMode(em === '1');
+      document.querySelectorAll('.widget').forEach(w=>{const {wU,hU}=widgetUnits(w);setWidgetPixelSize(w,wU,hU);});
+      setEditMode((localStorage.getItem(getEditKey())||'0')==='1');
       loadTheme();
+      defaultLayoutIfNeeded(); applyLayout(); normalizeAll();
+      updateClockTypography(); syncThemeThumb(null,true);
+      tick(); setInterval(tick,1000);
 
-      defaultLayoutIfNeeded();
-      applyLayout();
-      normalizeAll();
-
-      updateClockTypography();
-      syncThemeThumb(null, true);
-
-      tick();
-      setInterval(tick, 1000);
-
-      window.addEventListener('resize', ()=>{
-        syncGridVars();
-        document.querySelectorAll('.widget').forEach(w=>{
-          const { wU, hU } = widgetUnits(w);
-          setWidgetPixelSize(w, wU, hU);
-        });
-        normalizeAll();
-        updateClockTypography();
-        syncThemeThumb(null, true);
-      });
+      // ✅ FIX: usa handleResize que chama applyLayout (reposiciona widgets)
+      window.addEventListener('resize', handleResize);
 
       refreshAccountUI();
-
-      if(!firebaseReady){
-        openAuth('create');
-      }else{
-        lockApp();
-        openAuth('login');
-      }
+      if(!firebaseReady){ openAuth('create'); }else{ lockApp(); openAuth('login'); }
     }
 
     boot();
