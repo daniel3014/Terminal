@@ -182,68 +182,161 @@
       flex-direction:column;
       gap:calc(8px * var(--ws, 1));
       min-height:0;
+      justify-content:center;
+    }
+
+    /* Help overlay — flutua sobre widgets */
+    .cmd-help-overlay{
+      position:fixed;
+      inset:0;
+      z-index:58;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:max(18px, var(--pad));
+      background:rgba(0,0,0,0.22);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      pointer-events:none;
+    }
+    html[data-theme="light"] .cmd-help-overlay{ background:rgba(0,0,0,0.12); }
+    .cmd-help-overlay.open{
+      display:flex;
+      pointer-events:auto;
     }
     .cmd-help-panel{
+      width:min(760px, calc(100vw - 36px));
+      height:min(78vh, 640px);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border-radius:26px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, var(--glass), var(--glass2));
+      box-shadow:0 28px 88px rgba(0,0,0,0.38);
+      backdrop-filter:blur(18px) saturate(140%);
+      -webkit-backdrop-filter:blur(18px) saturate(140%);
+      pointer-events:auto;
+    }
+    .cmd-help-head{
+      flex:0 0 auto;
+      padding:14px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    html[data-theme="light"] .cmd-help-head{ border-bottom:1px solid rgba(10,20,40,0.08); }
+    .cmd-help-head b{ font-size:14px; letter-spacing:.2px; }
+    .cmd-help-head span{ font-size:12px; color:var(--muted); }
+    .cmd-help-body{
       flex:1 1 auto;
       min-height:0;
-      display:none;
+      display:grid;
+      grid-template-columns:minmax(190px, 240px) 1fr;
+    }
+    @media (max-width:640px){
+      .cmd-help-body{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }
+    }
+    .cmd-help-folders{
+      border-right:1px solid rgba(255,255,255,0.08);
+      padding:10px;
       overflow:auto;
       -webkit-overflow-scrolling:touch;
-      border-radius:calc(16px * var(--ws, 1));
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    html[data-theme="light"] .cmd-help-folders{ border-right:1px solid rgba(10,20,40,0.08); }
+    .cmd-help-folder{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+      text-align:left;
+      transition:background 160ms var(--ease), border-color 160ms var(--ease), transform 160ms var(--ease);
+    }
+    .cmd-help-folder:hover,
+    .cmd-help-folder.active{
+      border-color:rgba(var(--accent),0.28);
+      background:rgba(var(--accent),0.10);
+    }
+    .cmd-help-folder:active{ transform:scale(.995); }
+    .cmd-help-folder-ico{
+      width:34px; height:34px; border-radius:12px;
       border:1px solid var(--stroke2);
-      background:rgba(0,0,0,0.10);
-      padding:calc(10px * var(--ws, 1));
+      background:rgba(255,255,255,0.06);
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex:0 0 auto;
     }
-    html[data-theme="light"] .cmd-help-panel{ background:rgba(255,255,255,0.40); }
-    .cmd-help-panel.open{ display:block; }
-    .cmd-help-head{
-      font-size:calc(11px * var(--ws, 1));
-      font-weight:800;
-      letter-spacing:.2px;
+    html[data-theme="light"] .cmd-help-folder-ico{ background:rgba(255,255,255,0.45); }
+    .cmd-help-folder-txt{ min-width:0; display:flex; flex-direction:column; gap:2px; }
+    .cmd-help-folder-txt b{ font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cmd-help-folder-txt span{ font-size:11px; color:var(--muted); }
+    .cmd-help-list{
+      padding:12px 14px;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      min-height:0;
+    }
+    .cmd-help-list-empty{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
       color:var(--muted);
-      margin-bottom:calc(8px * var(--ws, 1));
-      padding:0 calc(2px * var(--ws, 1));
-    }
-    .cmd-help-group{ margin-bottom:calc(10px * var(--ws, 1)); }
-    .cmd-help-group:last-child{ margin-bottom:0; }
-    .cmd-help-cat{
-      font-size:calc(10.5px * var(--ws, 1));
-      font-weight:800;
-      letter-spacing:.3px;
-      text-transform:uppercase;
-      color:rgba(var(--accent),0.95);
-      margin:0 0 calc(6px * var(--ws, 1));
-      padding:0 calc(2px * var(--ws, 1));
+      font-size:13px;
+      padding:20px;
     }
     .cmd-help-item{
-      padding:calc(7px * var(--ws, 1)) calc(8px * var(--ws, 1));
-      border-radius:calc(12px * var(--ws, 1));
+      width:100%;
+      text-align:left;
+      padding:12px 12px;
+      border-radius:16px;
       border:1px solid transparent;
-      margin-bottom:calc(4px * var(--ws, 1));
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+      margin-bottom:6px;
+      transition:background 160ms var(--ease), border-color 160ms var(--ease), transform 160ms var(--ease);
     }
     .cmd-help-item:hover{
-      border-color:rgba(255,255,255,0.10);
-      background:rgba(255,255,255,0.04);
+      border-color:rgba(var(--accent),0.24);
+      background:rgba(var(--accent),0.08);
     }
-    html[data-theme="light"] .cmd-help-item:hover{
-      border-color:rgba(10,20,40,0.08);
-      background:rgba(255,255,255,0.45);
-    }
+    .cmd-help-item:active{ transform:scale(.995); }
     .cmd-help-names{
       display:flex;
       flex-wrap:wrap;
-      gap:calc(5px * var(--ws, 1));
-      margin-bottom:calc(3px * var(--ws, 1));
+      align-items:center;
+      gap:6px;
+      margin-bottom:4px;
     }
     .cmd-help-id{
-      font-size:calc(12px * var(--ws, 1));
+      font-size:13px;
       font-weight:800;
       letter-spacing:.1px;
     }
+    .cmd-help-run{
+      font-size:11px;
+      color:rgba(var(--accent),0.95);
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(var(--accent),0.22);
+      background:rgba(var(--accent),0.08);
+    }
     .cmd-help-alias{
-      font-size:calc(10.5px * var(--ws, 1));
+      font-size:10.5px;
       color:var(--muted);
-      padding:calc(2px * var(--ws, 1)) calc(7px * var(--ws, 1));
+      padding:2px 7px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,0.10);
       background:rgba(0,0,0,0.06);
@@ -253,10 +346,9 @@
       background:rgba(255,255,255,0.35);
     }
     .cmd-help-desc{
-      font-size:calc(11px * var(--ws, 1));
+      font-size:12px;
       color:var(--muted);
-      line-height:1.35;
-      padding-left:calc(2px * var(--ws, 1));
+      line-height:1.4;
     }
     .cmd{
       flex:1 1 60px;
@@ -853,7 +945,6 @@
       <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; flex-direction:column; min-height:0;">
           <div class="chat-stack">
-            <div class="cmd-help-panel" id="cmdHelpPanel" aria-hidden="true"></div>
             <div class="chat-row">
               <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder="Comando (ex.: help, theme dark, nav account)…" aria-describedby="cmdHint"/>
               <div class="hint" id="cmdHint" role="status" aria-live="polite">Enter ↵</div>
@@ -1030,6 +1121,22 @@
     </div>
   </div>
 
+  <div class="cmd-help-overlay" id="cmdHelpOverlay" aria-hidden="true">
+    <div class="cmd-help-panel" id="cmdHelpPanel" role="dialog" aria-modal="true" aria-label="Ajuda de comandos">
+      <div class="cmd-help-head">
+        <div>
+          <b id="cmdHelpTitle">Comandos</b>
+          <span id="cmdHelpSub">Passe o rato nas pastas • clique num comando para executar</span>
+        </div>
+        <span id="cmdHelpCount" style="font-size:12px; color:var(--muted);"></span>
+      </div>
+      <div class="cmd-help-body">
+        <div class="cmd-help-folders" id="cmdHelpFolders"></div>
+        <div class="cmd-help-list" id="cmdHelpList"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="mini-overlay" id="profileOverlay" aria-hidden="true">
     <div class="mini-modal" role="dialog" aria-modal="true" aria-label="Editar perfil">
       <div class="mini-head"><b>Editar perfil</b><div class="mini-close" id="profileClose" title="Fechar">✕</div></div>
@@ -1109,18 +1216,24 @@
     const ghost = document.getElementById('ghost');
     const cmd   = document.getElementById('cmd');
     const cmdHint = document.getElementById('cmdHint');
+    const cmdHelpOverlay = document.getElementById('cmdHelpOverlay');
     const cmdHelpPanel = document.getElementById('cmdHelpPanel');
+    const cmdHelpFolders = document.getElementById('cmdHelpFolders');
+    const cmdHelpList = document.getElementById('cmdHelpList');
+    const cmdHelpCount = document.getElementById('cmdHelpCount');
     const CMD_HINT_DEFAULT = 'Enter ↵';
     const HELP_VERBS = new Set(['help', 'ajuda', '?']);
     const CMD_CATEGORY_META = {
-      sistema: { label: 'Sistema', order: 1 },
-      aparencia: { label: 'Aparência', order: 2 },
-      navegacao: { label: 'Navegação', order: 3 },
-      layout: { label: 'Layout', order: 4 },
-      conta: { label: 'Conta & sincronização', order: 5 },
-      menu: { label: 'Menu lateral', order: 6 },
-      outros: { label: 'Outros', order: 99 },
+      sistema: { label: 'Sistema', icon: '⌁', order: 1 },
+      aparencia: { label: 'Aparência', icon: '✨', order: 2 },
+      navegacao: { label: 'Navegação', icon: '🧭', order: 3 },
+      layout: { label: 'Layout', icon: '🧩', order: 4 },
+      conta: { label: 'Conta & sync', icon: '👤', order: 5 },
+      menu: { label: 'Menu lateral', icon: '📂', order: 6 },
+      outros: { label: 'Outros', icon: '📁', order: 99 },
     };
+    let helpGroups = new Map();
+    let activeHelpCategory = '';
 
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1243,7 +1356,7 @@
     /* ===== Storage / Profiles ===== */
     const SYNC_KEY='terminal.account.sync.v2', ACCOUNTS_USED_KEY='terminal.accounts.used.v1';
     const ACTIVE_PROFILE_KEY='terminal.profile.active.v1', GUEST_PROFILE_KEY='terminal.profile.guest.v1';
-    let activeProfileId='guest', currentUser=null;
+    let activeProfileId='guest', currentUser=null, profilePhotoOverride='';
 
     function lockApp(){ document.body.classList.add('auth-locked'); }
     function unlockApp(){ document.body.classList.remove('auth-locked'); }
@@ -1530,9 +1643,7 @@
       const act=e.target.closest('[data-action]');
       if(act){
         e.preventDefault();
-        resetCmdFeedback();
-        const res = await TerminalCommandBus.dispatch('ui:'+act.dataset.action, buildCommandContext());
-        showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
+        await executeCommandLine(act.dataset.action);
         return;
       }
       const el=e.target.closest('[data-nav]'); if(el) navTo(el.dataset.nav);
@@ -1562,7 +1673,7 @@
     window.addEventListener('keydown',(e)=>{ if(e.key==='Escape'&&authOverlay.classList.contains('open')){e.preventDefault();e.stopPropagation();} },true);
 
     function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
-    async function loginAsGuest(){ currentUser=null; setActiveProfile('guest'); closeAuth(); await loadFromCloudIfNeeded(); bootApplyAfterProfileChange(); refreshAccountUI(); }
+    async function loginAsGuest(){ currentUser=null; profilePhotoOverride=loadGuestProfile().photo||''; setActiveProfile('guest'); closeAuth(); await loadFromCloudIfNeeded(); bootApplyAfterProfileChange(); refreshAccountUI(); }
     async function loginWithEmailPassword(email,pass,mode){
       if(!firebaseReady) return showAuthError('Firebase não configurado.');
       if(!validEmail(email)) return showAuthError('Digite um email válido.');
@@ -1599,7 +1710,7 @@
     }
     function getCurrentProfileView(){
       if(activeProfileId==='guest'){ const g=loadGuestProfile(); return {name:g.name||'Convidado',email:'Sessão local',photo:g.photo||'',badge:'Guest'}; }
-      if(currentUser) return {name:currentUser.displayName||'Usuário',email:currentUser.email||'—',photo:currentUser.photoURL||'',badge:'Sync'};
+      if(currentUser) return {name:currentUser.displayName||'Usuário',email:currentUser.email||'—',photo:profilePhotoOverride||currentUser.photoURL||'',badge:'Sync'};
       return {name:'Conta',email:'—',photo:'',badge:'—'};
     }
     function openProfileEditor(){
@@ -1619,6 +1730,45 @@
     profilePhotoFile.addEventListener('change',async()=>{ const f=profilePhotoFile.files&&profilePhotoFile.files[0]; if(!f) return; try{setProfileAvatarPreview(URL.createObjectURL(f));}catch(_){} });
 
     function isProbablyDataUrl(s){ return /^data:/i.test(String(s||'').trim()); }
+    function withTimeout(promise, ms, message){
+      return Promise.race([
+        promise,
+        new Promise((_, rej)=>setTimeout(()=>rej(new Error(message || 'Operação expirou.')), ms)),
+      ]);
+    }
+    async function compressImageFile(file, maxDim=512, quality=0.82){
+      if(!(file && (file.type||'').startsWith('image/'))) throw new Error('Arquivo inválido. Use uma imagem.');
+      const url = URL.createObjectURL(file);
+      try{
+        const img = await new Promise((res, rej)=>{
+          const i = new Image();
+          i.onload = ()=>res(i);
+          i.onerror = ()=>rej(new Error('Não foi possível ler a imagem.'));
+          i.src = url;
+        });
+        const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
+        const w = Math.max(1, Math.round((img.naturalWidth || 1) * scale));
+        const h = Math.max(1, Math.round((img.naturalHeight || 1) * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if(!ctx) throw new Error('Canvas não suportado neste browser.');
+        ctx.drawImage(img, 0, 0, w, h);
+        const blob = await new Promise((res, rej)=>canvas.toBlob(b=>b ? res(b) : rej(new Error('Falha ao comprimir imagem.')), 'image/jpeg', quality));
+        return new File([blob], String(file.name||'avatar').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
+      }finally{
+        URL.revokeObjectURL(url);
+      }
+    }
+    async function readFileAsDataUrl(file){
+      const compressed = await compressImageFile(file);
+      return new Promise((res, rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(String(r.result || ''));
+        r.onerror = ()=>rej(new Error('Falha ao ler a imagem.'));
+        r.readAsDataURL(compressed);
+      });
+    }
     function validatePhotoUrl(url){
       const u=String(url||'').trim(); if(!u) return {ok:true,value:''};
       if(isProbablyDataUrl(u)) return {ok:false,msg:'Data URL é muito longa. Use arquivo (upload) ou uma URL https.'};
@@ -1629,11 +1779,13 @@
     }
     async function uploadAvatarToStorage(file){
       if(!firebaseReady||!currentUser||!fbStorage) throw new Error('Storage não disponível.');
-      if(file.size>6*1024*1024) throw new Error('Arquivo muito grande (máx 6MB).');
-      const path=`avatars/${currentUser.uid}/${Date.now()}_${(file.name||'avatar').replace(/[^\w.\-]+/g,'_').slice(0,60)}`;
+      const compressed = file.size ? file : await compressImageFile(file);
+      if(compressed.size>6*1024*1024) throw new Error('Arquivo muito grande (máx 6MB).');
+      const path=`avatars/${currentUser.uid}/${Date.now()}_${(compressed.name||'avatar').replace(/[^\w.\-]+/g,'_').slice(0,60)}`;
       const ref=fbStorage.ref().child(path);
-      await ref.put(file,{contentType:file.type||'image/jpeg',cacheControl:'public,max-age=31536000'});
-      return ref.getDownloadURL();
+      const task = ref.put(compressed,{contentType:compressed.type||'image/jpeg',cacheControl:'public,max-age=31536000'});
+      await withTimeout(task, 30000, 'Upload da foto expirou. Verifique Firebase Storage.');
+      return withTimeout(ref.getDownloadURL(), 10000, 'Não foi possível obter URL da foto.');
     }
     async function saveProfileToCloud({name,photo}){
       const ref=userDocRef(); if(!ref) return;
@@ -1646,18 +1798,33 @@
         const name=String(profileName.value||'').trim(); if(!name) return showProfileError('Digite um nome.');
         const f=profilePhotoFile.files&&profilePhotoFile.files[0]; let photo='';
         if(activeProfileId==='guest'){
-          if(f){ photo=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||''));r.onerror=rej;r.readAsDataURL(f);}); }
+          if(f){ photo=await readFileAsDataUrl(f); }
           else{ const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg); photo=v.value||''; }
+          if(photo.length>900000) return showProfileError('Foto muito grande. Escolha outra imagem.');
           saveGuestProfile({name,photo}); lastKnownPhoto=photo||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced(); return;
         }
         if(!firebaseReady||!currentUser) return showProfileError('Você precisa estar logado.');
-        if(f){ photo=await uploadAvatarToStorage(f); }
-        else{ const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg); photo=v.value||(lastKnownPhoto||''); }
-        await currentUser.updateProfile({displayName:name,photoURL:photo||''});
-        await fbAuth.currentUser.reload(); currentUser=fbAuth.currentUser;
-        await saveProfileToCloud({name,photo:currentUser.photoURL||''});
-        upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||name,photo:currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
-        lastKnownPhoto=currentUser.photoURL||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced();
+        if(f){
+          try{
+            const compressed = await compressImageFile(f);
+            photo = await uploadAvatarToStorage(compressed);
+          }catch(uploadErr){
+            console.warn('Upload Storage falhou, usando foto local:', uploadErr);
+            photo = await readFileAsDataUrl(f);
+            if(photo.length>750000) throw new Error('Foto muito grande após compressão.');
+          }
+        }else{
+          const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg);
+          photo=v.value||(lastKnownPhoto||'');
+        }
+        const authPhotoUrl = photo && !isProbablyDataUrl(photo) ? photo : '';
+        await withTimeout(currentUser.updateProfile({displayName:name,photoURL:authPhotoUrl||currentUser.photoURL||''}), 15000, 'Atualização do perfil expirou.');
+        profilePhotoOverride = photo || '';
+        await withTimeout(fbAuth.currentUser.reload(), 10000, 'Recarregar sessão expirou.');
+        currentUser=fbAuth.currentUser;
+        await saveProfileToCloud({name,photo:profilePhotoOverride||currentUser.photoURL||''});
+        upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||name,photo:profilePhotoOverride||currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
+        lastKnownPhoto=profilePhotoOverride||currentUser.photoURL||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced();
       }catch(err){ showProfileError((err&&err.message)||'Erro ao salvar perfil.'); }
       finally{ profileSave.textContent=prevText; profileSave.disabled=false; }
     });
@@ -1673,7 +1840,7 @@
 
     syncToggle.addEventListener('click',async()=>{ const next=!getSyncEnabled(); setSyncEnabled(next); if(next) await loadFromCloudIfNeeded(); bootApplyAfterProfileChange(); refreshAccountUI(); });
     saveNowBtn.addEventListener('click',async()=>{ try{localStorage.setItem(getEditKey(),isEditMode?'1':'0');}catch(e){} saveLayout(loadLayout()); await saveToCloudNow(); alert('Configs salvas ✅'); });
-    logoutBtn.addEventListener('click',async()=>{ try{if(firebaseReady&&currentUser) await fbAuth.signOut();}catch(e){} currentUser=null; setActiveProfile('guest'); lockApp(); openAuth('login'); refreshAccountUI(); });
+    logoutBtn.addEventListener('click',async()=>{ try{if(firebaseReady&&currentUser) await fbAuth.signOut();}catch(e){} currentUser=null; profilePhotoOverride=''; setActiveProfile('guest'); lockApp(); openAuth('login'); refreshAccountUI(); });
     openSwitcherBtn.addEventListener('click',()=>{ switcherBox.style.display=switcherBox.style.display!=='none'?'none':''; });
 
     function setAvatarUI(photo){
@@ -1720,9 +1887,10 @@
       try{
         const data=await loadSettingsFromCloud(); if(!data) return;
         if(data.profile){
+          profilePhotoOverride = data.profile.photo || profilePhotoOverride || '';
           try{
             if(data.profile.name&&currentUser.displayName!==data.profile.name) await currentUser.updateProfile({displayName:data.profile.name});
-            if(data.profile.photo&&currentUser.photoURL!==data.profile.photo) await currentUser.updateProfile({photoURL:data.profile.photo});
+            if(data.profile.photo&& !isProbablyDataUrl(data.profile.photo) && currentUser.photoURL!==data.profile.photo) await currentUser.updateProfile({photoURL:data.profile.photo});
           }catch(e){}
         }
         const s=data.settings||{};
@@ -1735,7 +1903,7 @@
       if(!getSyncEnabled()||!firebaseReady||!currentUser) return;
       try{
         await saveSettingsToCloud({themeMode:localStorage.getItem(getThemeKey())||'auto',editMode:(localStorage.getItem(getEditKey())||'0')==='1',layoutJson:localStorage.getItem(getLayoutKey())||'{}'});
-        await saveProfileToCloud({name:currentUser.displayName||'',photo:currentUser.photoURL||''});
+        await saveProfileToCloud({name:currentUser.displayName||'',photo:profilePhotoOverride||currentUser.photoURL||''});
       }catch(e){ console.warn("Save cloud falhou:",e); }
     }
     let cloudSyncTimer=0;
@@ -1758,80 +1926,136 @@
       return 'outros';
     }
 
+    function getCommandRunText(cmd){
+      if(cmd.runAs) return cmd.runAs;
+      if(String(cmd.id).startsWith('ui:')) return cmd.aliases && cmd.aliases[0] ? cmd.aliases[0] : cmd.id.split(':')[1];
+      if(cmd.id === 'theme') return 'theme auto';
+      if(cmd.id === 'menu') return 'menu toggle';
+      if(cmd.id === 'edit') return 'edit toggle';
+      if(cmd.id === 'nav') return 'nav home';
+      return cmd.id;
+    }
+
+    function renderHelpCommandList(cat){
+      if(!cmdHelpList) return;
+      const items = (helpGroups.get(cat) || []).slice().sort((a, b)=>a.id.localeCompare(b.id, 'pt'));
+      cmdHelpList.replaceChildren();
+      if(!items.length){
+        const empty = document.createElement('div');
+        empty.className = 'cmd-help-list-empty';
+        empty.textContent = 'Passe o rato numa pasta para ver os comandos.';
+        cmdHelpList.appendChild(empty);
+        return;
+      }
+      items.forEach((cmd)=>{
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'cmd-help-item';
+        row.title = 'Executar: ' + getCommandRunText(cmd);
+
+        const names = document.createElement('div');
+        names.className = 'cmd-help-names';
+        const idEl = document.createElement('span');
+        idEl.className = 'cmd-help-id';
+        idEl.textContent = cmd.id;
+        names.appendChild(idEl);
+        const runTag = document.createElement('span');
+        runTag.className = 'cmd-help-run';
+        runTag.textContent = '▶ ' + getCommandRunText(cmd);
+        names.appendChild(runTag);
+        (cmd.aliases || []).forEach((alias)=>{
+          const tag = document.createElement('span');
+          tag.className = 'cmd-help-alias';
+          tag.textContent = alias;
+          names.appendChild(tag);
+        });
+        row.appendChild(names);
+
+        if(cmd.description){
+          const desc = document.createElement('div');
+          desc.className = 'cmd-help-desc';
+          desc.textContent = cmd.description;
+          row.appendChild(desc);
+        }
+
+        row.addEventListener('click', (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          executeCommandLine(getCommandRunText(cmd));
+        });
+        cmdHelpList.appendChild(row);
+      });
+    }
+
+    function setActiveHelpCategory(cat){
+      activeHelpCategory = cat || '';
+      if(!cmdHelpFolders) return;
+      cmdHelpFolders.querySelectorAll('.cmd-help-folder').forEach((btn)=>{
+        btn.classList.toggle('active', btn.dataset.cat === activeHelpCategory);
+      });
+      renderHelpCommandList(activeHelpCategory);
+    }
+
     function buildHelpPanel(){
-      if(!cmdHelpPanel || !globalThis.TerminalCommandBus) return;
+      if(!cmdHelpFolders || !globalThis.TerminalCommandBus) return;
       const manifest = TerminalCommandBus.getManifest();
-      const groups = new Map();
+      helpGroups = new Map();
       manifest.forEach((cmd)=>{
         const cat = cmd.category || inferCmdCategory(cmd.id);
-        if(!groups.has(cat)) groups.set(cat, []);
-        groups.get(cat).push(cmd);
+        if(!helpGroups.has(cat)) helpGroups.set(cat, []);
+        helpGroups.get(cat).push(cmd);
       });
-      const sortedCats = [...groups.keys()].sort((a, b)=>{
+      const sortedCats = [...helpGroups.keys()].sort((a, b)=>{
         return (CMD_CATEGORY_META[a]?.order || 99) - (CMD_CATEGORY_META[b]?.order || 99);
       });
 
-      cmdHelpPanel.replaceChildren();
-      const head = document.createElement('div');
-      head.className = 'cmd-help-head';
-      head.textContent = manifest.length + ' comandos — digite outro comando para fechar';
-      cmdHelpPanel.appendChild(head);
+      if(cmdHelpCount) cmdHelpCount.textContent = manifest.length + ' comandos';
+      cmdHelpFolders.replaceChildren();
 
       sortedCats.forEach((cat)=>{
-        const items = groups.get(cat) || [];
-        if(!items.length) return;
-        items.sort((a, b)=>a.id.localeCompare(b.id, 'pt'));
+        const items = helpGroups.get(cat) || [];
+        const meta = CMD_CATEGORY_META[cat] || { label: cat, icon: '📁' };
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cmd-help-folder';
+        btn.dataset.cat = cat;
 
-        const group = document.createElement('section');
-        group.className = 'cmd-help-group';
-        const title = document.createElement('h3');
-        title.className = 'cmd-help-cat';
-        title.textContent = CMD_CATEGORY_META[cat]?.label || cat;
-        group.appendChild(title);
+        const ico = document.createElement('span');
+        ico.className = 'cmd-help-folder-ico';
+        ico.textContent = meta.icon || '📁';
+        btn.appendChild(ico);
 
-        items.forEach((cmd)=>{
-          const row = document.createElement('div');
-          row.className = 'cmd-help-item';
+        const txt = document.createElement('span');
+        txt.className = 'cmd-help-folder-txt';
+        const title = document.createElement('b');
+        title.textContent = meta.label || cat;
+        const sub = document.createElement('span');
+        sub.textContent = items.length + ' comando' + (items.length === 1 ? '' : 's');
+        txt.appendChild(title);
+        txt.appendChild(sub);
+        btn.appendChild(txt);
 
-          const names = document.createElement('div');
-          names.className = 'cmd-help-names';
-          const idEl = document.createElement('span');
-          idEl.className = 'cmd-help-id';
-          idEl.textContent = cmd.id;
-          names.appendChild(idEl);
-          (cmd.aliases || []).forEach((alias)=>{
-            const tag = document.createElement('span');
-            tag.className = 'cmd-help-alias';
-            tag.textContent = alias;
-            names.appendChild(tag);
-          });
-          row.appendChild(names);
-
-          if(cmd.description){
-            const desc = document.createElement('div');
-            desc.className = 'cmd-help-desc';
-            desc.textContent = cmd.description;
-            row.appendChild(desc);
-          }
-
-          group.appendChild(row);
-        });
-
-        cmdHelpPanel.appendChild(group);
+        btn.addEventListener('mouseenter', ()=>setActiveHelpCategory(cat));
+        btn.addEventListener('focus', ()=>setActiveHelpCategory(cat));
+        btn.addEventListener('click', ()=>setActiveHelpCategory(cat));
+        cmdHelpFolders.appendChild(btn);
       });
+
+      setActiveHelpCategory(sortedCats[0] || '');
     }
 
     function showHelpPanel(){
-      if(!cmdHelpPanel) return;
+      if(!cmdHelpOverlay) return;
       buildHelpPanel();
-      cmdHelpPanel.classList.add('open');
-      cmdHelpPanel.setAttribute('aria-hidden', 'false');
+      cmdHelpOverlay.classList.add('open');
+      cmdHelpOverlay.setAttribute('aria-hidden', 'false');
     }
 
     function hideHelpPanel(){
-      if(!cmdHelpPanel) return;
-      cmdHelpPanel.classList.remove('open');
-      cmdHelpPanel.setAttribute('aria-hidden', 'true');
+      if(!cmdHelpOverlay) return;
+      cmdHelpOverlay.classList.remove('open');
+      cmdHelpOverlay.setAttribute('aria-hidden', 'true');
+      activeHelpCategory = '';
     }
 
     function resetCmdFeedback(){
@@ -1844,6 +2068,29 @@
       cmdHint.textContent = text || CMD_HINT_DEFAULT;
     }
 
+    async function executeCommandLine(line, opts={}){
+      if(!globalThis.TerminalCommandBus) return null;
+      const text = String(line || '').trim();
+      if(!text) return null;
+      const keepHelp = opts.keepHelp === true;
+      if(!keepHelp) resetCmdFeedback();
+      cmd.value = text;
+      const parsed = TerminalCommandBus.parseInput(text);
+      const isHelp = HELP_VERBS.has(parsed.verb);
+      const res = await TerminalCommandBus.dispatch(text, buildCommandContext());
+      if(isHelp && res.ok !== false){
+        showHelpPanel();
+        if(cmdHint){
+          const total = TerminalCommandBus.getManifest().length;
+          cmdHint.textContent = total + ' comandos — clique para executar';
+        }
+      }else{
+        showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
+      }
+      cmd.value = '';
+      return res;
+    }
+
     function registerTerminalCommands(){
       if(!globalThis.TerminalCommandBus) return;
 
@@ -1851,7 +2098,8 @@
         id: 'help',
         aliases: ['ajuda', '?'],
         category: 'sistema',
-        description: 'Lista todos os comandos disponíveis, organizados por categoria',
+        runAs: 'help',
+        description: 'Abre o painel com todos os comandos por categoria',
         handler: async ()=>{
           console.info('[Terminal] Comandos disponíveis:', TerminalCommandBus.getManifest());
           return { ok: true, code: 'help', message: '' };
@@ -1862,6 +2110,7 @@
         id: 'theme',
         aliases: ['tema'],
         category: 'aparencia',
+        runAs: 'theme auto',
         description: 'theme light | dark | auto',
         handler: async (ctx, p)=>{
           const mode = String(p.args[0] || '').toLowerCase();
@@ -1875,6 +2124,7 @@
         id: 'menu',
         aliases: ['sidebar'],
         category: 'navegacao',
+        runAs: 'menu toggle',
         description: 'menu open | close | toggle',
         handler: async (ctx, p)=>{
           const sub = String(p.args[0] || 'open').toLowerCase();
@@ -1889,6 +2139,7 @@
         id: 'close',
         aliases: ['fechar'],
         category: 'navegacao',
+        runAs: 'close',
         description: 'Fecha o menu lateral',
         handler: async (ctx)=>{ ctx.closeSidebar(); return { message: 'Menu fechado.' }; },
       });
@@ -1897,6 +2148,7 @@
         id: 'edit',
         aliases: ['editar'],
         category: 'layout',
+        runAs: 'edit toggle',
         description: 'edit on | off | toggle — modo reorganizar widgets',
         handler: async (ctx, p)=>{
           const sub = String(p.args[0] || 'toggle').toLowerCase();
@@ -1911,6 +2163,7 @@
         id: 'nav',
         aliases: ['ir'],
         category: 'navegacao',
+        runAs: 'nav account',
         description: 'nav home | configs | account | personalize | automation | devices',
         handler: async (ctx, p)=>{
           const id = String(p.args[0] || '').toLowerCase();
@@ -1926,6 +2179,7 @@
         id: 'save',
         aliases: ['sync', 'guardar'],
         category: 'conta',
+        runAs: 'save',
         description: 'Guarda configurações na nuvem (conta com sync)',
         handler: async (ctx)=>{
           if(!ctx.firebaseReady || !ctx.currentUser) return { ok: false, message: 'Inicie sessão para sincronizar.' };
@@ -1951,6 +2205,7 @@
           id: 'ui:' + id,
           aliases: [id],
           category: 'menu',
+          runAs: id,
           description: label + ' (em breve)',
           handler: async ()=>({ ok: false, code: 'stub', message: label + ' — em breve.' }),
         });
@@ -1961,38 +2216,16 @@
         e.preventDefault();
         const line = String(cmd.value || '').trim();
         if(!line) return;
-        resetCmdFeedback();
-        const parsed = TerminalCommandBus.parseInput(line);
-        const isHelp = HELP_VERBS.has(parsed.verb);
-        const res = await TerminalCommandBus.dispatch(line, buildCommandContext());
-        if(isHelp && res.ok !== false){
-          showHelpPanel();
-          if(cmdHint){
-            const total = TerminalCommandBus.getManifest().length;
-            cmdHint.textContent = total + ' comandos — digite outro para fechar';
-          }
-        }else{
-          showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
-        }
-        cmd.value = '';
+        await executeCommandLine(line);
       });
 
-      window.terminalDispatch = async (text)=>{
-        resetCmdFeedback();
-        const parsed = TerminalCommandBus.parseInput(text);
-        const isHelp = HELP_VERBS.has(parsed.verb);
-        const res = await TerminalCommandBus.dispatch(text, buildCommandContext());
-        if(isHelp && res.ok !== false){
-          showHelpPanel();
-          if(cmdHint){
-            const total = TerminalCommandBus.getManifest().length;
-            cmdHint.textContent = total + ' comandos — digite outro para fechar';
-          }
-        }else if(res.message){
-          showCmdFeedback(res.message);
-        }
-        return res;
-      };
+      if(cmdHelpOverlay){
+        cmdHelpOverlay.addEventListener('pointerdown', (e)=>{
+          if(e.target === cmdHelpOverlay) return;
+        });
+      }
+
+      window.terminalDispatch = (text)=>executeCommandLine(text);
       window.terminalGetCommandManifest = ()=>TerminalCommandBus.getManifest();
     }
 
@@ -2012,11 +2245,12 @@
         currentUser=user||null;
         if(currentUser){
           setActiveProfile('uid:'+currentUser.uid);
-          upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||'Usuário',photo:currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
-          lastKnownPhoto=currentUser.photoURL||'';
+          profilePhotoOverride=currentUser.photoURL||'';
+          upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||'Usuário',photo:profilePhotoOverride||currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
+          lastKnownPhoto=profilePhotoOverride||currentUser.photoURL||'';
           await loadFromCloudIfNeeded(); closeAuth(); bootApplyAfterProfileChange(); refreshAccountUI();
         }else{
-          if(activeProfileId!=='guest') setActiveProfile('guest');
+          if(activeProfileId!=='guest'){ setActiveProfile('guest'); profilePhotoOverride=loadGuestProfile().photo||''; }
           openAuth('login'); refreshAccountUI();
         }
       });
