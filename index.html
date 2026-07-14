@@ -173,6 +173,90 @@
       align-items:center;
       gap:calc(10px * var(--ws, 1));
       flex-wrap:wrap;
+      flex:0 0 auto;
+    }
+    .chat-stack{
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:calc(8px * var(--ws, 1));
+      min-height:0;
+    }
+    .cmd-help-panel{
+      flex:1 1 auto;
+      min-height:0;
+      display:none;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      border-radius:calc(16px * var(--ws, 1));
+      border:1px solid var(--stroke2);
+      background:rgba(0,0,0,0.10);
+      padding:calc(10px * var(--ws, 1));
+    }
+    html[data-theme="light"] .cmd-help-panel{ background:rgba(255,255,255,0.40); }
+    .cmd-help-panel.open{ display:block; }
+    .cmd-help-head{
+      font-size:calc(11px * var(--ws, 1));
+      font-weight:800;
+      letter-spacing:.2px;
+      color:var(--muted);
+      margin-bottom:calc(8px * var(--ws, 1));
+      padding:0 calc(2px * var(--ws, 1));
+    }
+    .cmd-help-group{ margin-bottom:calc(10px * var(--ws, 1)); }
+    .cmd-help-group:last-child{ margin-bottom:0; }
+    .cmd-help-cat{
+      font-size:calc(10.5px * var(--ws, 1));
+      font-weight:800;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      color:rgba(var(--accent),0.95);
+      margin:0 0 calc(6px * var(--ws, 1));
+      padding:0 calc(2px * var(--ws, 1));
+    }
+    .cmd-help-item{
+      padding:calc(7px * var(--ws, 1)) calc(8px * var(--ws, 1));
+      border-radius:calc(12px * var(--ws, 1));
+      border:1px solid transparent;
+      margin-bottom:calc(4px * var(--ws, 1));
+    }
+    .cmd-help-item:hover{
+      border-color:rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+    }
+    html[data-theme="light"] .cmd-help-item:hover{
+      border-color:rgba(10,20,40,0.08);
+      background:rgba(255,255,255,0.45);
+    }
+    .cmd-help-names{
+      display:flex;
+      flex-wrap:wrap;
+      gap:calc(5px * var(--ws, 1));
+      margin-bottom:calc(3px * var(--ws, 1));
+    }
+    .cmd-help-id{
+      font-size:calc(12px * var(--ws, 1));
+      font-weight:800;
+      letter-spacing:.1px;
+    }
+    .cmd-help-alias{
+      font-size:calc(10.5px * var(--ws, 1));
+      color:var(--muted);
+      padding:calc(2px * var(--ws, 1)) calc(7px * var(--ws, 1));
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.06);
+    }
+    html[data-theme="light"] .cmd-help-alias{
+      border:1px solid rgba(10,20,40,0.10);
+      background:rgba(255,255,255,0.35);
+    }
+    .cmd-help-desc{
+      font-size:calc(11px * var(--ws, 1));
+      color:var(--muted);
+      line-height:1.35;
+      padding-left:calc(2px * var(--ws, 1));
     }
     .cmd{
       flex:1 1 60px;
@@ -767,10 +851,13 @@
       </div>
 
       <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
-        <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
-          <div class="chat-row">
-            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder="Comando (ex.: help, theme dark, nav account)…" aria-describedby="cmdHint"/>
-            <div class="hint" id="cmdHint" role="status" aria-live="polite">Enter ↵</div>
+        <div class="pad" style="width:100%; height:100%; display:flex; flex-direction:column; min-height:0;">
+          <div class="chat-stack">
+            <div class="cmd-help-panel" id="cmdHelpPanel" aria-hidden="true"></div>
+            <div class="chat-row">
+              <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder="Comando (ex.: help, theme dark, nav account)…" aria-describedby="cmdHint"/>
+              <div class="hint" id="cmdHint" role="status" aria-live="polite">Enter ↵</div>
+            </div>
           </div>
         </div>
         <div class="resize-handle" data-handle="resize"></div>
@@ -1022,8 +1109,18 @@
     const ghost = document.getElementById('ghost');
     const cmd   = document.getElementById('cmd');
     const cmdHint = document.getElementById('cmdHint');
+    const cmdHelpPanel = document.getElementById('cmdHelpPanel');
     const CMD_HINT_DEFAULT = 'Enter ↵';
-    let cmdHintTimer = 0;
+    const HELP_VERBS = new Set(['help', 'ajuda', '?']);
+    const CMD_CATEGORY_META = {
+      sistema: { label: 'Sistema', order: 1 },
+      aparencia: { label: 'Aparência', order: 2 },
+      navegacao: { label: 'Navegação', order: 3 },
+      layout: { label: 'Layout', order: 4 },
+      conta: { label: 'Conta & sincronização', order: 5 },
+      menu: { label: 'Menu lateral', order: 6 },
+      outros: { label: 'Outros', order: 99 },
+    };
 
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1429,9 +1526,15 @@
     sidebarClose.addEventListener('click',closeSidebar);
     sidebarBack.addEventListener('click',navBack);
     sidebarOverlay.addEventListener('pointerdown',(e)=>{ if(e.target===sidebarOverlay) closeSidebar(); });
-    sidebarPages.addEventListener('click',(e)=>{
+    sidebarPages.addEventListener('click', async (e)=>{
       const act=e.target.closest('[data-action]');
-      if(act){ e.preventDefault(); TerminalCommandBus.dispatch('ui:'+act.dataset.action, buildCommandContext()); return; }
+      if(act){
+        e.preventDefault();
+        resetCmdFeedback();
+        const res = await TerminalCommandBus.dispatch('ui:'+act.dataset.action, buildCommandContext());
+        showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
+        return;
+      }
       const el=e.target.closest('[data-nav]'); if(el) navTo(el.dataset.nav);
     });
     document.getElementById('dockConfigs').addEventListener('click',()=>navTo('configs'));
@@ -1650,11 +1753,95 @@
       };
     }
 
+    function inferCmdCategory(id){
+      if(String(id || '').startsWith('ui:')) return 'menu';
+      return 'outros';
+    }
+
+    function buildHelpPanel(){
+      if(!cmdHelpPanel || !globalThis.TerminalCommandBus) return;
+      const manifest = TerminalCommandBus.getManifest();
+      const groups = new Map();
+      manifest.forEach((cmd)=>{
+        const cat = cmd.category || inferCmdCategory(cmd.id);
+        if(!groups.has(cat)) groups.set(cat, []);
+        groups.get(cat).push(cmd);
+      });
+      const sortedCats = [...groups.keys()].sort((a, b)=>{
+        return (CMD_CATEGORY_META[a]?.order || 99) - (CMD_CATEGORY_META[b]?.order || 99);
+      });
+
+      cmdHelpPanel.replaceChildren();
+      const head = document.createElement('div');
+      head.className = 'cmd-help-head';
+      head.textContent = manifest.length + ' comandos — digite outro comando para fechar';
+      cmdHelpPanel.appendChild(head);
+
+      sortedCats.forEach((cat)=>{
+        const items = groups.get(cat) || [];
+        if(!items.length) return;
+        items.sort((a, b)=>a.id.localeCompare(b.id, 'pt'));
+
+        const group = document.createElement('section');
+        group.className = 'cmd-help-group';
+        const title = document.createElement('h3');
+        title.className = 'cmd-help-cat';
+        title.textContent = CMD_CATEGORY_META[cat]?.label || cat;
+        group.appendChild(title);
+
+        items.forEach((cmd)=>{
+          const row = document.createElement('div');
+          row.className = 'cmd-help-item';
+
+          const names = document.createElement('div');
+          names.className = 'cmd-help-names';
+          const idEl = document.createElement('span');
+          idEl.className = 'cmd-help-id';
+          idEl.textContent = cmd.id;
+          names.appendChild(idEl);
+          (cmd.aliases || []).forEach((alias)=>{
+            const tag = document.createElement('span');
+            tag.className = 'cmd-help-alias';
+            tag.textContent = alias;
+            names.appendChild(tag);
+          });
+          row.appendChild(names);
+
+          if(cmd.description){
+            const desc = document.createElement('div');
+            desc.className = 'cmd-help-desc';
+            desc.textContent = cmd.description;
+            row.appendChild(desc);
+          }
+
+          group.appendChild(row);
+        });
+
+        cmdHelpPanel.appendChild(group);
+      });
+    }
+
+    function showHelpPanel(){
+      if(!cmdHelpPanel) return;
+      buildHelpPanel();
+      cmdHelpPanel.classList.add('open');
+      cmdHelpPanel.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideHelpPanel(){
+      if(!cmdHelpPanel) return;
+      cmdHelpPanel.classList.remove('open');
+      cmdHelpPanel.setAttribute('aria-hidden', 'true');
+    }
+
+    function resetCmdFeedback(){
+      hideHelpPanel();
+      if(cmdHint) cmdHint.textContent = CMD_HINT_DEFAULT;
+    }
+
     function showCmdFeedback(text){
       if(!cmdHint) return;
-      clearTimeout(cmdHintTimer);
       cmdHint.textContent = text || CMD_HINT_DEFAULT;
-      cmdHintTimer = setTimeout(()=>{ cmdHint.textContent = CMD_HINT_DEFAULT; }, 4200);
     }
 
     function registerTerminalCommands(){
@@ -1663,18 +1850,18 @@
       TerminalCommandBus.register({
         id: 'help',
         aliases: ['ajuda', '?'],
-        description: 'Lista comandos (resumo no ecrã, detalhe no consola F12)',
+        category: 'sistema',
+        description: 'Lista todos os comandos disponíveis, organizados por categoria',
         handler: async ()=>{
-          const m = TerminalCommandBus.getManifest();
-          console.info('[Terminal] Comandos disponíveis:', m);
-          const names = m.map(x=>x.id).slice(0, 10).join(', ');
-          return { message: m.length + ' comandos — ' + names + (m.length > 10 ? '…' : '') + ' (F12)' };
+          console.info('[Terminal] Comandos disponíveis:', TerminalCommandBus.getManifest());
+          return { ok: true, code: 'help', message: '' };
         },
       });
 
       TerminalCommandBus.register({
         id: 'theme',
         aliases: ['tema'],
+        category: 'aparencia',
         description: 'theme light | dark | auto',
         handler: async (ctx, p)=>{
           const mode = String(p.args[0] || '').toLowerCase();
@@ -1687,6 +1874,7 @@
       TerminalCommandBus.register({
         id: 'menu',
         aliases: ['sidebar'],
+        category: 'navegacao',
         description: 'menu open | close | toggle',
         handler: async (ctx, p)=>{
           const sub = String(p.args[0] || 'open').toLowerCase();
@@ -1700,6 +1888,7 @@
       TerminalCommandBus.register({
         id: 'close',
         aliases: ['fechar'],
+        category: 'navegacao',
         description: 'Fecha o menu lateral',
         handler: async (ctx)=>{ ctx.closeSidebar(); return { message: 'Menu fechado.' }; },
       });
@@ -1707,6 +1896,7 @@
       TerminalCommandBus.register({
         id: 'edit',
         aliases: ['editar'],
+        category: 'layout',
         description: 'edit on | off | toggle — modo reorganizar widgets',
         handler: async (ctx, p)=>{
           const sub = String(p.args[0] || 'toggle').toLowerCase();
@@ -1720,7 +1910,8 @@
       TerminalCommandBus.register({
         id: 'nav',
         aliases: ['ir'],
-        description: 'nav home|configs|account|personalize|automation|devices',
+        category: 'navegacao',
+        description: 'nav home | configs | account | personalize | automation | devices',
         handler: async (ctx, p)=>{
           const id = String(p.args[0] || '').toLowerCase();
           if(!id || !pages[id]) return { ok: false, message: 'Uso: nav home | configs | account | personalize | automation | devices' };
@@ -1734,6 +1925,7 @@
       TerminalCommandBus.register({
         id: 'save',
         aliases: ['sync', 'guardar'],
+        category: 'conta',
         description: 'Guarda configurações na nuvem (conta com sync)',
         handler: async (ctx)=>{
           if(!ctx.firebaseReady || !ctx.currentUser) return { ok: false, message: 'Inicie sessão para sincronizar.' };
@@ -1758,7 +1950,8 @@
         TerminalCommandBus.register({
           id: 'ui:' + id,
           aliases: [id],
-          description: label + ' (roadmap)',
+          category: 'menu',
+          description: label + ' (em breve)',
           handler: async ()=>({ ok: false, code: 'stub', message: label + ' — em breve.' }),
         });
       });
@@ -1768,12 +1961,38 @@
         e.preventDefault();
         const line = String(cmd.value || '').trim();
         if(!line) return;
+        resetCmdFeedback();
+        const parsed = TerminalCommandBus.parseInput(line);
+        const isHelp = HELP_VERBS.has(parsed.verb);
         const res = await TerminalCommandBus.dispatch(line, buildCommandContext());
-        showCmdFeedback(res.message || (res.ok ? 'OK' : 'Erro'));
+        if(isHelp && res.ok !== false){
+          showHelpPanel();
+          if(cmdHint){
+            const total = TerminalCommandBus.getManifest().length;
+            cmdHint.textContent = total + ' comandos — digite outro para fechar';
+          }
+        }else{
+          showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
+        }
         cmd.value = '';
       });
 
-      window.terminalDispatch = (text)=>TerminalCommandBus.dispatch(text, buildCommandContext());
+      window.terminalDispatch = async (text)=>{
+        resetCmdFeedback();
+        const parsed = TerminalCommandBus.parseInput(text);
+        const isHelp = HELP_VERBS.has(parsed.verb);
+        const res = await TerminalCommandBus.dispatch(text, buildCommandContext());
+        if(isHelp && res.ok !== false){
+          showHelpPanel();
+          if(cmdHint){
+            const total = TerminalCommandBus.getManifest().length;
+            cmdHint.textContent = total + ' comandos — digite outro para fechar';
+          }
+        }else if(res.message){
+          showCmdFeedback(res.message);
+        }
+        return res;
+      };
       window.terminalGetCommandManifest = ()=>TerminalCommandBus.getManifest();
     }
 
