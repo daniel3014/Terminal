@@ -185,62 +185,104 @@
       justify-content:center;
     }
 
-    /* Help overlay — flutua sobre widgets */
+    /* Help — pop-up ancorado ao widget chat */
     .cmd-help-overlay{
       position:fixed;
       inset:0;
       z-index:58;
       display:none;
-      align-items:center;
-      justify-content:center;
-      padding:max(18px, var(--pad));
-      background:rgba(0,0,0,0.22);
-      backdrop-filter:blur(6px);
-      -webkit-backdrop-filter:blur(6px);
       pointer-events:none;
+      background:transparent;
     }
-    html[data-theme="light"] .cmd-help-overlay{ background:rgba(0,0,0,0.12); }
     .cmd-help-overlay.open{
-      display:flex;
+      display:block;
       pointer-events:auto;
     }
+    .cmd-help-backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.14);
+      backdrop-filter:blur(3px);
+      -webkit-backdrop-filter:blur(3px);
+      opacity:0;
+      transition:opacity 260ms var(--ease);
+    }
+    html[data-theme="light"] .cmd-help-backdrop{ background:rgba(0,0,0,0.08); }
+    .cmd-help-overlay.open .cmd-help-backdrop{ opacity:1; }
     .cmd-help-panel{
-      width:min(760px, calc(100vw - 36px));
-      height:min(78vh, 640px);
+      position:fixed;
       display:flex;
       flex-direction:column;
       overflow:hidden;
-      border-radius:26px;
+      border-radius:24px;
       border:1px solid var(--stroke);
       background:linear-gradient(180deg, var(--glass), var(--glass2));
-      box-shadow:0 28px 88px rgba(0,0,0,0.38);
+      box-shadow:0 24px 70px rgba(0,0,0,0.34), 0 0 0 1px rgba(var(--accent),0.08);
       backdrop-filter:blur(18px) saturate(140%);
       -webkit-backdrop-filter:blur(18px) saturate(140%);
       pointer-events:auto;
+      transform-origin:bottom center;
+      transform:scale(0.88) translateY(18px);
+      opacity:0;
+      transition:transform 360ms cubic-bezier(.2,.92,.22,1), opacity 280ms var(--ease);
+    }
+    .cmd-help-overlay.open .cmd-help-panel{
+      transform:scale(1) translateY(0);
+      opacity:1;
+    }
+    .cmd-help-panel::after{
+      content:"";
+      position:absolute;
+      bottom:-7px;
+      left:var(--help-tail-x, 50%);
+      width:14px; height:14px;
+      transform:translateX(-50%) rotate(45deg);
+      background:linear-gradient(135deg, var(--glass2), var(--glass));
+      border-right:1px solid var(--stroke);
+      border-bottom:1px solid var(--stroke);
+      box-shadow:4px 4px 14px rgba(0,0,0,0.12);
     }
     .cmd-help-head{
       flex:0 0 auto;
-      padding:14px 16px 12px;
+      padding:12px 14px 10px;
       border-bottom:1px solid rgba(255,255,255,0.08);
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
-      gap:12px;
+      gap:10px;
     }
     html[data-theme="light"] .cmd-help-head{ border-bottom:1px solid rgba(10,20,40,0.08); }
-    .cmd-help-head b{ font-size:14px; letter-spacing:.2px; }
-    .cmd-help-head span{ font-size:12px; color:var(--muted); }
+    .cmd-help-head b{ font-size:14px; letter-spacing:.2px; display:block; }
+    .cmd-help-head span{ font-size:12px; color:var(--muted); display:block; margin-top:2px; }
+    .cmd-help-close{
+      width:34px; height:34px; border-radius:14px; border:1px solid var(--stroke2);
+      background:rgba(0,0,0,0.10); color:var(--text);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      flex:0 0 auto; font-size:14px; line-height:1;
+      transition:transform 160ms var(--ease), background 160ms var(--ease);
+    }
+    html[data-theme="light"] .cmd-help-close{ background:rgba(255,255,255,0.35); }
+    .cmd-help-close:hover{ background:rgba(var(--accent),0.12); }
+    .cmd-help-close:active{ transform:scale(.97); }
     .cmd-help-body{
       flex:1 1 auto;
       min-height:0;
       display:grid;
-      grid-template-columns:minmax(190px, 240px) 1fr;
+      grid-template-columns:minmax(190px, 220px) 1fr;
     }
     @media (max-width:640px){
       .cmd-help-body{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }
     }
-    .cmd-help-folders{
+    .cmd-help-side{
+      display:flex;
+      flex-direction:column;
+      min-height:0;
       border-right:1px solid rgba(255,255,255,0.08);
+    }
+    html[data-theme="light"] .cmd-help-side{ border-right:1px solid rgba(10,20,40,0.08); }
+    .cmd-help-folders{
+      flex:1 1 auto;
+      min-height:0;
       padding:10px;
       overflow:auto;
       -webkit-overflow-scrolling:touch;
@@ -248,7 +290,15 @@
       flex-direction:column;
       gap:6px;
     }
-    html[data-theme="light"] .cmd-help-folders{ border-right:1px solid rgba(10,20,40,0.08); }
+    .cmd-help-count{
+      flex:0 0 auto;
+      padding:10px 12px 12px;
+      font-size:11.5px;
+      color:var(--muted);
+      border-top:1px solid rgba(255,255,255,0.08);
+      letter-spacing:.1px;
+    }
+    html[data-theme="light"] .cmd-help-count{ border-top:1px solid rgba(10,20,40,0.08); }
     .cmd-help-folder{
       display:flex;
       align-items:center;
@@ -313,42 +363,17 @@
       background:rgba(var(--accent),0.08);
     }
     .cmd-help-item:active{ transform:scale(.995); }
-    .cmd-help-names{
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:6px;
-      margin-bottom:4px;
-    }
-    .cmd-help-id{
+    .cmd-help-cmd{
       font-size:13px;
       font-weight:800;
       letter-spacing:.1px;
-    }
-    .cmd-help-run{
-      font-size:11px;
-      color:rgba(var(--accent),0.95);
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid rgba(var(--accent),0.22);
-      background:rgba(var(--accent),0.08);
-    }
-    .cmd-help-alias{
-      font-size:10.5px;
-      color:var(--muted);
-      padding:2px 7px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.10);
-      background:rgba(0,0,0,0.06);
-    }
-    html[data-theme="light"] .cmd-help-alias{
-      border:1px solid rgba(10,20,40,0.10);
-      background:rgba(255,255,255,0.35);
+      margin-bottom:5px;
+      color:var(--text);
     }
     .cmd-help-desc{
       font-size:12px;
       color:var(--muted);
-      line-height:1.4;
+      line-height:1.45;
     }
     .cmd{
       flex:1 1 60px;
@@ -833,9 +858,36 @@
       display:flex; align-items:center; justify-content:center;
     }
     html[data-theme="light"] .prof-ava-wrap{ background:rgba(255,255,255,0.45); }
-    .prof-ava-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .prof-ava-wrap img.prof-static-img{
+      position:absolute; inset:0;
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .prof-ava-placeholder{
+      display:flex; align-items:center; justify-content:center;
+      width:100%; height:100%;
+      font-weight:900; color:var(--muted); font-size:16px;
+    }
+    .prof-ava-wrap.crop-active .prof-static-img,
+    .prof-ava-wrap.crop-active .prof-ava-placeholder{ display:none !important; }
+    .prof-crop-img{
+      position:absolute;
+      top:50%; left:50%;
+      transform-origin:center center;
+      will-change:transform;
+      pointer-events:none;
+      user-select:none;
+      max-width:none;
+    }
+    .prof-ava-wrap.crop-active{ cursor:grab; touch-action:none; }
+    .prof-ava-wrap.crop-active.dragging{ cursor:grabbing; }
+    .prof-photo-col{ display:flex; flex-direction:column; gap:8px; flex:0 0 auto; }
+    .prof-crop-controls{
+      display:flex; flex-direction:column; gap:4px; width:84px;
+    }
+    .prof-crop-controls input[type=range]{ width:100%; accent-color:rgba(var(--accent),0.95); }
+    .prof-crop-hint{ font-size:10.5px !important; line-height:1.25rem; text-align:center; }
     .prof-cam{
-      position:absolute; right:8px; bottom:8px;
+      position:absolute; right:8px; bottom:8px; z-index:3;
       width:34px; height:34px; border-radius:14px;
       border:1px solid var(--stroke2);
       background:linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
@@ -1122,16 +1174,20 @@
   </div>
 
   <div class="cmd-help-overlay" id="cmdHelpOverlay" aria-hidden="true">
+    <div class="cmd-help-backdrop" id="cmdHelpBackdrop"></div>
     <div class="cmd-help-panel" id="cmdHelpPanel" role="dialog" aria-modal="true" aria-label="Ajuda de comandos">
       <div class="cmd-help-head">
         <div>
           <b id="cmdHelpTitle">Comandos</b>
-          <span id="cmdHelpSub">Passe o rato nas pastas • clique num comando para executar</span>
+          <span id="cmdHelpSub">Passe o rato nas pastas • clique para executar</span>
         </div>
-        <span id="cmdHelpCount" style="font-size:12px; color:var(--muted);"></span>
+        <button type="button" class="cmd-help-close" id="cmdHelpClose" title="Fechar">✕</button>
       </div>
       <div class="cmd-help-body">
-        <div class="cmd-help-folders" id="cmdHelpFolders"></div>
+        <div class="cmd-help-side">
+          <div class="cmd-help-folders" id="cmdHelpFolders"></div>
+          <div class="cmd-help-count" id="cmdHelpCount"></div>
+        </div>
         <div class="cmd-help-list" id="cmdHelpList"></div>
       </div>
     </div>
@@ -1142,10 +1198,18 @@
       <div class="mini-head"><b>Editar perfil</b><div class="mini-close" id="profileClose" title="Fechar">✕</div></div>
       <div class="mini-body">
         <div class="prof-top">
-          <div class="prof-ava-wrap" id="profileAvatarPrev">
-            <div style="font-weight:900; color: var(--muted); font-size: 16px;">⌁</div>
-            <div class="prof-cam" id="profilePickBtn" title="Alterar foto">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+          <div class="prof-photo-col">
+            <div class="prof-ava-wrap" id="profileAvatarPrev">
+              <img id="profileCropImg" class="prof-crop-img" alt="" style="display:none"/>
+              <img id="profileStaticImg" class="prof-static-img" alt="" style="display:none"/>
+              <div class="prof-ava-placeholder" id="profileAvatarPlaceholder" style="font-weight:900; color:var(--muted); font-size:16px;">⌁</div>
+              <div class="prof-cam" id="profilePickBtn" title="Alterar foto">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 7l1.2-2h3.6L15 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8"/></svg>
+              </div>
+            </div>
+            <div class="prof-crop-controls" id="profileCropControls" style="display:none;">
+              <input type="range" id="profileCropZoom" min="1" max="2.5" step="0.01" value="1" aria-label="Zoom da foto"/>
+              <span class="auth-small prof-crop-hint">Arraste para centralizar</span>
             </div>
           </div>
           <div style="flex:1 1 auto; min-width:0;">
@@ -1169,7 +1233,7 @@
           <button class="auth-btn secondary" id="profileCancel">Cancelar</button>
           <button class="auth-btn" id="profileSave">💾 Salvar</button>
         </div>
-        <div class="auth-small" style="color: var(--muted);">Dica: com login, foto por arquivo vai para Firebase Storage. 🧊✅</div>
+        <div class="auth-small" style="color: var(--muted);">A foto é comprimida e guardada no perfil. Arraste para centralizar antes de salvar.</div>
       </div>
     </div>
   </div>
@@ -1217,7 +1281,9 @@
     const cmd   = document.getElementById('cmd');
     const cmdHint = document.getElementById('cmdHint');
     const cmdHelpOverlay = document.getElementById('cmdHelpOverlay');
+    const cmdHelpBackdrop = document.getElementById('cmdHelpBackdrop');
     const cmdHelpPanel = document.getElementById('cmdHelpPanel');
+    const cmdHelpClose = document.getElementById('cmdHelpClose');
     const cmdHelpFolders = document.getElementById('cmdHelpFolders');
     const cmdHelpList = document.getElementById('cmdHelpList');
     const cmdHelpCount = document.getElementById('cmdHelpCount');
@@ -1697,16 +1763,86 @@
     const profileSave=document.getElementById('profileSave'), profileName=document.getElementById('profileName'), profilePhotoUrl=document.getElementById('profilePhotoUrl');
     const profilePhotoFile=document.getElementById('profilePhotoFile'), profileError=document.getElementById('profileError');
     const profileAvatarPrev=document.getElementById('profileAvatarPrev'), profilePickBtn=document.getElementById('profilePickBtn');
+    const profileCropImg=document.getElementById('profileCropImg'), profileStaticImg=document.getElementById('profileStaticImg');
+    const profileAvatarPlaceholder=document.getElementById('profileAvatarPlaceholder'), profileCropControls=document.getElementById('profileCropControls');
+    const profileCropZoom=document.getElementById('profileCropZoom');
     const useCurrentPhotoBtn=document.getElementById('useCurrentPhotoBtn'), clearPhotoBtn=document.getElementById('clearPhotoBtn');
     let lastKnownPhoto='';
+    const CROP_VIEW = 84;
+    let crop={ active:false, src:null, naturalW:0, naturalH:0, baseScale:1, zoom:1, x:0, y:0, file:null, objectUrl:'' };
+    let cropDrag=null;
 
     function showProfileError(msg){ profileError.textContent=msg; profileError.style.display='block'; }
     function clearProfileError(){ profileError.style.display='none'; profileError.textContent='—'; }
+    function revokeCropObjectUrl(){
+      if(crop.objectUrl){ try{ URL.revokeObjectURL(crop.objectUrl); }catch(_){} crop.objectUrl=''; }
+    }
+    function resetCropState(){
+      revokeCropObjectUrl();
+      crop={ active:false, src:null, naturalW:0, naturalH:0, baseScale:1, zoom:1, x:0, y:0, file:null, objectUrl:'' };
+      if(profileCropImg){ profileCropImg.style.display='none'; profileCropImg.removeAttribute('src'); }
+      if(profileAvatarPrev) profileAvatarPrev.classList.remove('crop-active','dragging');
+      if(profileCropControls) profileCropControls.style.display='none';
+      if(profileCropZoom) profileCropZoom.value='1';
+    }
+    function renderCropPreview(){
+      if(!crop.active || !crop.src || !profileCropImg) return;
+      const scale = crop.baseScale * crop.zoom;
+      const w = crop.naturalW * scale;
+      const h = crop.naturalH * scale;
+      profileCropImg.style.display='block';
+      profileCropImg.style.width = w + 'px';
+      profileCropImg.style.height = h + 'px';
+      profileCropImg.style.transform = 'translate(calc(-50% + ' + crop.x + 'px), calc(-50% + ' + crop.y + 'px))';
+    }
+    function exportCroppedAvatar(){
+      if(!crop.active || !crop.src) return '';
+      const out = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = out; canvas.height = out;
+      const ctx = canvas.getContext('2d');
+      if(!ctx) throw new Error('Canvas não suportado.');
+      const scale = crop.baseScale * crop.zoom;
+      const imgW = crop.naturalW * scale;
+      const imgH = crop.naturalH * scale;
+      const ox = (CROP_VIEW - imgW) / 2 + crop.x;
+      const oy = (CROP_VIEW - imgH) / 2 + crop.y;
+      ctx.drawImage(crop.src, -ox / scale, -oy / scale, CROP_VIEW / scale, CROP_VIEW / scale, 0, 0, out, out);
+      return canvas.toDataURL('image/jpeg', 0.88);
+    }
+    async function startCropFromFile(file){
+      if(!file) return;
+      resetCropState();
+      crop.file = file;
+      crop.objectUrl = URL.createObjectURL(file);
+      const img = await new Promise((res, rej)=>{
+        const i = new Image();
+        i.onload = ()=>res(i);
+        i.onerror = ()=>rej(new Error('Não foi possível abrir a imagem.'));
+        i.src = crop.objectUrl;
+      });
+      crop.active = true;
+      crop.src = img;
+      crop.naturalW = img.naturalWidth || 1;
+      crop.naturalH = img.naturalHeight || 1;
+      crop.baseScale = Math.max(CROP_VIEW / crop.naturalW, CROP_VIEW / crop.naturalH);
+      crop.zoom = 1;
+      crop.x = 0;
+      crop.y = 0;
+      if(profileStaticImg) profileStaticImg.style.display='none';
+      if(profileAvatarPlaceholder) profileAvatarPlaceholder.style.display='none';
+      if(profileAvatarPrev) profileAvatarPrev.classList.add('crop-active');
+      if(profileCropControls) profileCropControls.style.display='flex';
+      if(profileCropZoom) profileCropZoom.value='1';
+      renderCropPreview();
+    }
     function setProfileAvatarPreview(photo){
-      profileAvatarPrev.innerHTML='';
-      if(photo){ const img=document.createElement('img'); img.src=photo; img.alt='avatar'; profileAvatarPrev.appendChild(img); }
-      else{ const d=document.createElement('div'); d.style.cssText='font-weight:900;color:var(--muted);font-size:16px'; d.textContent='⌁'; profileAvatarPrev.appendChild(d); }
-      profileAvatarPrev.appendChild(profilePickBtn);
+      resetCropState();
+      if(profileStaticImg){
+        if(photo){ profileStaticImg.src=photo; profileStaticImg.style.display='block'; }
+        else{ profileStaticImg.removeAttribute('src'); profileStaticImg.style.display='none'; }
+      }
+      if(profileAvatarPlaceholder) profileAvatarPlaceholder.style.display = photo ? 'none' : 'flex';
     }
     function getCurrentProfileView(){
       if(activeProfileId==='guest'){ const g=loadGuestProfile(); return {name:g.name||'Convidado',email:'Sessão local',photo:g.photo||'',badge:'Guest'}; }
@@ -1714,10 +1850,12 @@
       return {name:'Conta',email:'—',photo:'',badge:'—'};
     }
     function openProfileEditor(){
-      clearProfileError(); const p=getCurrentProfileView(); lastKnownPhoto=p.photo||'';
-      profileName.value=p.name||''; profilePhotoFile.value=''; profilePhotoUrl.value='';
+      clearProfileError(); resetCropState(); profilePhotoFile.value='';
+      const p=getCurrentProfileView(); lastKnownPhoto=p.photo||'';
+      profileName.value=p.name||''; profilePhotoUrl.value='';
       profilePhotoUrl.placeholder=lastKnownPhoto||'https://...';
-      setProfileAvatarPreview(lastKnownPhoto); profileOverlay.classList.add('open'); profileOverlay.setAttribute('aria-hidden','false');
+      setProfileAvatarPreview(lastKnownPhoto);
+      profileOverlay.classList.add('open'); profileOverlay.setAttribute('aria-hidden','false');
       setTimeout(()=>profileName.focus(),60);
     }
     function closeProfileEditor(){ profileOverlay.classList.remove('open'); profileOverlay.setAttribute('aria-hidden','true'); }
@@ -1725,9 +1863,39 @@
     profileClose.addEventListener('click',closeProfileEditor); profileCancel.addEventListener('click',closeProfileEditor);
     profileOverlay.addEventListener('pointerdown',(e)=>{ if(e.target===profileOverlay) closeProfileEditor(); });
     profilePickBtn.addEventListener('click',()=>profilePhotoFile.click());
-    useCurrentPhotoBtn.addEventListener('click',()=>{ profilePhotoUrl.value=lastKnownPhoto||''; setProfileAvatarPreview(lastKnownPhoto||''); });
+    useCurrentPhotoBtn.addEventListener('click',()=>{ profilePhotoUrl.value=lastKnownPhoto||''; profilePhotoFile.value=''; setProfileAvatarPreview(lastKnownPhoto||''); });
     clearPhotoBtn.addEventListener('click',()=>{ profilePhotoFile.value=''; profilePhotoUrl.value=''; lastKnownPhoto=''; setProfileAvatarPreview(''); });
-    profilePhotoFile.addEventListener('change',async()=>{ const f=profilePhotoFile.files&&profilePhotoFile.files[0]; if(!f) return; try{setProfileAvatarPreview(URL.createObjectURL(f));}catch(_){} });
+    profilePhotoFile.addEventListener('change',async()=>{
+      const f=profilePhotoFile.files&&profilePhotoFile.files[0];
+      if(!f) return;
+      clearProfileError();
+      try{ await startCropFromFile(f); }
+      catch(err){ showProfileError((err&&err.message)||'Erro ao abrir imagem.'); }
+    });
+    if(profileCropZoom) profileCropZoom.addEventListener('input',()=>{ crop.zoom=parseFloat(profileCropZoom.value||'1')||1; renderCropPreview(); });
+    function onCropPointerDown(e){
+      if(!crop.active) return;
+      if(e.target.closest('#profilePickBtn')) return;
+      e.preventDefault();
+      cropDrag={ startX:e.clientX, startY:e.clientY, originX:crop.x, originY:crop.y };
+      profileAvatarPrev.classList.add('dragging');
+      try{ profileAvatarPrev.setPointerCapture(e.pointerId); }catch(_){}
+    }
+    function onCropPointerMove(e){
+      if(!cropDrag) return;
+      crop.x = cropDrag.originX + (e.clientX - cropDrag.startX);
+      crop.y = cropDrag.originY + (e.clientY - cropDrag.startY);
+      renderCropPreview();
+    }
+    function onCropPointerUp(){
+      if(!cropDrag) return;
+      cropDrag=null;
+      profileAvatarPrev.classList.remove('dragging');
+    }
+    profileAvatarPrev.addEventListener('pointerdown', onCropPointerDown);
+    window.addEventListener('pointermove', onCropPointerMove);
+    window.addEventListener('pointerup', onCropPointerUp);
+    window.addEventListener('pointercancel', onCropPointerUp);
 
     function isProbablyDataUrl(s){ return /^data:/i.test(String(s||'').trim()); }
     function withTimeout(promise, ms, message){
@@ -1777,6 +1945,11 @@
       catch(e){ return {ok:false,msg:'URL inválida.'}; }
       return {ok:true,value:u};
     }
+    async function uploadTaskAsPromise(task){
+      return new Promise((resolve, reject)=>{
+        task.on('state_changed', null, reject, ()=>resolve(task.snapshot));
+      });
+    }
     async function uploadAvatarToStorage(file){
       if(!firebaseReady||!currentUser||!fbStorage) throw new Error('Storage não disponível.');
       const compressed = file.size ? file : await compressImageFile(file);
@@ -1784,47 +1957,55 @@
       const path=`avatars/${currentUser.uid}/${Date.now()}_${(compressed.name||'avatar').replace(/[^\w.\-]+/g,'_').slice(0,60)}`;
       const ref=fbStorage.ref().child(path);
       const task = ref.put(compressed,{contentType:compressed.type||'image/jpeg',cacheControl:'public,max-age=31536000'});
-      await withTimeout(task, 30000, 'Upload da foto expirou. Verifique Firebase Storage.');
+      await withTimeout(uploadTaskAsPromise(task), 30000, 'Upload da foto expirou. Verifique Firebase Storage.');
       return withTimeout(ref.getDownloadURL(), 10000, 'Não foi possível obter URL da foto.');
     }
     async function saveProfileToCloud({name,photo}){
       const ref=userDocRef(); if(!ref) return;
       await ref.set({profile:{name:name||'',photo:photo||''},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
+    async function resolveProfilePhotoForSave(){
+      if(crop.active && crop.src) return exportCroppedAvatar();
+      const f=profilePhotoFile.files&&profilePhotoFile.files[0];
+      if(f) return readFileAsDataUrl(f);
+      const v=validatePhotoUrl(profilePhotoUrl.value);
+      if(!v.ok) throw new Error(v.msg);
+      return v.value || lastKnownPhoto || '';
+    }
 
     profileSave.addEventListener('click',async()=>{
       clearProfileError(); const prevText=profileSave.textContent; profileSave.textContent='💾 Salvando...'; profileSave.disabled=true;
       try{
-        const name=String(profileName.value||'').trim(); if(!name) return showProfileError('Digite um nome.');
-        const f=profilePhotoFile.files&&profilePhotoFile.files[0]; let photo='';
+        const name=String(profileName.value||'').trim();
+        if(!name) return showProfileError('Digite um nome.');
+        let photo='';
+        try{ photo = await resolveProfilePhotoForSave(); }
+        catch(parseErr){ return showProfileError((parseErr&&parseErr.message)||'Foto inválida.'); }
+        if(photo.length>900000) return showProfileError('Foto muito grande. Ajuste o zoom ou escolha outra imagem.');
+
         if(activeProfileId==='guest'){
-          if(f){ photo=await readFileAsDataUrl(f); }
-          else{ const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg); photo=v.value||''; }
-          if(photo.length>900000) return showProfileError('Foto muito grande. Escolha outra imagem.');
-          saveGuestProfile({name,photo}); lastKnownPhoto=photo||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced(); return;
+          saveGuestProfile({name,photo});
+          lastKnownPhoto=photo||'';
+          refreshAccountUI();
+          closeProfileEditor();
+          return;
         }
         if(!firebaseReady||!currentUser) return showProfileError('Você precisa estar logado.');
-        if(f){
-          try{
-            const compressed = await compressImageFile(f);
-            photo = await uploadAvatarToStorage(compressed);
-          }catch(uploadErr){
-            console.warn('Upload Storage falhou, usando foto local:', uploadErr);
-            photo = await readFileAsDataUrl(f);
-            if(photo.length>750000) throw new Error('Foto muito grande após compressão.');
-          }
-        }else{
-          const v=validatePhotoUrl(profilePhotoUrl.value); if(!v.ok) return showProfileError(v.msg);
-          photo=v.value||(lastKnownPhoto||'');
-        }
-        const authPhotoUrl = photo && !isProbablyDataUrl(photo) ? photo : '';
-        await withTimeout(currentUser.updateProfile({displayName:name,photoURL:authPhotoUrl||currentUser.photoURL||''}), 15000, 'Atualização do perfil expirou.');
+
         profilePhotoOverride = photo || '';
-        await withTimeout(fbAuth.currentUser.reload(), 10000, 'Recarregar sessão expirou.');
-        currentUser=fbAuth.currentUser;
-        await saveProfileToCloud({name,photo:profilePhotoOverride||currentUser.photoURL||''});
-        upsertUsedAccount({key:'uid:'+currentUser.uid,uid:currentUser.uid,email:currentUser.email||'',name:currentUser.displayName||name,photo:profilePhotoOverride||currentUser.photoURL||'',provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',lastAt:Date.now()});
-        lastKnownPhoto=profilePhotoOverride||currentUser.photoURL||''; refreshAccountUI(); closeProfileEditor(); requestCloudSyncDebounced();
+        await withTimeout(currentUser.updateProfile({displayName:name}), 12000, 'Atualização do nome expirou.');
+        await withTimeout(saveProfileToCloud({name, photo:profilePhotoOverride}), 12000, 'Guardar perfil na nuvem expirou.');
+        currentUser = fbAuth.currentUser || currentUser;
+        upsertUsedAccount({
+          key:'uid:'+currentUser.uid, uid:currentUser.uid, email:currentUser.email||'',
+          name:currentUser.displayName||name, photo:profilePhotoOverride,
+          provider:(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password',
+          lastAt:Date.now()
+        });
+        lastKnownPhoto=profilePhotoOverride;
+        refreshAccountUI();
+        closeProfileEditor();
+        requestCloudSyncDebounced();
       }catch(err){ showProfileError((err&&err.message)||'Erro ao salvar perfil.'); }
       finally{ profileSave.textContent=prevText; profileSave.disabled=false; }
     });
@@ -1926,19 +2107,75 @@
       return 'outros';
     }
 
+    function isHelpCommand(cmd){
+      const id = String(cmd && cmd.id || '').toLowerCase();
+      return HELP_VERBS.has(id) || id === 'help';
+    }
+
+    function getCommandSummary(cmd){
+      if(cmd.summary) return cmd.summary;
+      const summaries = {
+        'theme light': 'Ativa o tema claro na interface.',
+        'theme dark': 'Ativa o tema escuro na interface.',
+        'theme auto': 'Segue o tema do sistema operativo.',
+        theme: 'Altera o tema visual do Terminal.',
+        menu: 'Abre, fecha ou alterna o menu lateral.',
+        close: 'Fecha o painel do menu lateral.',
+        edit: 'Liga ou desliga o modo de reorganizar widgets.',
+        nav: 'Navega para uma secção do menu lateral.',
+        save: 'Guarda layout, tema e perfil na nuvem.',
+      };
+      if(summaries[cmd.id]) return summaries[cmd.id];
+      if(String(cmd.id).startsWith('ui:')) return 'Abre a opção "' + (cmd.aliases && cmd.aliases[0] || cmd.id.split(':')[1]) + '" no menu (em breve).';
+      return cmd.description || 'Executa esta ação no Terminal.';
+    }
+
+    function expandHelpManifest(manifest){
+      const out = [];
+      manifest.forEach((cmd)=>{
+        if(isHelpCommand(cmd)) return;
+        if(cmd.id === 'theme'){
+          [
+            { id:'theme light', runAs:'theme light', category:'aparencia' },
+            { id:'theme dark', runAs:'theme dark', category:'aparencia' },
+            { id:'theme auto', runAs:'theme auto', category:'aparencia' },
+          ].forEach((v)=>out.push(Object.assign({}, cmd, v)));
+          return;
+        }
+        out.push(cmd);
+      });
+      return out;
+    }
+
     function getCommandRunText(cmd){
       if(cmd.runAs) return cmd.runAs;
       if(String(cmd.id).startsWith('ui:')) return cmd.aliases && cmd.aliases[0] ? cmd.aliases[0] : cmd.id.split(':')[1];
-      if(cmd.id === 'theme') return 'theme auto';
       if(cmd.id === 'menu') return 'menu toggle';
       if(cmd.id === 'edit') return 'edit toggle';
       if(cmd.id === 'nav') return 'nav home';
       return cmd.id;
     }
 
+    function positionHelpPanel(){
+      const chat = document.querySelector('.widget[data-id="chat"]');
+      if(!chat || !cmdHelpPanel) return;
+      const rect = chat.getBoundingClientRect();
+      const panelW = Math.min(620, Math.max(rect.width + 80, 420), window.innerWidth - 24);
+      const panelH = Math.min(520, Math.max(360, window.innerHeight - rect.top - 36), window.innerHeight - 24);
+      const left = clamp(rect.left + (rect.width - panelW) / 2, 12, window.innerWidth - panelW - 12);
+      const bottom = Math.max(12, window.innerHeight - rect.top + 10);
+      const tailX = clamp(rect.left + rect.width / 2 - left, 28, panelW - 28);
+      cmdHelpPanel.style.width = Math.round(panelW) + 'px';
+      cmdHelpPanel.style.height = Math.round(panelH) + 'px';
+      cmdHelpPanel.style.left = Math.round(left) + 'px';
+      cmdHelpPanel.style.bottom = Math.round(bottom) + 'px';
+      cmdHelpPanel.style.top = 'auto';
+      cmdHelpPanel.style.setProperty('--help-tail-x', Math.round(tailX) + 'px');
+    }
+
     function renderHelpCommandList(cat){
       if(!cmdHelpList) return;
-      const items = (helpGroups.get(cat) || []).slice().sort((a, b)=>a.id.localeCompare(b.id, 'pt'));
+      const items = (helpGroups.get(cat) || []).slice().sort((a, b)=>getCommandRunText(a).localeCompare(getCommandRunText(b), 'pt'));
       cmdHelpList.replaceChildren();
       if(!items.length){
         const empty = document.createElement('div');
@@ -1948,40 +2185,26 @@
         return;
       }
       items.forEach((cmd)=>{
+        const runText = getCommandRunText(cmd);
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'cmd-help-item';
-        row.title = 'Executar: ' + getCommandRunText(cmd);
+        row.title = 'Executar: ' + runText;
 
-        const names = document.createElement('div');
-        names.className = 'cmd-help-names';
-        const idEl = document.createElement('span');
-        idEl.className = 'cmd-help-id';
-        idEl.textContent = cmd.id;
-        names.appendChild(idEl);
-        const runTag = document.createElement('span');
-        runTag.className = 'cmd-help-run';
-        runTag.textContent = '▶ ' + getCommandRunText(cmd);
-        names.appendChild(runTag);
-        (cmd.aliases || []).forEach((alias)=>{
-          const tag = document.createElement('span');
-          tag.className = 'cmd-help-alias';
-          tag.textContent = alias;
-          names.appendChild(tag);
-        });
-        row.appendChild(names);
+        const cmdLine = document.createElement('div');
+        cmdLine.className = 'cmd-help-cmd';
+        cmdLine.textContent = runText;
+        row.appendChild(cmdLine);
 
-        if(cmd.description){
-          const desc = document.createElement('div');
-          desc.className = 'cmd-help-desc';
-          desc.textContent = cmd.description;
-          row.appendChild(desc);
-        }
+        const desc = document.createElement('div');
+        desc.className = 'cmd-help-desc';
+        desc.textContent = getCommandSummary(cmd);
+        row.appendChild(desc);
 
         row.addEventListener('click', (e)=>{
           e.preventDefault();
           e.stopPropagation();
-          executeCommandLine(getCommandRunText(cmd));
+          executeCommandLine(runText);
         });
         cmdHelpList.appendChild(row);
       });
@@ -1998,7 +2221,7 @@
 
     function buildHelpPanel(){
       if(!cmdHelpFolders || !globalThis.TerminalCommandBus) return;
-      const manifest = TerminalCommandBus.getManifest();
+      const manifest = expandHelpManifest(TerminalCommandBus.getManifest());
       helpGroups = new Map();
       manifest.forEach((cmd)=>{
         const cat = cmd.category || inferCmdCategory(cmd.id);
@@ -2009,7 +2232,7 @@
         return (CMD_CATEGORY_META[a]?.order || 99) - (CMD_CATEGORY_META[b]?.order || 99);
       });
 
-      if(cmdHelpCount) cmdHelpCount.textContent = manifest.length + ' comandos';
+      if(cmdHelpCount) cmdHelpCount.textContent = manifest.length + ' comandos disponíveis';
       cmdHelpFolders.replaceChildren();
 
       sortedCats.forEach((cat)=>{
@@ -2047,8 +2270,10 @@
     function showHelpPanel(){
       if(!cmdHelpOverlay) return;
       buildHelpPanel();
+      positionHelpPanel();
       cmdHelpOverlay.classList.add('open');
       cmdHelpOverlay.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(()=>positionHelpPanel());
     }
 
     function hideHelpPanel(){
@@ -2056,6 +2281,10 @@
       cmdHelpOverlay.classList.remove('open');
       cmdHelpOverlay.setAttribute('aria-hidden', 'true');
       activeHelpCategory = '';
+    }
+
+    function closeHelpPanel(){
+      resetCmdFeedback();
     }
 
     function resetCmdFeedback(){
@@ -2081,8 +2310,8 @@
       if(isHelp && res.ok !== false){
         showHelpPanel();
         if(cmdHint){
-          const total = TerminalCommandBus.getManifest().length;
-          cmdHint.textContent = total + ' comandos — clique para executar';
+          const total = expandHelpManifest(TerminalCommandBus.getManifest()).length;
+          cmdHint.textContent = total + ' comandos — clique ✕ ou outro comando para fechar';
         }
       }else{
         showCmdFeedback(res.message || (res.ok !== false ? 'OK' : 'Erro'));
@@ -2211,6 +2440,11 @@
         });
       });
 
+      if(cmdHelpOverlay){
+        if(cmdHelpClose) cmdHelpClose.addEventListener('click', closeHelpPanel);
+        if(cmdHelpBackdrop) cmdHelpBackdrop.addEventListener('click', closeHelpPanel);
+      }
+
       cmd.addEventListener('keydown', async (e)=>{
         if(e.key !== 'Enter') return;
         e.preventDefault();
@@ -2220,9 +2454,7 @@
       });
 
       if(cmdHelpOverlay){
-        cmdHelpOverlay.addEventListener('pointerdown', (e)=>{
-          if(e.target === cmdHelpOverlay) return;
-        });
+        cmdHelpOverlay.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); });
       }
 
       window.terminalDispatch = (text)=>executeCommandLine(text);
@@ -2261,11 +2493,12 @@
        tudo com base no novo tamanho real da área.
        ===================================================== */
     function handleResize(){
-      syncGridVars();   // atualiza variáveis CSS com novo subStep
-      applyLayout();    // reposiciona widgets com o novo grid
-      normalizeAll();   // garante que nenhum widget fica fora da área
+      syncGridVars();
+      applyLayout();
+      normalizeAll();
       updateClockTypography();
       syncThemeThumb(null,true);
+      if(cmdHelpOverlay && cmdHelpOverlay.classList.contains('open')) positionHelpPanel();
     }
 
     /* ===== Boot ===== */
