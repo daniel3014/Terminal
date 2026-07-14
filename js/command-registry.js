@@ -5,7 +5,7 @@
 (function (global) {
   'use strict';
 
-  /** @typedef {{ id: string, aliases?: string[], description?: string, handler: (ctx: object, parsed: Parsed) => Promise<CommandResult>|CommandResult }} CommandDef */
+  /** @typedef {{ id: string, aliases?: string[], description?: string, category?: string, handler: (ctx: object, parsed: Parsed) => Promise<CommandResult>|CommandResult }} CommandDef */
   /** @typedef {{ ok?: boolean, code?: string, message?: string, data?: unknown }} CommandResult */
   /** @typedef {{ verb: string, args: string[], raw: string }} Parsed */
 
@@ -35,17 +35,24 @@
   function register(def) {
     if (!def || !def.id || typeof def.handler !== 'function') return;
     const id = norm(def.id);
-    const entry = { id, aliases: (def.aliases || []).map(norm), description: def.description || '', handler: def.handler };
+    const entry = {
+      id,
+      aliases: (def.aliases || []).map(norm),
+      description: def.description || '',
+      category: def.category || '',
+      handler: def.handler,
+    };
     commands.push(entry);
     lookup.set(id, entry);
     entry.aliases.forEach((a) => lookup.set(a, entry));
   }
 
   function getManifest() {
-    return commands.map(({ id, aliases, description }) => ({
+    return commands.map(({ id, aliases, description, category }) => ({
       id,
       aliases: (aliases || []).filter((a) => a !== id),
       description,
+      category: category || '',
     }));
   }
 
