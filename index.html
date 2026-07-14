@@ -733,6 +733,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="js/command-registry.js"></script>
 </head>
 
 <body>
@@ -768,8 +769,8 @@
       <div class="widget chat-widget" data-id="chat" data-kind="chat" data-w="6" data-h="2" data-resizable="1">
         <div class="pad" style="width:100%; height:100%; display:flex; align-items:center;">
           <div class="chat-row">
-            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder="Digite um comando…"/>
-            <div class="hint">Enter ↵</div>
+            <input class="cmd" id="cmd" autocomplete="off" spellcheck="false" placeholder="Comando (ex.: help, theme dark, nav account)…" aria-describedby="cmdHint"/>
+            <div class="hint" id="cmdHint" role="status" aria-live="polite">Enter ↵</div>
           </div>
         </div>
         <div class="resize-handle" data-handle="resize"></div>
@@ -1020,6 +1021,9 @@
     const area  = document.getElementById('area');
     const ghost = document.getElementById('ghost');
     const cmd   = document.getElementById('cmd');
+    const cmdHint = document.getElementById('cmdHint');
+    const CMD_HINT_DEFAULT = 'Enter ↵';
+    let cmdHintTimer = 0;
 
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
     const prefersDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1425,10 +1429,13 @@
     sidebarClose.addEventListener('click',closeSidebar);
     sidebarBack.addEventListener('click',navBack);
     sidebarOverlay.addEventListener('pointerdown',(e)=>{ if(e.target===sidebarOverlay) closeSidebar(); });
-    sidebarPages.addEventListener('click',(e)=>{ const el=e.target.closest('[data-nav]'); if(el) navTo(el.dataset.nav); });
+    sidebarPages.addEventListener('click',(e)=>{
+      const act=e.target.closest('[data-action]');
+      if(act){ e.preventDefault(); TerminalCommandBus.dispatch('ui:'+act.dataset.action, buildCommandContext()); return; }
+      const el=e.target.closest('[data-nav]'); if(el) navTo(el.dataset.nav);
+    });
     document.getElementById('dockConfigs').addEventListener('click',()=>navTo('configs'));
     document.getElementById('dockAccount').addEventListener('click',()=>navTo('account'));
-    document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',()=>alert(`${el.dataset.action} (placeholder)`)));
 
     /* ===== Auth ===== */
     const authOverlay=document.getElementById('authOverlay'), tabCreate=document.getElementById('tabCreate'), tabLogin=document.getElementById('tabLogin');
@@ -1631,6 +1638,145 @@
     let cloudSyncTimer=0;
     function requestCloudSyncDebounced(){ if(!getSyncEnabled()||!firebaseReady||!currentUser) return; clearTimeout(cloudSyncTimer); cloudSyncTimer=setTimeout(()=>saveToCloudNow(),700); }
 
+    /* ===== Command bus (typed bar + menu + future AI) ===== */
+    function buildCommandContext(){
+      return {
+        setTheme, openSidebar, closeSidebar, toggleSidebar, navTo, resetMenuNav,
+        getEditMode: ()=>isEditMode,
+        setEditMode,
+        saveToCloudNow,
+        get firebaseReady(){ return firebaseReady; },
+        get currentUser(){ return currentUser; },
+      };
+    }
+
+    function showCmdFeedback(text){
+      if(!cmdHint) return;
+      clearTimeout(cmdHintTimer);
+      cmdHint.textContent = text || CMD_HINT_DEFAULT;
+      cmdHintTimer = setTimeout(()=>{ cmdHint.textContent = CMD_HINT_DEFAULT; }, 4200);
+    }
+
+    function registerTerminalCommands(){
+      if(!globalThis.TerminalCommandBus) return;
+
+      TerminalCommandBus.register({
+        id: 'help',
+        aliases: ['ajuda', '?'],
+        description: 'Lista comandos (resumo no ecrã, detalhe no consola F12)',
+        handler: async ()=>{
+          const m = TerminalCommandBus.getManifest();
+          console.info('[Terminal] Comandos disponíveis:', m);
+          const names = m.map(x=>x.id).slice(0, 10).join(', ');
+          return { message: m.length + ' comandos — ' + names + (m.length > 10 ? '…' : '') + ' (F12)' };
+        },
+      });
+
+      TerminalCommandBus.register({
+        id: 'theme',
+        aliases: ['tema'],
+        description: 'theme light | dark | auto',
+        handler: async (ctx, p)=>{
+          const mode = String(p.args[0] || '').toLowerCase();
+          if(!['light','dark','auto'].includes(mode)) return { ok: false, message: 'Uso: theme light | dark | auto' };
+          ctx.setTheme(mode);
+          return { message: 'Tema: ' + mode };
+        },
+      });
+
+      TerminalCommandBus.register({
+        id: 'menu',
+        aliases: ['sidebar'],
+        description: 'menu open | close | toggle',
+        handler: async (ctx, p)=>{
+          const sub = String(p.args[0] || 'open').toLowerCase();
+          if(sub === 'close' || sub === 'fechar') ctx.closeSidebar();
+          else if(sub === 'toggle') ctx.toggleSidebar();
+          else ctx.openSidebar();
+          return { message: 'Menu' };
+        },
+      });
+
+      TerminalCommandBus.register({
+        id: 'close',
+        aliases: ['fechar'],
+        description: 'Fecha o menu lateral',
+        handler: async (ctx)=>{ ctx.closeSidebar(); return { message: 'Menu fechado.' }; },
+      });
+
+      TerminalCommandBus.register({
+        id: 'edit',
+        aliases: ['editar'],
+        description: 'edit on | off | toggle — modo reorganizar widgets',
+        handler: async (ctx, p)=>{
+          const sub = String(p.args[0] || 'toggle').toLowerCase();
+          if(sub === 'on' || sub === 'true') ctx.setEditMode(true);
+          else if(sub === 'off' || sub === 'false') ctx.setEditMode(false);
+          else ctx.setEditMode(!ctx.getEditMode());
+          return { message: ctx.getEditMode() ? 'Modo edição: ligado' : 'Modo edição: desligado' };
+        },
+      });
+
+      TerminalCommandBus.register({
+        id: 'nav',
+        aliases: ['ir'],
+        description: 'nav home|configs|account|personalize|automation|devices',
+        handler: async (ctx, p)=>{
+          const id = String(p.args[0] || '').toLowerCase();
+          if(!id || !pages[id]) return { ok: false, message: 'Uso: nav home | configs | account | personalize | automation | devices' };
+          ctx.openSidebar();
+          ctx.resetMenuNav();
+          ctx.navTo(id);
+          return { message: 'Menu → ' + id };
+        },
+      });
+
+      TerminalCommandBus.register({
+        id: 'save',
+        aliases: ['sync', 'guardar'],
+        description: 'Guarda configurações na nuvem (conta com sync)',
+        handler: async (ctx)=>{
+          if(!ctx.firebaseReady || !ctx.currentUser) return { ok: false, message: 'Inicie sessão para sincronizar.' };
+          await ctx.saveToCloudNow();
+          return { message: 'Sincronizado.' };
+        },
+      });
+
+      const stubs = [
+        ['layout', 'Layout e snap'],
+        ['preferences', 'Preferências'],
+        ['about', 'Sobre'],
+        ['themes', 'Temas no menu'],
+        ['grid', 'Grid'],
+        ['motion', 'Animações'],
+        ['routines', 'Rotinas'],
+        ['calendar', 'Agenda'],
+        ['current', 'Este dispositivo'],
+        ['manage', 'Dispositivos'],
+      ];
+      stubs.forEach(([id, label])=>{
+        TerminalCommandBus.register({
+          id: 'ui:' + id,
+          aliases: [id],
+          description: label + ' (roadmap)',
+          handler: async ()=>({ ok: false, code: 'stub', message: label + ' — em breve.' }),
+        });
+      });
+
+      cmd.addEventListener('keydown', async (e)=>{
+        if(e.key !== 'Enter') return;
+        e.preventDefault();
+        const line = String(cmd.value || '').trim();
+        if(!line) return;
+        const res = await TerminalCommandBus.dispatch(line, buildCommandContext());
+        showCmdFeedback(res.message || (res.ok ? 'OK' : 'Erro'));
+        cmd.value = '';
+      });
+
+      window.terminalDispatch = (text)=>TerminalCommandBus.dispatch(text, buildCommandContext());
+      window.terminalGetCommandManifest = ()=>TerminalCommandBus.getManifest();
+    }
+
     function bootApplyAfterProfileChange(){
       const savedTheme=localStorage.getItem(getThemeKey())||'auto';
       applyTheme(savedTheme);
@@ -1690,6 +1836,7 @@
       if(!firebaseReady){ openAuth('create'); }else{ lockApp(); openAuth('login'); }
     }
 
+    registerTerminalCommands();
     boot();
   })();
   </script>
